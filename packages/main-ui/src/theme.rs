@@ -40,7 +40,12 @@ impl Default for FontTheme {
     }
 }
 
-pub fn init() {
-    use_context_provider(|| ColorTheme::default());
-    use_context_provider(|| FontTheme::default());
+#[derive(Debug, Clone, Copy)]
+pub struct ThemeService;
+
+impl ThemeService {
+    pub fn init() {
+        use_context_provider(|| ColorTheme::default());
+        use_context_provider(|| FontTheme::default());
+    }
 }

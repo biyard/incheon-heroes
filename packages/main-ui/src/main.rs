@@ -16,7 +16,7 @@ fn main() {
 }
 
 fn app() -> Element {
-    theme::init();
+    theme::ThemeService::init();
     PopupService::init();
 
     rsx! {
