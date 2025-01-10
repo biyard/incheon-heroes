@@ -1,4 +1,4 @@
-SERVICE ?= $(shell basename `git rev-parse --show-toplevel`)
+SERVICE ?= main-ui
 VERSION ?= $(shell toml get Cargo.toml package.version | tr -d \")
 COMMIT ?= $(shell git rev-parse --short HEAD)
 ENV ?= local
