@@ -46,5 +46,9 @@
   "hosted-zone:account=385474633683:domainName=democrasee.me:region=ap-northeast-2": {
     "Id": "/hostedzone/Z098010930NQH8SSWXM4A",
     "Name": "democrasee.me."
+  },
+  "hosted-zone:account=385474633683:domainName=incheonheroes.world:region=ap-northeast-2": {
+    "Id": "/hostedzone/Z00414621E5V00CYFFB50",
+    "Name": "incheonheroes.world."
   }
 }

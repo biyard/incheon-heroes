@@ -1,3 +1,4 @@
+pub mod assets;
 pub mod config;
 pub mod pages;
 pub mod route;
@@ -26,13 +27,11 @@ fn app() -> Element {
             name: "viewport",
             content: "width=device-width, initial-scale=1.0",
         }
-        document::Link { id: "favicon", rel: "icon", href: asset!("/public/favicon.ico") }
+        document::Link { id: "favicon", rel: "icon", href: "{assets::FAVICON}" }
         document::Link { rel: "stylesheet", href: asset!("/public/main.css") }
         document::Link { rel: "stylesheet", href: asset!("/public/tailwind.css") }
-        document::Link {
-            rel: "stylesheet",
-            href: "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css",
-        }
+
+        document::Link { href: "https://fonts.googleapis.com", rel: "preconnect" }
         document::Script { src: "https://cdn.tailwindcss.com/3.4.16" }
 
         Router::<Route> {}

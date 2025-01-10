@@ -1,4 +1,5 @@
 pub mod _routes;
+mod i18n;
 pub mod page;
 pub mod template;
 

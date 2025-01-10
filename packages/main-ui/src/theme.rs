@@ -14,10 +14,10 @@ pub struct ColorTheme {
 impl Default for ColorTheme {
     fn default() -> Self {
         ColorTheme {
-            background: "#2C2E42".to_string(),
+            background: "white".to_string(),
             primary: "#ADBCD7".to_string(),
             primary_icon: "#74789E".to_string(),
-            primary_text: "#74789E".to_string(),
+            primary_text: "black".to_string(),
             secondary: "#8588AB".to_string(),
             secondary_icon: "#74789E".to_string(),
             secondary_text: "#74789E".to_string(),
