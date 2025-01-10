@@ -1,0 +1,47 @@
+@import url(https://cdn.jsdelivr.net/gh/moonspam/NanumSquare@2.0/nanumsquare.css);
+
+html, body {
+  background: #2C2E42;
+  font-family: NanumSquareAc, sans-serif !important;
+  color: white;
+}
+
+@keyframes growWidth {
+  0% {
+    width: 0;
+    opacity: 1;
+  }
+  100% {
+    width: 100%;
+    opacity: 1;
+  }
+}
+
+@keyframes growToLeft {
+  0% {
+    width: 0px;
+    left: 100%;
+  }
+  100% {
+    width: 100%;
+    left: 0px;
+  }
+}
+
+.animate-grow-to-left {
+  animation: growToLeft 2s ease-in-out forwards;
+}
+
+.animate-grow {
+  animation: growWidth 2s ease-in-out forwards;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}

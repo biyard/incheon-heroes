@@ -1,0 +1,20 @@
+#![allow(non_snake_case)]
+use crate::route::Route;
+use crate::theme::ColorTheme;
+use dioxus::prelude::*;
+use dioxus_popup::PopupZone;
+use dioxus_translate::*;
+
+#[component]
+pub fn RootLayout(lang: Language) -> Element {
+    let theme: ColorTheme = use_context();
+
+    rsx! {
+        div {
+            class: "flex flex-col items-center justify-start w-full min-h-[100vh] text-white max-[1440px]:px-[10px]",
+            style: "background: {theme.background}",
+            div { class: "w-full max-w-[1440px]", Outlet::<Route> {} }
+        }
+        PopupZone {}
+    }
+}
