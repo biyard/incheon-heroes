@@ -4,6 +4,7 @@ use super::i18n::HeaderTranslate;
 use super::i18n::LoginButtonTranslate;
 use super::i18n::MainTextTranslate;
 use crate::assets::*;
+use crate::components::icons::arrows::{ArrowDirection, SingleSimpleArrow};
 use crate::route::Route;
 use crate::theme::ColorTheme;
 use base64::display;
@@ -21,7 +22,7 @@ pub fn RootLayout(lang: Language) -> Element {
             class: "flex flex-col w-full items-center justify-start min-h-[100vh] text-white",
             style: "background: {theme.background}; color: {theme.primary_text}",
             Header {
-                class: "w-full h-[70px] flex items-center justify-center max-w-[1440px]",
+                class: "w-full min-h-[70px] flex flex-row items-start justify-center max-w-[1440px]",
                 lang,
             }
             div { class: "w-full my-[70px]", Outlet::<Route> {} }
@@ -38,35 +39,156 @@ pub fn Header(
     lang: Language,
 ) -> Element {
     let tr: HeaderTranslate = translate(&lang);
+    let mut expanded = use_signal(|| false);
+    let submenu_class = if expanded() {
+        "h-fit opacity-100"
+    } else {
+        "h-[0px] opacity-0"
+    };
+
+    let handle_select_menu = move |_| {
+        expanded.set(false);
+    };
 
     rsx! {
         div { id, class,
             Link {
-                class: "flex items-center justify-center",
+                class: "flex items-center justify-center h-[70px]",
                 to: Route::HomePage { lang },
                 img { src: "{LOGO}", class: "w-[145px] h-[50px]" }
             }
-            div {
-                id: "menu",
-                class: "grow grid grid-cols-5 items-center justify-center",
-                Menu { value: "{tr.history}", to: Route::HomePage { lang } }
-                Menu { value: "{tr.event}", to: Route::HomePage { lang } }
-                Menu { value: "{tr.shop}", to: Route::HomePage { lang } }
-                Menu { value: "{tr.dao}", to: Route::HomePage { lang } }
-                Menu { value: "{tr.info}", to: Route::HomePage { lang } }
+
+            div { class: "grow flex flex-col items-center justify-center px-[30px]",
+                div { id: "menus", class: "w-full grid grid-cols-5 h-[70px]",
+                    ExpandableMenu {
+                        expanded: expanded(),
+                        onclick: move |_| {
+                            expanded.set(!expanded());
+                        },
+                        "{tr.history}"
+                    }
+
+                    ExpandableMenu {
+                        expanded: expanded(),
+                        onclick: move |_| {
+                            expanded.set(!expanded());
+                        },
+                        "{tr.event}"
+                    }
+                    Menu {
+                        to: Route::HomePage { lang },
+                        onclick: handle_select_menu,
+                        "{tr.shop}"
+                    }
+                    Menu {
+                        to: Route::HomePage { lang },
+                        onclick: handle_select_menu,
+                        "{tr.dao}"
+                    }
+                    ExpandableMenu {
+                        expanded: expanded(),
+                        onclick: move |_| {
+                            expanded.set(!expanded());
+                        },
+                        "{tr.info}"
+                    }
+                }
+
+                div {
+                    id: "submenus",
+                    class: "transition-all w-full grid grid-cols-5 {submenu_class} overflow-hidden",
+                    div { class: "col-span-1 flex flex-col items-start justify-start",
+                        SubMenu {
+                            to: Route::HomePage { lang },
+                            onclick: handle_select_menu,
+                            "{tr.notice}"
+                        }
+                        SubMenu {
+                            to: Route::HomePage { lang },
+                            onclick: handle_select_menu,
+                            "{tr.story}"
+                        }
+                        SubMenu {
+                            to: Route::HomePage { lang },
+                            onclick: handle_select_menu,
+                            "{tr.microverse}"
+                        }
+                        SubMenu {
+                            to: Route::HomePage { lang },
+                            onclick: handle_select_menu,
+                            "{tr.top_contributor}"
+                        }
+
+                    }
+                    div { class: "col-span-3 flex flex-col justify-start",
+                        SubMenu {
+                            to: Route::HomePage { lang },
+                            onclick: handle_select_menu,
+                            "{tr.calendar}"
+                        }
+                        SubMenu {
+                            to: Route::HomePage { lang },
+                            onclick: handle_select_menu,
+                            "{tr.contest_voting}"
+                        }
+                    }
+                    div { class: "col-span-1 flex flex-col justify-start",
+                        SubMenu {
+                            to: Route::HomePage { lang },
+                            onclick: handle_select_menu,
+                            "{tr.faq}"
+                        }
+                        SubMenu {
+                            to: Route::HomePage { lang },
+                            onclick: handle_select_menu,
+                            "{tr.docs}"
+                        }
+                    }
+                }
             }
         }
     }
 }
 
 #[component]
-pub fn Menu(value: String, #[props(into)] to: NavigationTarget) -> Element {
+pub fn ExpandableMenu(
+    expanded: bool,
+    children: Element,
+    onclick: EventHandler<MouseEvent>,
+) -> Element {
+    rsx! {
+        div {
+            class: "flex flex-row items-center justify-start text-[16px] font-bold col-span-1 gap-[10px] cursor-pointer",
+            onclick,
+            {children}
+            SingleSimpleArrow { direction: if expanded { ArrowDirection::Up } else { ArrowDirection::Down } }
+        }
+    }
+}
+
+#[component]
+pub fn SubMenu(
+    children: Element,
+    #[props(into)] to: NavigationTarget,
+    onclick: EventHandler<MouseEvent>,
+) -> Element {
+    rsx! {
+        Link { to, class: "text-[14px] font-regular", onclick, {children} }
+    }
+}
+
+#[component]
+pub fn Menu(
+    children: Element,
+    #[props(into)] to: NavigationTarget,
+    onclick: EventHandler<MouseEvent>,
+) -> Element {
     rsx! {
         Link {
-            id: "menu-{value}",
             to,
-            class: "flex items-center justify-center text-[16px] font-bold col-span-1",
-            "{value}"
+            class: "flex flex-row items-center justify-start text-[16px] font-bold col-span-1 gap-[10px]",
+            onclick,
+            {children}
         }
     }
 }
