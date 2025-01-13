@@ -9,6 +9,12 @@ pub enum Route {
         #[layout(RootLayout)]
             #[route("/")]
             HomePage { lang: Language },
+
+            #[route("/notices")]
+            NoticesPage { lang: Language },
+
+            #[route("/stories")]
+            StoriesPage { lang: Language },
         #[end_layout]
     #[end_nest]
 
