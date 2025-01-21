@@ -13,3 +13,17 @@ pub const LOGO: Asset = asset!(
         .with_size(ImageSize::Automatic)
         .with_format(ImageFormat::Avif)
 );
+
+pub const VIDEO: Asset = asset!(
+    "/public/videos/main.mp4",
+    ImageAssetOptions::new()
+        .with_size(ImageSize::Automatic)
+        .with_format(ImageFormat::Avif)
+);
+
+pub const DIAMOND: Asset = asset!(
+    "/public/images/diamond.png",
+    ImageAssetOptions::new()
+        .with_size(ImageSize::Automatic)
+        .with_format(ImageFormat::Avif)
+);

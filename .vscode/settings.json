@@ -1,0 +1,24 @@
+{
+    "tailwindCSS.experimental.classRegex": [
+        "class: \"(.*)\""
+    ],
+    "tailwindCSS.includeLanguages": {
+        "rust": "html"
+    },
+    "editor.defaultFormatter": "rust-lang.rust-analyzer",
+    "editor.formatOnSave": true,
+    "dioxus.formatOnSave": "enabled",
+    "rust-analyzer.cargo.features": [
+        "server",
+        "web"
+    ],
+    "[jsonc]": {
+        "editor.defaultFormatter": "vscode.json-language-features"
+    },
+    "[typescript]": {
+        "editor.defaultFormatter": "vscode.typescript-language-features"
+    },
+    "rust-analyzer.cargo.extraEnv": {
+        "CARGO_INCREMENTAL": "1"
+    }
+}

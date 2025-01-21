@@ -1,0 +1,17 @@
+# Github actions
+github.vscode-github-actions
+
+# Rust
+rust-lang.rust-analyzer
+1yib.rust-bundle
+dustypomerleau.rust-syntax
+
+# Cargo.toml
+tamasfe.even-better-toml
+fill-labs.dependi
+
+# Makefile
+ms-vscode.makefile-tools
+
+# Dioxus RSX
+dioxuslabs.dioxus
