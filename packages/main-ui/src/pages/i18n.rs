@@ -15,9 +15,9 @@ translate! {
         ko: "SHOP",
         en: "SHOP",
     },
-    dao: {
-        ko: "DAO",
-        en: "DAO",
+    my_nfts: {
+        ko: "MY NFTs",
+        en: "MY NFTs",
     },
     info: {
         ko: "INFO",

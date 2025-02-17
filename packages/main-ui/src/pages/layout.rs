@@ -76,14 +76,14 @@ pub fn Header(
                         "{tr.event}"
                     }
                     Menu {
-                        to: Route::HomePage { lang },
+                        to: Route::ShopPage { lang },
                         onclick: handle_select_menu,
                         "{tr.shop}"
                     }
                     Menu {
-                        to: Route::HomePage { lang },
+                        to: Route::MyNftsPage { lang },
                         onclick: handle_select_menu,
-                        "{tr.dao}"
+                        "{tr.my_nfts}"
                     }
                     ExpandableMenu {
                         expanded: expanded(),
@@ -99,22 +99,17 @@ pub fn Header(
                     class: "transition-all w-full grid grid-cols-5 {submenu_class} overflow-hidden",
                     div { class: "col-span-1 flex flex-col items-start justify-start",
                         SubMenu {
-                            to: Route::HomePage { lang },
+                            to: Route::NoticesPage { lang },
                             onclick: handle_select_menu,
                             "{tr.notice}"
                         }
                         SubMenu {
-                            to: Route::HomePage { lang },
+                            to: Route::StoriesPage { lang },
                             onclick: handle_select_menu,
                             "{tr.story}"
                         }
                         SubMenu {
-                            to: Route::HomePage { lang },
-                            onclick: handle_select_menu,
-                            "{tr.microverse}"
-                        }
-                        SubMenu {
-                            to: Route::HomePage { lang },
+                            to: Route::ContributorsPage { lang },
                             onclick: handle_select_menu,
                             "{tr.top_contributor}"
                         }
@@ -122,24 +117,27 @@ pub fn Header(
                     }
                     div { class: "col-span-3 flex flex-col justify-start",
                         SubMenu {
-                            to: Route::HomePage { lang },
+                            to: Route::CalendarPage { lang },
                             onclick: handle_select_menu,
                             "{tr.calendar}"
                         }
                         SubMenu {
-                            to: Route::HomePage { lang },
+                            to: Route::SongsPage { lang },
                             onclick: handle_select_menu,
                             "{tr.contest_voting}"
                         }
                     }
                     div { class: "col-span-1 flex flex-col justify-start",
                         SubMenu {
-                            to: Route::HomePage { lang },
+                            to: Route::FaqPage { lang },
                             onclick: handle_select_menu,
                             "{tr.faq}"
                         }
-                        SubMenu {
-                            to: Route::HomePage { lang },
+
+                        a {
+                            href: "https://incheon-universe.gitbook.io/incheon-universe",
+                            target: "_blank",
+                            class: "text-[14px] font-regular",
                             onclick: handle_select_menu,
                             "{tr.docs}"
                         }

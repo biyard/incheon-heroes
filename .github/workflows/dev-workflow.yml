@@ -31,14 +31,12 @@ jobs:
           target: wasm32-unknown-unknown
           toolchain: stable
 
-      - name: Install binstall
-        run: |
-          cargo install cargo-binstall
+      - uses: cargo-bins/cargo-binstall@main
 
       - name: Install dioxus-cli
         run: |
           cargo binstall dioxus-cli --version 0.6.1
-          cargo install toml-cli
+          cargo binstall toml-cli
 
       - name: Cache builder
         id: main-ui-build-cache
@@ -47,15 +45,6 @@ jobs:
           key: main-ui-build-cache
           path: |
             target
-
-      - name: Cache builder
-        id: main-ui-artifacts
-        uses: actions/cache@v3
-        with:
-          key: main-ui-artifacts
-          path: |
-            .build/main-ui
-
 
       - name: Checking violate
         env:
@@ -88,29 +77,8 @@ jobs:
           ENABLE_DYNAMO: false
           ENABLE_LAMBDA: true
         run: |
-          npm i -g aws-cdk tailwindcss
-          make deploy-web-if-needed
-
-  publish-crates:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: recursive
-          ssh-key: ${{ secrets.PULL_KEY_REPO }}
-
-      - uses: actions-rust-lang/setup-rust-toolchain@v1
-        with:
-          components: clippy, rustfmt
-          target: wasm32-unknown-unknown
-          toolchain: stable
-
-      - name: Publish
-        env:
-          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
-        run: |
-          make publish
+          npm i -g aws-cdk @tailwindcss/cli
+          make deploy-web
 
   create-release-pr:
     runs-on: ubuntu-latest
