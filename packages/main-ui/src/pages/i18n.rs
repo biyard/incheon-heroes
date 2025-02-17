@@ -157,3 +157,70 @@ translate! {
         en: "Account Address",
     }
 }
+
+translate! {
+    ExperienceBoardTranslate;
+
+    no: {
+        ko: "No.",
+        en: "No."
+    },
+
+    nft_id: {
+        ko: "NFT ID",
+        en: "NFT ID",
+    },
+
+    exp: {
+        ko: "경험치",
+        en: "EXP",
+    },
+
+    character: {
+        ko: "캐릭터",
+        en: "Character",
+    },
+
+    address: {
+        ko: "계정주소",
+        en: "Account Address",
+    }
+}
+
+translate! {
+    MissionBoardTranslate;
+
+    no: {
+        ko: "No.",
+        en: "No."
+    },
+
+    missions: {
+        ko: "완료 횟수",
+        en: "No. of Completions",
+    },
+
+    address: {
+        ko: "계정주소",
+        en: "Account Address",
+    }
+}
+
+translate! {
+    VotingBoardTranslate;
+
+    no: {
+        ko: "No.",
+        en: "No."
+    },
+
+    votes: {
+        ko: "투표 횟수",
+        en: "No. of Votes",
+    },
+
+    address: {
+        ko: "계정주소",
+        en: "Account Address",
+    }
+}

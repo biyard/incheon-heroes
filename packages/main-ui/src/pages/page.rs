@@ -144,17 +144,119 @@ pub fn Rank(i: usize) -> Element {
 
 #[component]
 pub fn ExperienceBoard(data: Vec<LeaderboardItemExperience>, lang: Language) -> Element {
-    rsx! {}
+    let tr: ExperienceBoardTranslate = translate(&lang);
+    let grids = vec![
+        "col-span-1",
+        "col-span-2",
+        "col-span-2",
+        "col-span-2",
+        "col-span-3",
+    ];
+    let headers = vec![tr.no, tr.nft_id, tr.exp, tr.character, tr.address];
+
+    rsx! {
+        div { class: "w-full flex-col flex gap-[5px] text-[10px] font-semibold",
+            div { class: "bg-[#B2D1C7] rounded-[10px] grid grid-cols-10 h-[40px]",
+                for (i , h) in headers.iter().enumerate() {
+                    div { class: "{grids[i]} flex items-center justify-center py-auto text-[15px] font-semibold text-[#636363]",
+                        "{h}"
+                    }
+                }
+            }
+
+            div { class: "rounded-[10px] border-[1px] border-[#E4E7E5] text-[#636363] text-[14px] font-medium",
+                for (i , h) in data.iter().enumerate() {
+                    div { class: if i < data.len() - 1 { "grid grid-cols-10 h-[40px] border-b-[1px]" } else { "grid grid-cols-10 h-[40px]" },
+                        div { class: "{grids[0]} flex items-center justify-center py-auto",
+                            Rank { i }
+                        }
+                        div { class: "{grids[1]} flex items-center justify-center py-auto",
+                            "#{h.nft_num}"
+                        }
+                        div { class: "{grids[2]} flex items-center justify-center py-auto",
+                            "{h.experience}"
+                        }
+                        div { class: "{grids[3]} flex items-center justify-center py-auto",
+                            "{nft_id_to_character(h.nft_num)}"
+                        }
+                        div { class: "{grids[4]} flex items-center justify-center py-auto",
+                            "{truncate_addr(&h.account_address)}"
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 #[component]
 pub fn DailyMissionBoard(data: Vec<LeaderboardItemDailyMission>, lang: Language) -> Element {
-    rsx! {}
+    let tr: MissionBoardTranslate = translate(&lang);
+    let grids = vec!["col-span-1", "col-span-4", "col-span-5"];
+    let headers = vec![tr.no, tr.missions, tr.address];
+
+    rsx! {
+        div { class: "w-full flex-col flex gap-[5px] text-[10px] font-semibold",
+            div { class: "bg-[#B2D1C7] rounded-[10px] grid grid-cols-10 h-[40px]",
+                for (i , h) in headers.iter().enumerate() {
+                    div { class: "{grids[i]} flex items-center justify-center py-auto text-[15px] font-semibold text-[#636363]",
+                        "{h}"
+                    }
+                }
+            }
+
+            div { class: "rounded-[10px] border-[1px] border-[#E4E7E5] text-[#636363] text-[14px] font-medium",
+                for (i , h) in data.iter().enumerate() {
+                    div { class: if i < data.len() - 1 { "grid grid-cols-10 h-[40px] border-b-[1px]" } else { "grid grid-cols-10 h-[40px]" },
+                        div { class: "{grids[0]} flex items-center justify-center py-auto",
+                            Rank { i }
+                        }
+                        div { class: "{grids[1]} flex items-center justify-center py-auto",
+                            "#{h.daily_count}"
+                        }
+                        div { class: "{grids[2]} flex items-center justify-center py-auto",
+                            "{truncate_addr(&h.account_address)}"
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 #[component]
 pub fn VotingBoard(data: Vec<LeaderboardItemVoting>, lang: Language) -> Element {
-    rsx! {}
+    let tr: VotingBoardTranslate = translate(&lang);
+    let grids = vec!["col-span-1", "col-span-4", "col-span-5"];
+    let headers = vec![tr.no, tr.votes, tr.address];
+
+    rsx! {
+        div { class: "w-full flex-col flex gap-[5px] text-[10px] font-semibold",
+            div { class: "bg-[#B2D1C7] rounded-[10px] grid grid-cols-10 h-[40px]",
+                for (i , h) in headers.iter().enumerate() {
+                    div { class: "{grids[i]} flex items-center justify-center py-auto text-[15px] font-semibold text-[#636363]",
+                        "{h}"
+                    }
+                }
+            }
+
+            div { class: "rounded-[10px] border-[1px] border-[#E4E7E5] text-[#636363] text-[14px] font-medium",
+                for (i , h) in data.iter().enumerate() {
+                    div { class: if i < data.len() - 1 { "grid grid-cols-10 h-[40px] border-b-[1px]" } else { "grid grid-cols-10 h-[40px]" },
+                        div { class: "{grids[0]} flex items-center justify-center py-auto",
+                            Rank { i }
+                        }
+                        div { class: "{grids[1]} flex items-center justify-center py-auto",
+                            "#{h.voting_count}"
+                        }
+                        div { class: "{grids[2]} flex items-center justify-center py-auto",
+                            "{truncate_addr(&h.account_address)}"
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 #[component]
