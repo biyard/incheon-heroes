@@ -127,27 +127,32 @@ translate! {
         en: "Voting Ranking",
     },
 
-    table_no: {
+}
+
+translate! {
+    LevelBoardTranslate;
+
+    no: {
         ko: "No.",
         en: "No."
     },
 
-    table_nft_id: {
+    nft_id: {
         ko: "NFT ID",
         en: "NFT ID",
     },
 
-    table_level: {
+    level: {
         ko: "레벨",
         en: "Level",
     },
 
-    table_character: {
+    character: {
         ko: "캐릭터",
         en: "Character",
     },
 
-    table_address: {
+    address: {
         ko: "계정주소",
         en: "Account Address",
     }

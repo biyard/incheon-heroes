@@ -27,3 +27,24 @@ pub const DIAMOND: Asset = asset!(
         .with_size(ImageSize::Automatic)
         .with_format(ImageFormat::Avif)
 );
+
+pub const GOLD_RANK: Asset = asset!(
+    "/public/images/gold_rank.png",
+    ImageAssetOptions::new()
+        .with_size(ImageSize::Automatic)
+        .with_format(ImageFormat::Avif)
+);
+
+pub const SILVER_RANK: Asset = asset!(
+    "/public/images/silver_rank.png",
+    ImageAssetOptions::new()
+        .with_size(ImageSize::Automatic)
+        .with_format(ImageFormat::Avif)
+);
+
+pub const BRONZE_RANK: Asset = asset!(
+    "/public/images/bronze_rank.png",
+    ImageAssetOptions::new()
+        .with_size(ImageSize::Automatic)
+        .with_format(ImageFormat::Avif)
+);

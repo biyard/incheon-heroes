@@ -1,14 +1,13 @@
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
+// FIXME: fix the error type to be more specific
+pub type Result<T> = std::result::Result<T, Error>;
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub enum Error {
+    Reqwest(String),
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
+impl From<reqwest::Error> for Error {
+    fn from(e: reqwest::Error) -> Self {
+        Self::Reqwest(e.to_string())
     }
 }

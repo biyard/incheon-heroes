@@ -9,6 +9,7 @@ pub mod notices;
 pub mod page;
 pub mod shop;
 pub mod stories;
+mod controller;
 
 pub use _routes::*;
 pub use layout::*;

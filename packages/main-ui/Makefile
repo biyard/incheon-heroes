@@ -7,22 +7,10 @@ ACCESS_KEY_ID ?= $(shell aws configure get aws_access_key_id $(AWS_FLAG))
 SECRET_ACCESS_KEY ?= $(shell aws configure get aws_secret_access_key $(AWS_FLAG))
 REGION ?= $(shell aws configure get region)
 
-ifeq ("$(ENV)","prod")
-	LOG_LEVEL ?= info
-	DOMAIN ?= incheonheroes.world
-	REDIRECT_URI = https://incheonheroes.world
-	MAIN_API_ENDPOINT ?= https://api.incheonheroes.world
-endif
-
-ifeq ("$(ENV)","dev")
-	REDIRECT_URI = https://dev.democrasee.me
-endif
-
-DOMAIN ?= dev.incheonheroes.world
 LOG_LEVEL ?= debug
 REDIRECT_URI ?= http://localhost:3000
 WORKSPACE_ROOT ?= ../..
-MAIN_API_ENDPOINT ?= https://api.dev.incheonheroes.world
+MAIN_API_ENDPOINT ?= https://api.incheon.world
 
 BUILD_ENV ?= ENV=$(ENV) VERSION=$(VERSION) COMMIT=$(COMMIT) LOG_LEVEL=$(LOG_LEVEL) ENV=$(ENV) DOMAIN=${DOMAIN} AWS_REGION=${REGION} AWS_ACCESS_KEY_ID=${ACCESS_KEY_ID} AWS_SECRET_ACCESS_KEY=${SECRET_ACCESS_KEY} SERVICE=$(SERVICE) WORKSPACE_ROOT=$(WORKSPACE_ROOT) BASE_URL=$(BASE_URL) MAIN_API_ENDPOINT=$(MAIN_API_ENDPOINT) REDIRECT_URI=$(REDIRECT_URI)
 
