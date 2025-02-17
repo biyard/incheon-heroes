@@ -32,7 +32,7 @@ fn app() -> Element {
 
     rsx! {
         document::Title { "Incheon Heroes" }
-        document::Meta { name: "description", content: "" }
+        document::Meta { name: "description", content: "Incheon heroes ...." }
         document::Meta {
             name: "viewport",
             content: "width=device-width, initial-scale=1.0",
