@@ -6,6 +6,7 @@ pub mod route;
 pub mod theme;
 
 use crate::route::Route;
+use assets::*;
 use dioxus::prelude::*;
 use dioxus_popup::PopupService;
 
@@ -28,11 +29,31 @@ fn app() -> Element {
             name: "viewport",
             content: "width=device-width, initial-scale=1.0",
         }
+
+        document::Link { href: "https://fonts.googleapis.com", rel: "preconnect" }
+        document::Link {
+            crossorigin: "false",
+            href: "https://fonts.gstatic.com",
+            rel: "preconnect",
+        }
+        document::Link {
+            href: "https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Russo+One&display=swap",
+            rel: "stylesheet",
+        }
+        document::Link {
+            href: "https://cdn.jsdelivr.net/gh/fonts-archive/Pretendard/Pretendard.css",
+            r#type: "text/css",
+            rel: "stylesheet",
+        }
+
+        document::Link {
+            href: "https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Noto+Color+Emoji&family=Russo+One&display=swap",
+            rel: "stylesheet",
+        }
         document::Link { id: "favicon", rel: "icon", href: "{assets::FAVICON}" }
         document::Link { rel: "stylesheet", href: asset!("/public/main.css") }
         document::Link { rel: "stylesheet", href: asset!("/public/tailwind.css") }
 
-        document::Link { href: "https://fonts.googleapis.com", rel: "preconnect" }
         document::Script { src: "https://cdn.tailwindcss.com/3.4.16" }
 
         Router::<Route> {}

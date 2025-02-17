@@ -98,3 +98,57 @@ translate! {
         en: "Please sign in first",
     },
 }
+
+translate! {
+    LeaderBoardTranslate;
+
+    title: {
+        ko: "Leader Board",
+        en: "Leader Board",
+    },
+
+    menu_level_rank: {
+        ko: "레벨 랭킹",
+        en: "Level Ranking",
+    },
+
+    menu_exp_rank: {
+        ko: "경험치 랭킹",
+        en: "Experience Ranking"
+    },
+
+    menu_daily_mission_rank: {
+        ko: "데일리 미션 참여 랭킹",
+        en: "Daily Mission Ranking",
+    },
+
+    menu_vote_rank: {
+        ko: "검증 투표 참여 랭킹",
+        en: "Voting Ranking",
+    },
+
+    table_no: {
+        ko: "No.",
+        en: "No."
+    },
+
+    table_nft_id: {
+        ko: "NFT ID",
+        en: "NFT ID",
+    },
+
+    table_level: {
+        ko: "레벨",
+        en: "Level",
+    },
+
+    table_character: {
+        ko: "캐릭터",
+        en: "Character",
+    },
+
+    table_address: {
+        ko: "계정주소",
+        en: "Account Address",
+    }
+}
