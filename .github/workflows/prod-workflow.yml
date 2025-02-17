@@ -3,7 +3,7 @@ name: Dev deploy
 on:
   push:
     branches:
-      - dev
+      - main
 
 env:
   CARGO_TERM_COLOR: always
@@ -66,10 +66,10 @@ jobs:
           FIREBASE_MESSAGING_SENDER_ID: "${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}"
           FIREBASE_APP_ID: "${{ secrets.FIREBASE_APP_ID }}"
           FIREBASE_MEASUREMENT_ID: "${{ secrets.FIREBASE_MEASUREMENT_ID }}"
-          MAIN_API_ENDPOINT: https://api.dev.incheon.world
-          ENV: dev
+          MAIN_API_ENDPOINT: https://api.incheon.world
+          ENV: prod
           SERVICE: main-ui
-          DOMAIN: dev.incheonheroes.world
+          DOMAIN: incheonheroes.world
           API_PREFIX: /api
           ENABLE_S3: true
           ENABLE_FARGATE: false
@@ -79,20 +79,3 @@ jobs:
         run: |
           npm i -g aws-cdk @tailwindcss/cli
           make deploy-web
-
-  create-release-pr:
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/dev'
-    needs:
-      [main-ui]
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: recursive
-          ssh-key: ${{ secrets.PULL_KEY_REPO }}
-      - name: Git pr release action
-        uses: grassedge/git-pr-release-action@v1.0
-        with:
-          base: main
-          head: dev
-          token: ${{ secrets.GITHUB_TOKEN }}
