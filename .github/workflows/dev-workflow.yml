@@ -35,8 +35,8 @@ jobs:
 
       - name: Install dioxus-cli
         run: |
-          cargo binstall dioxus-cli --version 0.6.1
-          cargo binstall toml-cli
+          cargo binstall dioxus-cli --force
+          cargo binstall toml-cli --force
 
       - name: Cache builder
         id: main-ui-build-cache
@@ -84,9 +84,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/dev'
     needs:
-      [
-        main-ui, publish-crates
-      ]
+      [main-ui]
     steps:
       - uses: actions/checkout@v3
         with:
