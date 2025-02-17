@@ -10,16 +10,17 @@ license.workspace = true
 [dependencies]
 reqwest.workspace = true
 dto.workspace = true
-dioxus = { workspace = true, features = ["router"] }
+dioxus = { workspace = true, features = ["router", "web", "fullstack"] }
+by-components.workspace = true
 
 dioxus-aws = { version = "0.6.15" }
 dioxus-web = { version = "0.6.1", features = [], optional = true }
 dioxus-logger = { version = "0.5.0" }
 tracing = { version = "0.1.40" }
 
-wasm-bindgen = { version = "0.2.99", optional = true }
-wasm-bindgen-futures = { version = "0.4.49", optional = true }
-web-sys = { version = "0.3.72", features=["Navigator"], optional = true}
+wasm-bindgen = { version = "0.2.99" }
+wasm-bindgen-futures = { version = "0.4.49" }
+web-sys = { version = "0.3.72", features=["Navigator"]}
 serde = "1.0.216"
 num-format = "0.4.4"
 
@@ -27,13 +28,13 @@ dioxus-sdk = { version = "0.6.0", features = ["window_size"], optional = true }
 chrono = "0.4.39"
 base64 = "0.22.1"
 url = "2.5.4"
-dioxus-oauth = { version = "0.6.2", features = ["web"], optional = true }
-google-wallet = { version = "0.1.0", optional = true }
-dioxus-translate = { version = "0.1.0", features = ["ko"] }
+dioxus-oauth.workspace = true
+google-wallet.workspace = true
+dioxus-translate.workspace = true
 dioxus-popup = "0.1.0"
 
 [features]
 default = []
-web = ["web-sys", "wasm-bindgen", "wasm-bindgen-futures", "dioxus-aws/web-only", "dioxus-web", "dioxus-sdk", "dioxus-oauth", "google-wallet","dioxus-translate/web"]
+web = ["dioxus-aws/web", "dioxus-web", "dioxus-sdk", "dioxus-translate/web"]
 server = ["dioxus-aws/server"]
 lambda = ["server", "dioxus-aws/lambda"]

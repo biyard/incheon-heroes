@@ -10,6 +10,13 @@ repository = "https://github.com/biyard/incheon-heroes"
 license = "Apache"
 
 [workspace.dependencies]
+by-components = { path = "deps/rust-sdk/packages/by-components" }
+dioxus-oauth = { path = "deps/rust-sdk/packages/dioxus-oauth" }
+google-wallet = { path = "deps/rust-sdk/packages/google-wallet" }
+dioxus-translate = { path = "deps/rust-sdk/packages/dioxus-translate", features = ["ko"] }
+dioxus-translate-macro = { path = "deps/rust-sdk/packages/dioxus-translate-macro" }
+dioxus-translate-types = { path = "deps/rust-sdk/packages/dioxus-translate-types" }
+
 serde = { version = "1.0.197", features = ["derive"] }
 serde_json = "1.0.133"
 slog = "2.7.0"

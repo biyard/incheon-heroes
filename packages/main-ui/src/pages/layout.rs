@@ -1,13 +1,10 @@
 #![allow(non_snake_case)]
 use super::i18n::FooterTranslate;
 use super::i18n::HeaderTranslate;
-use super::i18n::LoginButtonTranslate;
-use super::i18n::MainTextTranslate;
 use crate::assets::*;
-use crate::components::headings::Heading1;
 use crate::components::icons::arrows::{ArrowDirection, SingleSimpleArrow};
 use crate::route::Route;
-use crate::theme::ColorTheme;
+use by_components::theme::ColorTheme;
 use dioxus::prelude::*;
 // use dioxus_oauth::component;
 use dioxus_popup::PopupZone;
@@ -20,7 +17,8 @@ pub fn RootLayout(lang: Language) -> Element {
     rsx! {
         div {
             class: "flex flex-col w-full items-center justify-start min-h-[100vh] text-white",
-            style: "background: {theme.background}; color: {theme.primary_text}",
+            background: "{theme.background}",
+            color: "{theme.text.primary}",
             Header {
                 class: "w-full min-h-[70px] flex flex-row items-start justify-center max-w-[1440px]",
                 lang,

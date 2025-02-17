@@ -3,10 +3,9 @@ pub mod components;
 pub mod config;
 pub mod pages;
 pub mod route;
-pub mod theme;
 
 use crate::route::Route;
-use assets::*;
+use by_components::theme::{ColorTheme, TextColorTheme};
 use dioxus::prelude::*;
 use dioxus_popup::PopupService;
 
@@ -18,8 +17,19 @@ fn main() {
     dioxus_aws::launch(app);
 }
 
+fn setup_color_theme() {
+    use_context_provider(|| ColorTheme {
+        background: "white".to_string(),
+        text: TextColorTheme {
+            primary: "black".to_string(),
+            ..Default::default()
+        },
+        ..Default::default()
+    });
+}
+
 fn app() -> Element {
-    theme::ThemeService::init();
+    setup_color_theme();
     PopupService::init();
 
     rsx! {
