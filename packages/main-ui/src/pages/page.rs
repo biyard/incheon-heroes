@@ -1,5 +1,5 @@
 #![allow(non_snake_case)]
-use super::{template::Footer, LoginButton, Maintext, VideoSection};
+use super::{layout::Footer, LoginButton, Maintext, VideoSection};
 use dioxus::prelude::*;
 use dioxus_translate::Language;
 
