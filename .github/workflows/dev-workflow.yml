@@ -76,6 +76,7 @@ jobs:
           ENABLE_FARGATE: false
           ENABLE_DYNAMO: false
           ENABLE_LAMBDA: true
+          RUSTFLAGS: "-A warnings"
         run: |
           npm i -g aws-cdk @tailwindcss/cli
           make deploy-web
