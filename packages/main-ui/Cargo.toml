@@ -12,29 +12,28 @@ reqwest.workspace = true
 dto.workspace = true
 dioxus = { workspace = true, features = ["router", "web", "fullstack"] }
 by-components.workspace = true
+dioxus-oauth.workspace = true
+google-wallet.workspace = true
+dioxus-translate.workspace = true
+dioxus-popup.workspace = true
 
-dioxus-aws = { version = "0.6.15" }
-dioxus-web = { version = "0.6.1", features = [], optional = true }
+dioxus-aws.workspace = true
+dioxus-web.workspace = true
 dioxus-logger = { version = "0.5.0" }
 tracing = { version = "0.1.40" }
 
-wasm-bindgen = { version = "0.2.99" }
-wasm-bindgen-futures = { version = "0.4.49" }
+wasm-bindgen = { version = "0.2.100" }
+wasm-bindgen-futures = { version = "0.4.50" }
 web-sys = { version = "0.3.72", features=["Navigator"]}
 serde = "1.0.216"
 num-format = "0.4.4"
 
-dioxus-sdk = { version = "0.6.0", features = ["window_size"], optional = true }
 chrono = "0.4.39"
 base64 = "0.22.1"
 url = "2.5.4"
-dioxus-oauth.workspace = true
-google-wallet.workspace = true
-dioxus-translate.workspace = true
-dioxus-popup = "0.1.0"
 
 [features]
 default = []
-web = ["dioxus-aws/web", "dioxus-web", "dioxus-sdk", "dioxus-translate/web"]
+web = ["dioxus-aws/web", "dioxus-translate/web"]
 server = ["dioxus-aws/server"]
 lambda = ["server", "dioxus-aws/lambda"]

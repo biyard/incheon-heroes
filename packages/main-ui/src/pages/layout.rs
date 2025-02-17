@@ -6,8 +6,6 @@ use crate::components::icons::arrows::{ArrowDirection, SingleSimpleArrow};
 use crate::route::Route;
 use by_components::theme::ColorTheme;
 use dioxus::prelude::*;
-// use dioxus_oauth::component;
-use dioxus_popup::PopupZone;
 use dioxus_translate::*;
 
 #[component]
@@ -26,7 +24,6 @@ pub fn RootLayout(lang: Language) -> Element {
             div { class: "w-full py-[70px]", min_height: "calc(100vh - 190px)", Outlet::<Route> {} }
             Footer { lang }
         }
-        PopupZone {}
     }
 }
 
@@ -95,7 +92,7 @@ pub fn Header(
 
                 div {
                     id: "submenus",
-                    class: "bg-white transition-all w-full grid grid-cols-5 {submenu_class} overflow-hidden",
+                    class: "transition-all w-full grid grid-cols-5 {submenu_class} overflow-hidden",
                     div { class: "col-span-1 flex flex-col items-start justify-start",
                         SubMenu {
                             to: Route::NoticesPage { lang },

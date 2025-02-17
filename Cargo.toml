@@ -1,6 +1,7 @@
 [workspace]
 members = [ "packages/dto","packages/main-ui"]
 resolver = "2"
+exclude = ["deps"]
 
 [workspace.package]
 authors = ["Biyard"]
@@ -12,19 +13,25 @@ license = "Apache"
 [workspace.dependencies]
 by-components = { path = "deps/rust-sdk/packages/by-components" }
 dioxus-oauth = { path = "deps/rust-sdk/packages/dioxus-oauth" }
+dioxus-popup = { path = "deps/rust-sdk/packages/dioxus-popup" }
+dioxus-aws = { path = "deps/rust-sdk/packages/dioxus-aws" }
 google-wallet = { path = "deps/rust-sdk/packages/google-wallet" }
 dioxus-translate = { path = "deps/rust-sdk/packages/dioxus-translate", features = ["ko"] }
 dioxus-translate-macro = { path = "deps/rust-sdk/packages/dioxus-translate-macro" }
 dioxus-translate-types = { path = "deps/rust-sdk/packages/dioxus-translate-types" }
+rest-api = { path = "deps/rust-sdk/packages/rest-api" }
+by-macros = { path = "deps/rust-sdk/packages/by-macros" }
+by-types = { path = "deps/rust-sdk/packages/by-types" }
+by-axum = { path = "deps/rust-sdk/packages/by-axum" }
 
 serde = { version = "1.0.197", features = ["derive"] }
 serde_json = "1.0.133"
 slog = "2.7.0"
-by-axum = { version = "0.1.7" }
 easy-dynamodb = { version = "0.1.7" }
 dto = { path = "./packages/dto" }
 reqwest = { version = "0.12.5", features = ["blocking", "json", "multipart"] }
 dioxus = { version = "0.6.3" }
+dioxus-web = { version = "0.6.3" }
 
 [profile]
 

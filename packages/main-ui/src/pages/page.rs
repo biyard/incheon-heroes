@@ -3,6 +3,7 @@ use crate::components::headings::Heading1;
 
 use super::i18n::*;
 use crate::assets::*;
+use by_components::theme::ColorTheme;
 use dioxus::prelude::*;
 use dioxus_translate::*;
 
@@ -29,13 +30,15 @@ pub fn LeaderBoard(
     lang: Language,
 ) -> Element {
     let tr: LeaderBoardTranslate = translate(&lang);
+    let theme: ColorTheme = use_context();
 
     rsx! {
         div { class: "flex flex-col items-center gap-[30px]", ..attributes,
             Heading1 { "{tr.title}" }
-            div { class: "w-full flex flex-col items-end gap-[5px] px-[20px] py-[10px] rounded-[12px]" }
-
-
+            div {
+                class: "w-full flex flex-col items-end gap-[5px] px-[20px] py-[10px] rounded-[12px]",
+                background: "{theme.card.primary}",
+            }
         }
     }
 }

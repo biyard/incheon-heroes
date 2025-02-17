@@ -5,9 +5,8 @@ pub mod pages;
 pub mod route;
 
 use crate::route::Route;
-use by_components::theme::{ColorTheme, TextColorTheme};
+use by_components::theme::{CardColorTheme, ColorTheme, TextColorTheme};
 use dioxus::prelude::*;
-use dioxus_popup::PopupService;
 
 fn main() {
     let conf = config::get();
@@ -17,20 +16,19 @@ fn main() {
     dioxus_aws::launch(app);
 }
 
-fn setup_color_theme() {
+fn app() -> Element {
     use_context_provider(|| ColorTheme {
-        background: "white".to_string(),
+        background: "#E9F2EC",
+        card: CardColorTheme {
+            primary: "#F3F7F4",
+            ..Default::default()
+        },
         text: TextColorTheme {
-            primary: "black".to_string(),
+            primary: "black",
             ..Default::default()
         },
         ..Default::default()
     });
-}
-
-fn app() -> Element {
-    setup_color_theme();
-    PopupService::init();
 
     rsx! {
         document::Title { "Incheon Heroes" }
