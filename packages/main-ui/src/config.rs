@@ -17,6 +17,7 @@ pub struct Config {
     pub domain: &'static str,
     pub log_level: Level,
     pub main_api_endpoint: &'static str,
+    pub nft_metadata_base_url: &'static str,
     pub firebase: FirebaseConfig,
 }
 
@@ -35,6 +36,7 @@ impl Default for Config {
             },
             main_api_endpoint: option_env!("MAIN_API_ENDPOINT")
                 .unwrap_or("https://api.incheon.world"),
+            nft_metadata_base_url: option_env!("NFT_BASE_URI").expect("You must set NFT_BASE_URI"),
             firebase: FirebaseConfig {
                 api_key: option_env!("FIREBASE_API_KEY")
                     .expect("You must set FIREBASE_API_KEY")

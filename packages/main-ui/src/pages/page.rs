@@ -6,7 +6,6 @@ use crate::components::headings::Heading1;
 
 use super::i18n::*;
 use crate::assets::*;
-use by_components::theme::ColorTheme;
 use dioxus::prelude::*;
 use dioxus_translate::*;
 
@@ -34,46 +33,56 @@ pub fn LeaderBoard(
 ) -> Element {
     let tr: LeaderBoardTranslate = translate(&lang);
     let mut ctrl = LeaderBoardController::new()?;
-    let theme: ColorTheme = use_context();
 
     rsx! {
         div { class: "flex flex-col items-center gap-[30px]",
             Heading1 { lang, "{tr.title}" }
 
-            div {
-                class: "w-full flex flex-col items-end gap-[5px] px-[20px] py-[10px] rounded-[12px]",
-                background: "{theme.card.primary}",
+            div { class: "w-full flex flex-col items-end gap-[5px] px-[20px] py-[10px] rounded-[12px] bg-[#FAFAFA]/40",
                 if let Some(ref data) = ctrl.leaderboard.value()() {
                     div { class: "text-[10px] font-semibold", "Last updated at: {data.updated_at()}" }
-                    select {
-                        class: "bg-[#16775D4c] my-[5px] text-center py-[10px] px-[10px] flex items-center justify-center rounded-[10px] text-[#636363] font-semibold",
-                        onchange: move |event| {
-                            ctrl.selected_leaderboard_type
-                                .set(LeaderboardType::from_str(&event.value()).unwrap())
-                        },
-                        for option in LeaderboardType::variants(&lang).iter() {
-                            option {
-                                class: "bg-white rounded-[10px]",
-                                value: "{option}",
-                                "{option}"
-                            }
-                        }
-                    }
-                    match &data.leaderboard {
-                        LeaderboardItems::Level(data) => rsx! {
-                            LevelBoard { data: data.clone(), lang }
-                        },
-                        LeaderboardItems::Experience(data) => rsx! {
-                            ExperienceBoard { data: data.clone(), lang }
-                        },
-                        LeaderboardItems::Daily(data) => rsx! {
-                            DailyMissionBoard { data: data.clone(), lang }
-                        },
-                        LeaderboardItems::Voting(data) => rsx! {
-                            VotingBoard { data: data.clone(), lang }
-                        },
+
+                    RankingBoards {
+                        lang,
+                        data: data.leaderboard.clone(),
+                        onchange: move |t| { ctrl.selected_leaderboard_type.set(t) },
                     }
                 }
+            }
+        }
+    }
+}
+
+#[component]
+pub fn RankingBoards(
+    lang: Language,
+    data: LeaderboardItems,
+    onchange: EventHandler<LeaderboardType>,
+) -> Element {
+    rsx! {
+        div { class: "w-full flex flex-col items-end gap-[5px] px-[20px] py-[10px] rounded-[12px]",
+            select {
+                class: "bg-[#FAFAFA]/60 my-[5px] text-center py-[10px] px-[10px] flex items-center justify-center rounded-[10px] text-[#636363] font-semibold",
+                onchange: move |event| {
+                    onchange(LeaderboardType::from_str(&event.value()).unwrap());
+                },
+                for option in LeaderboardType::variants(&lang).iter() {
+                    option { class: "bg-white rounded-[10px]", value: "{option}", "{option}" }
+                }
+            }
+            match &data {
+                LeaderboardItems::Level(data) => rsx! {
+                    LevelBoard { data: data.clone(), lang }
+                },
+                LeaderboardItems::Experience(data) => rsx! {
+                    ExperienceBoard { data: data.clone(), lang }
+                },
+                LeaderboardItems::Daily(data) => rsx! {
+                    DailyMissionBoard { data: data.clone(), lang }
+                },
+                LeaderboardItems::Voting(data) => rsx! {
+                    VotingBoard { data: data.clone(), lang }
+                },
             }
         }
     }
@@ -93,7 +102,7 @@ pub fn LevelBoard(data: Vec<LeaderboardItemLevel>, lang: Language) -> Element {
 
     rsx! {
         div { class: "w-full flex-col flex gap-[5px] text-[10px] font-semibold",
-            div { class: "bg-[#B2D1C7] rounded-[10px] grid grid-cols-10 h-[40px]",
+            div { class: "bg-white/50 rounded-[10px] grid grid-cols-10 h-[40px]",
                 for (i , h) in headers.iter().enumerate() {
                     div { class: "{grids[i]} flex items-center justify-center py-auto text-[15px] font-semibold text-[#636363]",
                         "{h}"
@@ -114,7 +123,7 @@ pub fn LevelBoard(data: Vec<LeaderboardItemLevel>, lang: Language) -> Element {
                             "{h.level}"
                         }
                         div { class: "{grids[3]} flex items-center justify-center py-auto",
-                            "{nft_id_to_character(h.nft_num)}"
+                            "{h.character}"
                         }
                         div { class: "{grids[4]} flex items-center justify-center py-auto",
                             "{truncate_addr(&h.account_address)}"
@@ -177,7 +186,7 @@ pub fn ExperienceBoard(data: Vec<LeaderboardItemExperience>, lang: Language) -> 
                             "{h.experience}"
                         }
                         div { class: "{grids[3]} flex items-center justify-center py-auto",
-                            "{nft_id_to_character(h.nft_num)}"
+                            "{h.character"
                         }
                         div { class: "{grids[4]} flex items-center justify-center py-auto",
                             "{truncate_addr(&h.account_address)}"

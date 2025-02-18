@@ -17,6 +17,7 @@ google-wallet.workspace = true
 dioxus-translate.workspace = true
 dioxus-popup.workspace = true
 rest-api.workspace = true
+by-macros.workspace = true
 
 dioxus-aws.workspace = true
 dioxus-web.workspace = true
