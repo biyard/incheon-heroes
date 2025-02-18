@@ -1,4 +1,4 @@
 mod i18n;
-pub mod page;
+mod page;
 
 pub use page::*;
