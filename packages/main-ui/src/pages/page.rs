@@ -59,6 +59,8 @@ pub fn RankingBoards(
     data: LeaderboardItems,
     onchange: EventHandler<LeaderboardType>,
 ) -> Element {
+    tracing::debug!("RankingBoards: {:?}", data);
+
     rsx! {
         div { class: "w-full flex flex-col items-end gap-[5px] px-[20px] py-[10px] rounded-[12px]",
             select {
@@ -165,7 +167,7 @@ pub fn ExperienceBoard(data: Vec<LeaderboardItemExperience>, lang: Language) -> 
 
     rsx! {
         div { class: "w-full flex-col flex gap-[5px] text-[10px] font-semibold",
-            div { class: "bg-[#B2D1C7] rounded-[10px] grid grid-cols-10 h-[40px]",
+            div { class: "bg-white/50 rounded-[10px] grid grid-cols-10 h-[40px]",
                 for (i , h) in headers.iter().enumerate() {
                     div { class: "{grids[i]} flex items-center justify-center py-auto text-[15px] font-semibold text-[#636363]",
                         "{h}"
@@ -186,7 +188,7 @@ pub fn ExperienceBoard(data: Vec<LeaderboardItemExperience>, lang: Language) -> 
                             "{h.experience}"
                         }
                         div { class: "{grids[3]} flex items-center justify-center py-auto",
-                            "{h.character"
+                            "{h.character}"
                         }
                         div { class: "{grids[4]} flex items-center justify-center py-auto",
                             "{truncate_addr(&h.account_address)}"
@@ -206,7 +208,7 @@ pub fn DailyMissionBoard(data: Vec<LeaderboardItemDailyMission>, lang: Language)
 
     rsx! {
         div { class: "w-full flex-col flex gap-[5px] text-[10px] font-semibold",
-            div { class: "bg-[#B2D1C7] rounded-[10px] grid grid-cols-10 h-[40px]",
+            div { class: "bg-white/50 rounded-[10px] grid grid-cols-10 h-[40px]",
                 for (i , h) in headers.iter().enumerate() {
                     div { class: "{grids[i]} flex items-center justify-center py-auto text-[15px] font-semibold text-[#636363]",
                         "{h}"
@@ -241,7 +243,7 @@ pub fn VotingBoard(data: Vec<LeaderboardItemVoting>, lang: Language) -> Element 
 
     rsx! {
         div { class: "w-full flex-col flex gap-[5px] text-[10px] font-semibold",
-            div { class: "bg-[#B2D1C7] rounded-[10px] grid grid-cols-10 h-[40px]",
+            div { class: "bg-white/50 rounded-[10px] grid grid-cols-10 h-[40px]",
                 for (i , h) in headers.iter().enumerate() {
                     div { class: "{grids[i]} flex items-center justify-center py-auto text-[15px] font-semibold text-[#636363]",
                         "{h}"

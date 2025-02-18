@@ -48,3 +48,12 @@ translate! {
         en: "We would like to inform you of the final TOP4 and final winning works of the Incheon Heroes Holder Nickname Event!</br>Introducing the honored holders who were selected for the event!",
     },
 }
+
+translate! {
+    ExpandableContainerTranslate;
+
+    btn: {
+        ko: "클릭하여 상세내용 보기",
+        en: "Click to see details",
+    },
+}
