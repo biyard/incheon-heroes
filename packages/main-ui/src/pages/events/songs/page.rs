@@ -66,7 +66,7 @@ pub fn SongCard(song: Song) -> Element {
             div { class: "flex flex-row gap-[10px] p-[10px] items-center",
                 img {
                     class: "w-[100px] h-[100px] object-fit rounded-[10px]",
-                    src: "{song.image_url}",
+                    src: if let Some(ref url) = song.image_url { url.to_string() } else { "" },
                 }
 
                 div { class: "flex flex-col",
