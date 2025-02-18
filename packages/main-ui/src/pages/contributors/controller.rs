@@ -3,10 +3,18 @@ use dioxus::prelude::*;
 use crate::pages::controller::*;
 use by_macros::DioxusController;
 
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, PartialEq)]
+pub struct EventWinner {
+    pub value: String,
+    pub nickname: String,
+}
+
 #[derive(Debug, Clone, Copy, DioxusController)]
 pub struct Controller {
     pub s1_data: Signal<LeaderboardItems>,
     pub s2_data: Signal<LeaderboardItems>,
+    pub song_data: Signal<Vec<EventWinner>>,
+    pub nickname_data: Signal<Vec<EventWinner>>,
 }
 
 impl Controller {
@@ -14,6 +22,8 @@ impl Controller {
         let ctrl = Self {
             s1_data: use_signal(|| LeaderboardItems::Level(Self::s1_level_data())),
             s2_data: use_signal(|| LeaderboardItems::Level(Self::s2_level_data())),
+            song_data: use_signal(|| Self::song_winners()),
+            nickname_data: use_signal(|| Self::nickname_winners()),
         };
 
         Ok(ctrl)
@@ -37,6 +47,60 @@ impl Controller {
             LeaderboardType::Daily => LeaderboardItems::Daily(Self::s2_daily_mission_data()),
             LeaderboardType::Voting => LeaderboardItems::Voting(Self::s2_voting_data()),
         });
+    }
+
+    pub fn nickname_winners() -> Vec<EventWinner> {
+        vec![
+            EventWinner {
+                value: "도니".to_string(),
+                nickname: "deanneema".to_string(),
+            },
+            EventWinner {
+                value: "도니".to_string(),
+                nickname: "deanneema".to_string(),
+            },
+            EventWinner {
+                value: "히로리".to_string(),
+                nickname: "카트라이스".to_string(),
+            },
+            EventWinner {
+                value: "인히어".to_string(),
+                nickname: "hx_noxm".to_string(),
+            },
+            EventWinner {
+                value: "도너즈".to_string(),
+                nickname: "마트쟁이".to_string(),
+            },
+        ]
+    }
+
+    pub fn song_winners() -> Vec<EventWinner> {
+        vec![
+            EventWinner {
+                value: "지켜줘 인천히어로즈".to_string(),
+                nickname: "반다나".to_string(),
+            },
+            EventWinner {
+                value: "바다의 수호자여".to_string(),
+                nickname: "poopoo0301".to_string(),
+            },
+            EventWinner {
+                value: "우리의 인천".to_string(),
+                nickname: "다현".to_string(),
+            },
+            EventWinner {
+                value: "빛의 수호자들".to_string(),
+                nickname: "#1921".to_string(),
+            },
+            EventWinner {
+                value: "인천히어로즈가 지구를 지키는 것에 대하여".to_string(),
+                nickname: "#1162".to_string(),
+            },
+            EventWinner {
+                value: "지.구.히.어.로.즈".to_string(),
+                nickname: "지지".to_string(),
+            },
+        ]
     }
 
     pub fn s1_voting_data() -> Vec<LeaderboardItemVoting> {

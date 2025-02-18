@@ -57,3 +57,47 @@ translate! {
         en: "Click to see details",
     },
 }
+
+translate! {
+    NicknameWinnersTranslate;
+
+    title: {
+        ko: "최종 당선작",
+        en: "Final Winning Entry",
+    },
+
+    nickname: {
+        ko: "애칭명",
+        en: "Nickname",
+    },
+    discord: {
+        ko: "디스코드 계정",
+        en: "Discord Account",
+    },
+    top: {
+        ko: "TOP 4",
+        en: "TOP 4",
+    }
+}
+
+translate! {
+    SongWinnersTranslate;
+
+    title: {
+        ko: "최종 당선작",
+        en: "Final Winning Entry",
+    },
+
+    nickname: {
+        ko: "제목",
+        en: "Title",
+    },
+    discord: {
+        ko: "닉네임",
+        en: "Nickname",
+    },
+    top: {
+        ko: "인기상",
+        en: "Popularity Award",
+    }
+}

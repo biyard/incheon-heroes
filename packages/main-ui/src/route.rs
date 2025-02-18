@@ -25,6 +25,8 @@ pub enum Route {
     CalendarPage { lang: Language },
     #[route("/songs")]
     SongsPage { lang: Language },
+    #[route("/songs/:id")]
+    SongsByIdPage { lang: Language, id: i64 },
     #[end_nest]
 
     #[nest("/shop")]
