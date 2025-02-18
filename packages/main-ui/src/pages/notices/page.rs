@@ -18,7 +18,7 @@ pub fn NoticesPage(lang: Language) -> Element {
         div {
             id: "notices",
             class: "flex flex-col gap-[50px] items-center justify-center",
-            Heading1 { "{tr.title}" }
+            Heading1 { lang, "{tr.title}" }
             div { class: "w-full max-w-[700px] flex flex-col gap-[20px] items-center justify-center overflow-hidden",
                 for (title , detail) in notices {
                     Notice { title: "{title}", details: "{detail}", lang }

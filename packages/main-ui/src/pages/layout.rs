@@ -18,10 +18,14 @@ pub fn RootLayout(lang: Language) -> Element {
             background: "{theme.background}",
             color: "{theme.text.primary}",
             Header {
-                class: "w-full min-h-[70px] flex flex-row items-start justify-center max-w-[1440px]",
+                class: "w-full min-h-[70px] flex flex-row items-start justify-center max-w-[1440px] max-[1440px]:px-[20px]",
                 lang,
             }
-            div { class: "w-full py-[70px]", min_height: "calc(100vh - 190px)", Outlet::<Route> {} }
+            div {
+                class: "w-full max-w-[1440px] py-[70px] max-[1440px]:px-[20px]",
+                min_height: "calc(100vh - 190px)",
+                Outlet::<Route> {}
+            }
             Footer { lang }
         }
     }

@@ -18,7 +18,7 @@ pub fn HomePage(lang: Language) -> Element {
         div { id: "home-page", class: "flex flex-col items-center gap-[45px]",
             VideoSection {}
 
-            Heading1 { with_symbol: false, "INCHEON UNIVERSE" }
+            Heading1 { lang, with_symbol: false, "INCHEON UNIVERSE" }
             p { class: "text-[16px] font-bold text-center", "{tr.main_text}" }
             LoginButton { lang }
             LeaderBoard { lang }
@@ -38,7 +38,7 @@ pub fn LeaderBoard(
 
     rsx! {
         div { class: "flex flex-col items-center gap-[30px]",
-            Heading1 { "{tr.title}" }
+            Heading1 { lang, "{tr.title}" }
 
             div {
                 class: "w-full flex flex-col items-end gap-[5px] px-[20px] py-[10px] rounded-[12px]",
