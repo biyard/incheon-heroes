@@ -10,7 +10,7 @@ env:
 
 jobs:
   main-ui:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v3
@@ -75,7 +75,6 @@ jobs:
           ENABLE_FARGATE: false
           ENABLE_DYNAMO: false
           ENABLE_LAMBDA: true
-          RUSTFLAGS: "-A warnings"
         run: |
           npm i -g aws-cdk @tailwindcss/cli
           make deploy-web
