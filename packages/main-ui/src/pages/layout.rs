@@ -4,6 +4,7 @@ use super::i18n::HeaderTranslate;
 use crate::assets::*;
 use crate::components::icons::arrows::{ArrowDirection, SingleSimpleArrow};
 use crate::route::Route;
+use by_components::loaders::cube_loader::CubeLoader;
 use by_components::theme::ColorTheme;
 use dioxus::prelude::*;
 use dioxus_translate::*;
@@ -24,7 +25,12 @@ pub fn RootLayout(lang: Language) -> Element {
             div {
                 class: "w-full max-w-[1440px] py-[70px] max-[1440px]:px-[20px]",
                 min_height: "calc(100vh - 190px)",
-                Outlet::<Route> {}
+                SuspenseBoundary {
+                    fallback: |_| rsx! {
+                        div { class: "absolute w-full h-full flex items-center justify-center", CubeLoader {} }
+                    },
+                    Outlet::<Route> {}
+                }
             }
             Footer { lang }
         }
@@ -116,11 +122,11 @@ pub fn Header(
 
                     }
                     div { class: "col-span-3 flex flex-col justify-start",
-                        SubMenu {
-                            to: Route::CalendarPage { lang },
-                            onclick: handle_select_menu,
-                            "{tr.calendar}"
-                        }
+                        // SubMenu {
+                        //     to: Route::CalendarPage { lang },
+                        //     onclick: handle_select_menu,
+                        //     "{tr.calendar}"
+                        // }
                         SubMenu {
                             to: Route::SongsPage { lang },
                             onclick: handle_select_menu,

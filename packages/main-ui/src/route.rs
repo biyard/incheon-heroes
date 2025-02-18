@@ -26,7 +26,7 @@ pub enum Route {
     #[route("/songs")]
     SongsPage { lang: Language },
     #[route("/songs/:id")]
-    SongsByIdPage { lang: Language, id: i64 },
+    SongsByIdPage { lang: Language, id: String },
     #[end_nest]
 
     #[nest("/shop")]

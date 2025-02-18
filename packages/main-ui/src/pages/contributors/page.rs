@@ -158,7 +158,7 @@ pub fn SongWinners(lang: Language, winners: Vec<EventWinner>) -> Element {
                         Link {
                             to: Route::SongsByIdPage {
                                 lang,
-                                id: 31,
+                                id: 31.to_string(),
                             },
                             img { src: "{play_button}" }
                         }

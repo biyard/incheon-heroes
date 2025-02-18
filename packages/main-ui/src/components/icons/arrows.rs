@@ -35,3 +35,43 @@ pub fn SingleSimpleArrow(
         }
     }
 }
+
+#[component]
+pub fn LeftArrow() -> Element {
+    rsx! {
+        svg {
+            fill: "none",
+            height: "50",
+            view_box: "0 0 18 50",
+            width: "18",
+            xmlns: "http://www.w3.org/2000/svg",
+            path {
+                d: "M15.375 3.41797L2.625 25.0013L15.375 46.5846",
+                stroke: "#666666",
+                stroke_linecap: "round",
+                stroke_linejoin: "round",
+                stroke_width: "5",
+            }
+        }
+    }
+}
+
+#[component]
+pub fn RightArrow() -> Element {
+    rsx! {
+        svg {
+            fill: "none",
+            height: "50",
+            view_box: "0 0 18 50",
+            width: "18",
+            xmlns: "http://www.w3.org/2000/svg",
+            path {
+                d: "M2.625 46.582L15.375 24.9987L2.625 3.41537",
+                stroke: "#666666",
+                stroke_linecap: "round",
+                stroke_linejoin: "round",
+                stroke_width: "5",
+            }
+        }
+    }
+}

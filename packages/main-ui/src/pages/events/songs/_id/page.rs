@@ -5,7 +5,7 @@ use dioxus::prelude::*;
 use dioxus_translate::*;
 
 #[component]
-pub fn SongsByIdPage(id: i64, lang: Language) -> Element {
+pub fn SongsByIdPage(id: String, lang: Language) -> Element {
     let mut _ctrl = Controller::new()?;
     let tr: SongsByIdTranslate = translate(&lang);
 
