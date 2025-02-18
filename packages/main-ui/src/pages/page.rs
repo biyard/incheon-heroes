@@ -223,7 +223,7 @@ pub fn DailyMissionBoard(data: Vec<LeaderboardItemDailyMission>, lang: Language)
                             Rank { i }
                         }
                         div { class: "{grids[1]} flex items-center justify-center py-auto",
-                            "#{h.daily_count}"
+                            "{h.daily_count}"
                         }
                         div { class: "{grids[2]} flex items-center justify-center py-auto",
                             "{truncate_addr(&h.account_address)}"
@@ -258,7 +258,7 @@ pub fn VotingBoard(data: Vec<LeaderboardItemVoting>, lang: Language) -> Element 
                             Rank { i }
                         }
                         div { class: "{grids[1]} flex items-center justify-center py-auto",
-                            "#{h.voting_count}"
+                            "{h.voting_count}"
                         }
                         div { class: "{grids[2]} flex items-center justify-center py-auto",
                             "{truncate_addr(&h.account_address)}"
