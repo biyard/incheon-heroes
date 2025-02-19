@@ -30,6 +30,7 @@ impl Controller {
                 }
             }
         })?;
+
         let ctrl = Self {
             song,
             is_playing: use_signal(|| false),

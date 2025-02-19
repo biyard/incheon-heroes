@@ -158,10 +158,10 @@ pub fn SongCard(
                             visibility: if hover() { "visible" } else { "hidden" },
                             img {
                                 src: if is_play { asset!(
-                                    "public/images/stop.png", ImageAssetOptions::new().with_size(ImageSize::Manual {
+                                    "/public/images/stop.png", ImageAssetOptions::new().with_size(ImageSize::Manual {
                                     width : 50, height : 50 })
                                 ) } else { asset!(
-                                    "public/images/play.png", ImageAssetOptions::new().with_size(ImageSize::Manual {
+                                    "/public/images/play.png", ImageAssetOptions::new().with_size(ImageSize::Manual {
                                     width : 50, height : 50 })
                                 ) },
                             }
@@ -188,10 +188,10 @@ pub fn SongCard(
                             visibility: if hover() { "visible" } else { "hidden" },
                             img {
                                 src: if is_play { asset!(
-                                    "public/images/stop.png", ImageAssetOptions::new().with_size(ImageSize::Manual {
+                                    "/public/images/stop.png", ImageAssetOptions::new().with_size(ImageSize::Manual {
                                     width : 50, height : 50 })
                                 ) } else { asset!(
-                                    "public/images/play.png", ImageAssetOptions::new().with_size(ImageSize::Manual {
+                                    "/public/images/play.png", ImageAssetOptions::new().with_size(ImageSize::Manual {
                                     width : 50, height : 50 })
                                 ) },
                             }
@@ -226,7 +226,7 @@ pub fn SongCard(
                 div { class: "flex flex-row gap-[10px] items-center",
                     img {
                         src: asset!(
-                            "public/images/play_count.png", ImageAssetOptions::new()
+                            "/public/images/play_count.png", ImageAssetOptions::new()
                             .with_size(ImageSize::Manual { width : 15, height : 15 })
                         ),
                     }
@@ -236,7 +236,7 @@ pub fn SongCard(
                 div { class: "flex flex-row gap-[10px] items-center",
                     img {
                         src: asset!(
-                            "public/images/like_green_outline.png", ImageAssetOptions::new()
+                            "/public/images/like_green_outline.png", ImageAssetOptions::new()
                             .with_size(ImageSize::Manual { width : 15, height : 15 })
                         ),
                     }
@@ -246,7 +246,7 @@ pub fn SongCard(
                 div { class: "flex flex-row gap-[10px] items-center",
                     img {
                         src: asset!(
-                            "public/images/share_green.png", ImageAssetOptions::new()
+                            "/public/images/share_green.png", ImageAssetOptions::new()
                             .with_size(ImageSize::Manual { width : 20, height : 20 })
                         ),
                     }
