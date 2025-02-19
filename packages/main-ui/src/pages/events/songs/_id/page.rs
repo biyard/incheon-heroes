@@ -55,7 +55,7 @@ pub fn SongsByIdPage(id: String, lang: Language) -> Element {
 
 
                     div { class: "w-full grid grid-cols-2 gap-[10px] p-[10px]  text-[14px] text-white",
-
+                        // TODO: Implement share and like
                         button {
                             class: "col-span-1 w-full rounded-[5px] bg-[#32C564] p-[10px] flex flex-row gap-[10px] items-center justify-center",
                             box_shadow: "0px 4px 4px rgba(0, 0, 0, 0.25)",
