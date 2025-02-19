@@ -24,7 +24,7 @@ pub fn SongsByIdPage(id: String, lang: Language) -> Element {
             }
             Heading1 { lang, "{tr.title}" }
 
-            div { class: "w-full max-w-[700px] flex flex-row gap-[20px] items-start bg-[#FAFAFA] rounded-[10px] p-[10px]",
+            div { class: "w-full max-w-[700px] flex flex-row gap-[20px] items-start bg-[#FAFAFA] rounded-[10px] p-[20px]",
 
                 div { class: "w-[300px] flex flex-col gap-[10px] items-center",
                     Image {
@@ -116,7 +116,7 @@ pub fn Image(image: String, is_play: bool, onplay: EventHandler<()>) -> Element 
     let mut hover = use_signal(|| false);
 
     rsx! {
-        div { class: "flex flex-row gap-[10px] p-[10px] items-center",
+        div { class: "flex flex-row gap-[10px] items-center",
             div {
                 class: "relative w-[300px] min-w-[300px] h-[300px] rounded-[10px] cursor-pointer overflow-hidden",
                 onmouseenter: move |_| { hover.set(true) },
