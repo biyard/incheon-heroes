@@ -10,7 +10,7 @@ use dioxus_translate::*;
 pub fn SongsByIdPage(id: String, lang: Language) -> Element {
     let mut ctrl = Controller::new(id)?;
     let tr: SongsByIdTranslate = translate(&lang);
-    let song = ctrl.song();
+    let song = ctrl.song()?;
 
     rsx! {
         div { id: "songs-by-id", class: "flex flex-col gap-[50px] items-center",

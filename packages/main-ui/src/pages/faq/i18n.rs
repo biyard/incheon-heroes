@@ -4,7 +4,7 @@ translate! {
     FaqTranslate;
 
     title: {
-        ko: "FAQ",
+        ko: "자주하는 질문",
         en: "FAQ",
     },
 }

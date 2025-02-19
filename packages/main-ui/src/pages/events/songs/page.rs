@@ -18,7 +18,7 @@ pub fn SongsPage(lang: Language) -> Element {
     let mut song: Signal<Option<String>> = use_signal(|| None);
     let page = ctrl.page();
     let size = 12;
-    let songs = ctrl.songs();
+    let songs = ctrl.songs()?;
 
     let start = page * size;
     let mut end = start + size;
@@ -62,8 +62,8 @@ pub fn SongsPage(lang: Language) -> Element {
                     for i in start..end {
                         SongCard {
                             lang,
-                            song: ctrl.songs()[i].clone(),
-                            is_play: song().is_some() && song() == Some(ctrl.songs()[i].audio_url.clone()),
+                            song: songs[i].clone(),
+                            is_play: song().is_some() && song() == Some(songs[i].audio_url.clone()),
                             onplay: move |audio_url| {
                                 tracing::debug!("play song: {audio_url}");
                                 if let Some(ref s) = song() {
@@ -73,7 +73,7 @@ pub fn SongsPage(lang: Language) -> Element {
                                     }
                                 }
                                 spawn(async move {
-                                    let _ = ctrl.songs()[i].play().await;
+                                    let _ = ctrl.songs().unwrap()[i].play().await;
                                     ctrl.songs.restart();
                                 });
                                 song.set(Some(audio_url));
