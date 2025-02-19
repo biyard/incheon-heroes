@@ -2,7 +2,7 @@ use dioxus::prelude::*;
 use dioxus_translate::Translate;
 use dto::*;
 
-use crate::config;
+use crate::{config, models::nft_metadata::NftMetadata};
 
 #[derive(Debug, Clone, Copy)]
 pub struct LeaderBoardController {
@@ -163,16 +163,8 @@ pub struct LeaderboardItemVoting {
 }
 
 pub async fn nft_id_to_character(id: i64) -> String {
-    let base_url = config::get().nft_metadata_base_url;
-    let url = format!("{base_url}/{id}.json");
-    let res: dto::Result<NftMetadata> = rest_api::get(&url).await;
-    match res {
-        Ok(res) => res
-            .attributes
-            .iter()
-            .find(|attr| attr.trait_type == "Character")
-            .map(|attr| attr.value.clone())
-            .unwrap_or_else(|| "Unknown".to_string()),
+    match NftMetadata::fetch(id).await {
+        Ok(m) => m.character(),
         Err(e) => {
             tracing::error!("Failed to get NFT metadata: {:?}", e);
             "Unknown".to_string()
@@ -182,18 +174,4 @@ pub async fn nft_id_to_character(id: i64) -> String {
 
 pub fn truncate_addr(addr: &str) -> String {
     format!("{}...{}", &addr[..6], &addr[addr.len() - 4..])
-}
-
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
-pub struct NftMetadata {
-    pub name: String,
-    pub image: String,
-    pub description: String,
-    pub attributes: Vec<NftAttribute>,
-}
-
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
-pub struct NftAttribute {
-    pub trait_type: String,
-    pub value: String,
 }

@@ -1,6 +1,7 @@
 pub mod assets;
 pub mod components;
 pub mod config;
+pub mod models;
 pub mod pages;
 pub mod route;
 
@@ -63,7 +64,12 @@ fn app() -> Element {
         document::Link { rel: "stylesheet", href: asset!("/public/tailwind.css") }
 
         document::Script { src: "https://cdn.tailwindcss.com/3.4.16" }
-
+        document::Link {
+            href: "https://cdn.jsdelivr.net/npm/daisyui@4.12.23/dist/full.min.css",
+            r#type: "text/css",
+            rel: "stylesheet",
+        }
+        document::Script { src: "https://cdn.tailwindcss.com" }
         Router::<Route> {}
     }
 }

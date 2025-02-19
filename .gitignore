@@ -21,3 +21,4 @@ Cargo.lock
 #.idea/
 tailwind.css
 /.build/
+node_modules/

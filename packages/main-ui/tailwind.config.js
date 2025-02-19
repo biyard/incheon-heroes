@@ -3,5 +3,7 @@ module.exports = {
   darkMode: "selector",
   mode: "all",
   content: ["./src/**/*.{rs,html,css}"],
-  plugins: [],
+  plugins: [
+    require('daisyui'),
+  ],
 };
