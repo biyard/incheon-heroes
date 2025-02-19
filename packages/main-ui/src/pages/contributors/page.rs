@@ -64,7 +64,7 @@ pub fn ExpandableContainer(
     children: Element,
 ) -> Element {
     let badge = asset!("/public/images/badge.png");
-    let mut expanded = use_signal(|| true);
+    let mut expanded = use_signal(|| false);
     let tr: ExpandableContainerTranslate = translate(&lang);
 
     rsx! {

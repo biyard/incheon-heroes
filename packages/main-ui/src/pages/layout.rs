@@ -27,8 +27,11 @@ pub fn RootLayout(lang: Language) -> Element {
                 min_height: "calc(100vh - 190px)",
                 SuspenseBoundary {
                     fallback: |_| rsx! {
-                        div { class: "absolute w-full h-full flex items-center justify-center", CubeLoader {} }
+                        div { class: "absolute left-0 top-0 w-full h-full flex items-center justify-center",
+                            CubeLoader {}
+                        }
                     },
+
                     Outlet::<Route> {}
                 }
             }
