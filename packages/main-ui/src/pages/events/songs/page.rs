@@ -4,6 +4,7 @@ use crate::components::icons::arrows::LeftArrow;
 use crate::components::icons::arrows::RightArrow;
 use crate::models::nft_metadata::NftMetadata;
 use crate::models::songs::Song;
+use crate::route::Route;
 
 use super::controller::*;
 use super::i18n::*;
@@ -60,6 +61,7 @@ pub fn SongsPage(lang: Language) -> Element {
                     }
                     for i in start..end {
                         SongCard {
+                            lang,
                             song: ctrl.songs()[i].clone(),
                             is_play: song().is_some() && song() == Some(ctrl.songs()[i].audio_url.clone()),
                             onplay: move |audio_url| {
@@ -95,7 +97,12 @@ pub fn SongsPage(lang: Language) -> Element {
 }
 
 #[component]
-pub fn SongCard(song: Song, is_play: bool, onplay: EventHandler<String>) -> Element {
+pub fn SongCard(
+    lang: Language,
+    song: Song,
+    is_play: bool,
+    onplay: EventHandler<String>,
+) -> Element {
     let mut image_url = use_signal(|| song.image_url.clone());
     let nft_id = if song.nft_id.is_none() {
         "".to_string()
@@ -121,7 +128,11 @@ pub fn SongCard(song: Song, is_play: bool, onplay: EventHandler<String>) -> Elem
     let person = asset!("/public/images/person.png");
 
     rsx! {
-        div {
+        Link {
+            to: Route::SongsByIdPage {
+                lang,
+                id: song.key,
+            },
             class: "col-span-1 flex flex-col rounded-[10px]",
             background: "linear-gradient(180deg, #848484 50.5%, #666666 70%, #313131 100%)",
 
@@ -131,7 +142,9 @@ pub fn SongCard(song: Song, is_play: bool, onplay: EventHandler<String>) -> Elem
                         class: "relative w-[100px] min-w-[100px] h-[100px] rounded-[10px] cursor-pointer overflow-hidden",
                         onmouseenter: move |_| { hover.set(true) },
                         onmouseleave: move |_| { hover.set(false) },
-                        onclick: move |_| {
+                        onclick: move |evt| {
+                            evt.prevent_default();
+                            evt.stop_propagation();
                             tracing::debug!("play song");
                             onplay(song.audio_url.clone());
                         },
@@ -159,7 +172,9 @@ pub fn SongCard(song: Song, is_play: bool, onplay: EventHandler<String>) -> Elem
                         class: "relative w-[100px] min-w-[100px] h-[100px] rounded-[10px] cursor-pointer overflow-hidden",
                         onmouseenter: move |_| { hover.set(true) },
                         onmouseleave: move |_| { hover.set(false) },
-                        onclick: move |_| {
+                        onclick: move |evt| {
+                            evt.prevent_default();
+                            evt.stop_propagation();
                             tracing::debug!("play song");
                             onplay(song.audio_url.clone());
                         },

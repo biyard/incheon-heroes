@@ -6,7 +6,13 @@ pub struct Songs {
     pub candidates: Vec<Song>,
 }
 
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, PartialEq)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct SongResponse {
+    pub status: String,
+    pub candidate: Song,
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, PartialEq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct Song {
     pub key: String,
@@ -35,6 +41,13 @@ impl Songs {
 }
 
 impl Song {
+    pub async fn fetch(id: &str) -> dto::Result<Self> {
+        let endpoint = config::get().main_api_endpoint;
+        let endpoint = format!("{endpoint}/v1/heroes-song-contest/candidate?id={id}");
+        let res: dto::Result<SongResponse> = rest_api::get(&endpoint).await;
+        Ok(res?.candidate)
+    }
+
     pub async fn play(&self) -> dto::Result<()> {
         let endpoint = config::get().main_api_endpoint;
         let endpoint = format!("{}/v1/heroes-song-contest/play/count", endpoint);
