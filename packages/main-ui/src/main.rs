@@ -1,18 +1,20 @@
+// pub mod abi;
 pub mod assets;
 pub mod components;
 pub mod config;
 pub mod models;
 pub mod pages;
 pub mod route;
+pub mod services;
 
 use crate::route::Route;
 use by_components::theme::{CardColorTheme, ColorTheme, TextColorTheme};
 use dioxus::prelude::*;
+use services::klaytn::Klaytn;
 
 fn main() {
-    let conf = config::get();
-    dioxus_logger::init(conf.log_level).expect("failed to init logger");
-    tracing::debug!("config: {:?}", conf);
+    dioxus_logger::init(config::log_level()).expect("failed to init logger");
+    tracing::debug!("config: {:?}", config::get());
 
     dioxus_aws::launch(app);
 }
@@ -30,6 +32,7 @@ fn app() -> Element {
         },
         ..Default::default()
     });
+    Klaytn::init();
 
     rsx! {
         document::Title { "Incheon Heroes" }

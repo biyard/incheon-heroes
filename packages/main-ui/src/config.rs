@@ -11,12 +11,12 @@ pub struct FirebaseConfig {
 
 #[derive(Debug, serde::Deserialize, serde::Serialize)]
 pub struct KlaytnConfig {
-    pub endpoint: String,
+    pub endpoint: &'static str,
 }
 
 #[derive(Debug, serde::Deserialize, serde::Serialize)]
 pub struct ContractConfig {
-    pub shop: String,
+    pub shop: &'static str,
 }
 
 #[derive(Debug, serde::Deserialize, serde::Serialize)]
@@ -62,14 +62,10 @@ impl Default for Config {
                     .to_string(),
             },
             klaytn: KlaytnConfig {
-                endpoint: option_env!("KLAYTN_ENDPOINT")
-                    .expect("You must set KLAYTN_ENDPOINT")
-                    .to_string(),
+                endpoint: option_env!("KLAYTN_ENDPOINT").expect("You must set KLAYTN_ENDPOINT"),
             },
             contracts: ContractConfig {
-                shop: option_env!("CONTRACT_SHOP")
-                    .expect("You must set CONTRACT_SHOP")
-                    .to_string(),
+                shop: option_env!("CONTRACT_SHOP").expect("You must set CONTRACT_SHOP"),
             },
         }
     }
@@ -84,5 +80,16 @@ pub fn get() -> &'static Config {
             CONFIG = Some(Config::default());
         }
         CONFIG.as_ref().unwrap()
+    }
+}
+
+pub fn log_level() -> tracing::Level {
+    match option_env!("RUST_LOG") {
+        Some("trace") => tracing::Level::TRACE,
+        Some("debug") => tracing::Level::DEBUG,
+        Some("info") => tracing::Level::INFO,
+        Some("warn") => tracing::Level::WARN,
+        Some("error") => tracing::Level::ERROR,
+        _ => tracing::Level::INFO,
     }
 }
