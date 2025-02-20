@@ -81,4 +81,14 @@ translate! {
         ko: "개",
         en: "units",
     }
+
+    buy: {
+        ko: "구매하기",
+        en: "Buy",
+    }
+
+    like: {
+        ko: "좋아요",
+        en: "Like",
+    }
 }
