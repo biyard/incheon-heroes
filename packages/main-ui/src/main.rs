@@ -62,6 +62,7 @@ fn app() -> Element {
         document::Link { id: "favicon", rel: "icon", href: "{assets::FAVICON}" }
         document::Link { rel: "stylesheet", href: asset!("/public/main.css") }
         document::Link { rel: "stylesheet", href: asset!("/public/tailwind.css") }
+        document::Script { src: asset!("/public/dep.js") }
 
         document::Script { src: "https://cdn.tailwindcss.com/3.4.16" }
         document::Link {

@@ -22,3 +22,5 @@ Cargo.lock
 tailwind.css
 /.build/
 node_modules/
+/packages/main-ui/public/dep.js
+dist/

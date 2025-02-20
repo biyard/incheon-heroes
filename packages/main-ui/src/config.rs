@@ -1,6 +1,4 @@
-use tracing::Level;
-
-#[derive(Debug)]
+#[derive(Debug, serde::Deserialize, serde::Serialize)]
 pub struct FirebaseConfig {
     pub api_key: String,
     pub auth_domain: String,
@@ -11,14 +9,25 @@ pub struct FirebaseConfig {
     pub measurement_id: String,
 }
 
-#[derive(Debug)]
+#[derive(Debug, serde::Deserialize, serde::Serialize)]
+pub struct KlaytnConfig {
+    pub endpoint: String,
+}
+
+#[derive(Debug, serde::Deserialize, serde::Serialize)]
+pub struct ContractConfig {
+    pub shop: String,
+}
+
+#[derive(Debug, serde::Deserialize, serde::Serialize)]
 pub struct Config {
     pub env: &'static str,
     pub domain: &'static str,
-    pub log_level: Level,
     pub main_api_endpoint: &'static str,
     pub nft_metadata_base_url: &'static str,
     pub firebase: FirebaseConfig,
+    pub klaytn: KlaytnConfig,
+    pub contracts: ContractConfig,
 }
 
 impl Default for Config {
@@ -26,14 +35,6 @@ impl Default for Config {
         Config {
             env: option_env!("ENV").expect("You must set ENV"),
             domain: option_env!("DOMAIN").expect("You must set DOMAIN"),
-            log_level: match option_env!("LOG_LEVEL") {
-                Some("trace") => Level::TRACE,
-                Some("debug") => Level::DEBUG,
-                Some("info") => Level::INFO,
-                Some("warn") => Level::WARN,
-                Some("error") => Level::ERROR,
-                _ => Level::INFO,
-            },
             main_api_endpoint: option_env!("MAIN_API_ENDPOINT")
                 .unwrap_or("https://api.incheon.world"),
             nft_metadata_base_url: option_env!("NFT_BASE_URI").expect("You must set NFT_BASE_URI"),
@@ -58,6 +59,16 @@ impl Default for Config {
                     .to_string(),
                 measurement_id: option_env!("FIREBASE_MEASUREMENT_ID")
                     .expect("You must set FIREBASE_MEASUREMENT_ID")
+                    .to_string(),
+            },
+            klaytn: KlaytnConfig {
+                endpoint: option_env!("KLAYTN_ENDPOINT")
+                    .expect("You must set KLAYTN_ENDPOINT")
+                    .to_string(),
+            },
+            contracts: ContractConfig {
+                shop: option_env!("CONTRACT_SHOP")
+                    .expect("You must set CONTRACT_SHOP")
                     .to_string(),
             },
         }
