@@ -9,7 +9,7 @@ use dioxus_translate::*;
 
 #[component]
 pub fn LoginPage(lang: Language, hint: AccountHint) -> Element {
-    let ctrl = Controller::new(lang, hint)?;
+    let mut ctrl = Controller::new(lang, hint)?;
     let tr: LoginTranslate = translate(&lang);
 
     rsx! {
@@ -23,6 +23,7 @@ pub fn LoginPage(lang: Language, hint: AccountHint) -> Element {
                     r#type: "password",
                     class: "w-full max-w-[500px] h-[60px] border-[1px] border-black/40 rounded-[5px] p-[10px] flex flex-row justify-start items-center bg-[#E9F2EC]",
                     placeholder: "{tr.placeholder}",
+                    oninput: move |evt| ctrl.password.set(evt.value()),
                 }
                 button {
                     class: "w-full max-w-[500px] h-[60px] bg-[#2196F3] text-white text-[20px] font-bold rounded-[5px]",
