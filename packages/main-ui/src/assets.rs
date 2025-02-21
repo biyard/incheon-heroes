@@ -14,6 +14,13 @@ pub const LOGO: Asset = asset!(
         .with_format(ImageFormat::Avif)
 );
 
+pub const LOGO_WHITE: Asset = asset!(
+    "/public/logos/logo_white.png",
+    ImageAssetOptions::new()
+        .with_size(ImageSize::Automatic)
+        .with_format(ImageFormat::Avif)
+);
+
 pub const VIDEO: Asset = asset!(
     "/public/videos/main.mp4",
     ImageAssetOptions::new()

@@ -36,9 +36,10 @@ base64 = "0.22.1"
 url = "2.5.4"
 serde_json.workspace = true
 ethers = "2.0.14"
+hex = "0.4.3"
 
 [features]
 default = []
-web = ["dioxus-aws/web", "dioxus-translate/web"]
+web = ["dioxus-aws/web", "dioxus-translate/web", "dioxus-oauth/web"]
 server = ["dioxus-aws/server"]
 lambda = ["server", "dioxus-aws/lambda"]

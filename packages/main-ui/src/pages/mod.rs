@@ -1,4 +1,5 @@
 pub mod _routes;
+pub mod connect;
 pub mod contributors;
 mod controller;
 pub mod events;
@@ -15,6 +16,7 @@ pub use _routes::*;
 pub use layout::*;
 pub use page::*;
 
+pub use connect::*;
 pub use contributors::*;
 pub use events::*;
 pub use faq::*;

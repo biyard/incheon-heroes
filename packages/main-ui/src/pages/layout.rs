@@ -2,6 +2,7 @@
 use super::i18n::FooterTranslate;
 use super::i18n::HeaderTranslate;
 use crate::assets::*;
+use crate::components::icons;
 use crate::components::icons::arrows::{ArrowDirection, SingleSimpleArrow};
 use crate::route::Route;
 use by_components::loaders::cube_loader::CubeLoader;
@@ -28,7 +29,7 @@ pub fn RootLayout(lang: Language) -> Element {
             background: "{theme.background}",
             color: "{theme.text.primary}",
             Header {
-                class: "w-full min-h-[70px] flex flex-row items-start justify-center max-w-[1440px] max-[1440px]:px-[20px]",
+                class: "w-full min-h-[70px] flex flex-row items-center justify-center max-w-[1440px] max-[1440px]:px-[20px]",
                 lang,
             }
             div {
@@ -56,6 +57,8 @@ pub fn Header(
 
     lang: Language,
 ) -> Element {
+    let route: Route = use_route();
+    let nav = use_navigator();
     let tr: HeaderTranslate = translate(&lang);
     let mut expanded = use_signal(|| false);
     let submenu_class = if expanded() {
@@ -160,6 +163,21 @@ pub fn Header(
                             "{tr.docs}"
                         }
                     }
+                } // end of submenus
+            } // end of grow
+
+            div { class: "flex flex-row gap-[15px] items-center h-full",
+                button {
+                    onclick: move |_| {
+                        nav.push(Route::ConnectPage { lang });
+                    },
+                    icons::Connect {}
+                }
+                Link {
+                    class: "flex flex-row gap-[10px] items-center",
+                    to: route.switch_lang(),
+                    icons::Language {}
+                    span { class: "font-bold text-[16px]", "{tr.lang}" }
                 }
             }
         }
@@ -223,7 +241,7 @@ pub fn Footer(
             div {
                 id: "footer",
                 class: "w-full flex flex-col justify-start items-start",
-                img { src: "{LOGO}", class: "w-[145px] h-[50px]" }
+                img { src: "{LOGO_WHITE}", class: "w-[145px] h-[50px]" }
                 div { class: "m-1" }
                 div { class: "text-left w-full",
                     p { class: "text-xs", style: "white-space: nowrap;", "{tr.address}" }

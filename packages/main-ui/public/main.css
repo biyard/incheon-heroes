@@ -4,6 +4,10 @@
   font-family: Pretendard, sans-serif;
 }
 
+pre {
+  font-family: Pretendard, sans-serif;
+}
+
 @keyframes growWidth {
   0% {
     width: 0;

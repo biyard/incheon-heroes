@@ -10,6 +10,12 @@ pub struct FirebaseConfig {
 }
 
 #[derive(Debug, serde::Deserialize, serde::Serialize)]
+pub struct KakaoConfig {
+    pub client_id: &'static str,
+    pub redirect_uri: &'static str,
+}
+
+#[derive(Debug, serde::Deserialize, serde::Serialize)]
 pub struct KlaytnConfig {
     pub endpoint: &'static str,
 }
@@ -28,6 +34,7 @@ pub struct Config {
     pub firebase: FirebaseConfig,
     pub klaytn: KlaytnConfig,
     pub contracts: ContractConfig,
+    pub kakao: KakaoConfig,
 }
 
 impl Default for Config {
@@ -66,6 +73,11 @@ impl Default for Config {
             },
             contracts: ContractConfig {
                 shop: option_env!("CONTRACT_SHOP").expect("You must set CONTRACT_SHOP"),
+            },
+            kakao: KakaoConfig {
+                client_id: option_env!("KAKAO_CLIENT_ID").expect("You must set KAKAO_CLIENT_ID"),
+                redirect_uri: option_env!("KAKAO_REDIRECT_URI")
+                    .expect("You must set KAKAO_REDIRECT_URI"),
             },
         }
     }

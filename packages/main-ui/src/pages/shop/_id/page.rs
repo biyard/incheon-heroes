@@ -27,11 +27,7 @@ pub fn ShopByIdPage(id: String, lang: Language) -> Element {
     let desc = ctrl.description(lang)?;
 
     rsx! {
-        by_components::meta::MetaPage {
-            title: "{tr.title}",
-            description: "{desc}",
-            image: "{item.image}",
-        }
+        by_components::meta::MetaPage { title: "{name}", description: "{desc}", image: "{item.image}" }
         div { id: "shop-by-id", class: "w-full flex flex-col items-center",
             div { class: "w-full max-w-[900px] flex flex-col gap-[20px] items-center",
 
