@@ -38,6 +38,13 @@ fn app() -> Element {
         document::Title { "Incheon Heroes" }
         document::Meta { name: "description", content: "Incheon heroes ...." }
         document::Meta {
+            content: "Incheon, Heroes, 인천, 히어로즈, 유니버스",
+            name: "keywords",
+        }
+        document::Meta { content: "index, follow", name: "robots" }
+        document::Link { href: "https://incheonheroes.world", rel: "canonical" }
+
+        document::Meta {
             name: "viewport",
             content: "width=device-width, initial-scale=1.0",
         }

@@ -73,9 +73,7 @@ impl ShopContract {
 
         let mut items = vec![];
         for item in items_raw {
-            item.try_into()
-                .map(|i| items.push(i))
-                .map_err(|e| Error::Klaytn(e))?;
+            let _ = item.try_into().map(|i| items.push(i));
         }
 
         Ok(items)

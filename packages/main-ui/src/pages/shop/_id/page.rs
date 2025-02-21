@@ -8,7 +8,7 @@ use num_format::ToFormattedString;
 
 #[component]
 pub fn ShopByIdPage(id: String, lang: Language) -> Element {
-    let ctrl = Controller::new(id)?;
+    let ctrl = Controller::new(lang, id.clone())?;
     let tr: ShopByIdTranslate = translate(&lang);
 
     let item = ctrl.item()?;
@@ -22,6 +22,7 @@ pub fn ShopByIdPage(id: String, lang: Language) -> Element {
         Language::Ko => &item.name_ko.split_once(" ").unwrap().1,
         Language::En => &item.name_en.split_once(" ").unwrap().1,
     };
+
     rsx! {
         div { id: "shop-by-id", class: "w-full flex flex-col items-center",
             div { class: "w-full max-w-[900px] flex flex-col gap-[20px] items-center",
@@ -85,9 +86,15 @@ pub fn ShopByIdPage(id: String, lang: Language) -> Element {
                             }
                         }
                     }
+                } // end of top header section
+
+                div {
+                    id: "shop_item_details",
+                    class: "w-full bg-white/40 rounded-[10px] p-[40px] text-center",
+                    dangerous_inner_html: "{ctrl.details()?.1}",
                 }
             } // end of container
 
-        }
+        } // end of this page
     }
 }
