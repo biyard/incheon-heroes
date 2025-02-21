@@ -58,13 +58,13 @@ build: clean
 	mkdir -p .build
 	cd packages/$(SERVICE) && ENV=$(ENV) ARTIFACT_DIR=$(PWD)/.build/$(SERVICE) make build
 
-fixtures/cdk/node_modules:
-	cd fixtures/cdk && npm install
+deps/rust-sdk/cdk/node_modules:
+	cd deps/rust-sdk/cdk && npm install
 
-cdk-deploy: fixtures/cdk/node_modules
-	cd fixtures/cdk && $(BUILD_CDK_ENV) CODE_PATH=$(PWD)/.build/$(SERVICE) npm run build
-	cd fixtures/cdk && $(BUILD_CDK_ENV) CODE_PATH=$(PWD)/.build/$(SERVICE) cdk synth
-	cd fixtures/cdk && $(BUILD_CDK_ENV) CODE_PATH=$(PWD)/.build/$(SERVICE) cdk deploy --require-approval never $(AWS_FLAG) --all
+cdk-deploy: deps/rust-sdk/cdk/node_modules
+	cd deps/rust-sdk/cdk && $(BUILD_CDK_ENV) CODE_PATH=$(PWD)/.build/$(SERVICE) npm run build
+	cd deps/rust-sdk/cdk && $(BUILD_CDK_ENV) CODE_PATH=$(PWD)/.build/$(SERVICE) cdk synth
+	cd deps/rust-sdk/cdk && $(BUILD_CDK_ENV) CODE_PATH=$(PWD)/.build/$(SERVICE) cdk deploy --require-approval never $(AWS_FLAG) --all
 
 s3-deploy:
 	cp -r packages/$(SERVICE)/public/* .build/$(SERVICE)/public
