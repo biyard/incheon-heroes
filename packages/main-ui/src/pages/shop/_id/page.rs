@@ -1,4 +1,6 @@
 #![allow(non_snake_case)]
+use crate::components::icons;
+
 use super::controller::*;
 use super::i18n::*;
 use dioxus::prelude::*;
@@ -22,6 +24,7 @@ pub fn ShopByIdPage(id: String, lang: Language) -> Element {
         Language::Ko => &item.name_ko.split_once(" ").unwrap().1,
         Language::En => &item.name_en.split_once(" ").unwrap().1,
     };
+    let desc = ctrl.description(lang)?;
 
     rsx! {
         div { id: "shop-by-id", class: "w-full flex flex-col items-center",
@@ -29,7 +32,7 @@ pub fn ShopByIdPage(id: String, lang: Language) -> Element {
 
                 div { class: "w-full flex flex-row gap-[40px] justify-center",
 
-                    div { class: "relative w-[400px] w-[400px] rounded-[10px] overflow-hidden",
+                    div { class: "relative w-[400px] rounded-[10px] overflow-hidden bg-white/40",
                         img {
                             class: "w-full h-full object-cover",
                             src: "{item.image}",
@@ -48,7 +51,19 @@ pub fn ShopByIdPage(id: String, lang: Language) -> Element {
                         h2 { class: "text-[30px] font-semibold", color, "{name}" }
 
                         // TODO: description
-                        div { class: "w-full grow bg-white/40 rounded-[10px]" }
+                        div { class: "w-full flex flex-col p-[10px] items-center justify-start grow bg-white/40 rounded-[10px]",
+                            div { class: "flex flex-col items-center",
+                                icons::Badge {}
+                                p { class: "text-[20px] font-bold text-[#16775D]",
+                                    "{tr.title}"
+                                }
+                            }
+                            p {
+                                class: "w-full text-center text-[#636363] text-[15px]",
+                                font_family: "Pretendard",
+                                dangerous_inner_html: "{desc}",
+                            }
+                        }
                         div { class: "w-full bg-white/40 rounded-[10px] grid grid-cols-3 gap-[20px] py-[15px]",
                             span { class: "w-full col-span-1 text-center text-[#636363] text-[14px] font-bold",
                                 "{tr.price}"
@@ -90,7 +105,7 @@ pub fn ShopByIdPage(id: String, lang: Language) -> Element {
 
                 div {
                     id: "shop_item_details",
-                    class: "w-full bg-white/40 rounded-[10px] p-[40px] text-center",
+                    class: "w-full bg-white/40 rounded-[10px] px-[50px] p-[40px] text-center",
                     dangerous_inner_html: "{ctrl.details()?.1}",
                 }
             } // end of container

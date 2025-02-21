@@ -4,8 +4,8 @@ translate! {
     ShopByIdTranslate;
 
     title: {
-        ko: "SHOP_BY_ID",
-        en: "SHOP_BY_ID",
+        ko: "인천 히어로즈",
+        en: "Incheon Heroes",
     },
 
     price: {
