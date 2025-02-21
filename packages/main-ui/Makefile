@@ -43,7 +43,7 @@ build: clean public
 	mv $(ARTIFACT_DIR)/server $(ARTIFACT_DIR)/bootstrap
 
 .PHONY: public
-public: public/dep.js public/tailwind.css
+public: public/tailwind.css
 
 .PHONY: public/dep.js
 public/dep.js:

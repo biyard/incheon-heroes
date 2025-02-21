@@ -13,6 +13,7 @@ pub fn SongsByIdPage(id: String, lang: Language) -> Element {
     let song = ctrl.song()?;
 
     rsx! {
+        by_components::meta::MetaPage { title: "{tr.title}", audio: "{song.audio_url}" }
         div { id: "songs-by-id", class: "flex flex-col gap-[50px] items-center",
             if ctrl.is_playing() {
                 video {

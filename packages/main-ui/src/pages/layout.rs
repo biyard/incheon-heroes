@@ -5,6 +5,7 @@ use crate::assets::*;
 use crate::components::icons::arrows::{ArrowDirection, SingleSimpleArrow};
 use crate::route::Route;
 use by_components::loaders::cube_loader::CubeLoader;
+use by_components::meta::MetaSeoTemplate;
 use by_components::theme::ColorTheme;
 use dioxus::prelude::*;
 use dioxus_translate::*;
@@ -12,8 +13,16 @@ use dioxus_translate::*;
 #[component]
 pub fn RootLayout(lang: Language) -> Element {
     let theme: ColorTheme = use_context();
+    let path: Route = use_route();
 
     rsx! {
+        MetaSeoTemplate {
+            title: "Incheon Heroes",
+            canonical: "https://incheonheroes.world",
+            keywords: "Incheon, Heroes, 인천, 히어로즈, 유니버스",
+            url: "{path}",
+        }
+
         div {
             class: "flex flex-col w-full items-center justify-start min-h-[100vh] text-white",
             background: "{theme.background}",

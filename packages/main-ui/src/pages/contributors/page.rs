@@ -14,6 +14,8 @@ pub fn ContributorsPage(lang: Language) -> Element {
     let tr: ContributorsTranslate = translate(&lang);
 
     rsx! {
+        by_components::meta::MetaPage { title: "{tr.title}" }
+
         div {
             id: "contributors",
             class: "w-full flex flex-col items-center justify-center gap-[50px]",

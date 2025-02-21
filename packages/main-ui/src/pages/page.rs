@@ -6,6 +6,7 @@ use crate::components::headings::Heading1;
 
 use super::i18n::*;
 use crate::assets::*;
+use by_components::meta::MetaPage;
 use dioxus::prelude::*;
 use dioxus_translate::*;
 
@@ -14,6 +15,11 @@ pub fn HomePage(lang: Language) -> Element {
     let tr: MainTextTranslate = translate(&lang);
 
     rsx! {
+        MetaPage {
+            title: "{tr.title}",
+            description: "{tr.main_text}",
+            video: "{VIDEO}",
+        }
         div { id: "home-page", class: "flex flex-col items-center gap-[45px]",
             VideoSection {}
 

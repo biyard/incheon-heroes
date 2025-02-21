@@ -15,6 +15,7 @@ pub fn NoticesPage(lang: Language) -> Element {
     ];
 
     rsx! {
+        by_components::meta::MetaPage { title: "{tr.title}" }
         div {
             id: "notices",
             class: "flex flex-col gap-[50px] items-center justify-center",

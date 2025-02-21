@@ -27,6 +27,11 @@ pub fn ShopByIdPage(id: String, lang: Language) -> Element {
     let desc = ctrl.description(lang)?;
 
     rsx! {
+        by_components::meta::MetaPage {
+            title: "{tr.title}",
+            description: "{desc}",
+            image: "{item.image}",
+        }
         div { id: "shop-by-id", class: "w-full flex flex-col items-center",
             div { class: "w-full max-w-[900px] flex flex-col gap-[20px] items-center",
 
@@ -50,7 +55,6 @@ pub fn ShopByIdPage(id: String, lang: Language) -> Element {
                     div { class: "flex flex-col grow items-center gap-[10px]",
                         h2 { class: "text-[30px] font-semibold", color, "{name}" }
 
-                        // TODO: description
                         div { class: "w-full flex flex-col p-[10px] items-center justify-start grow bg-white/40 rounded-[10px]",
                             div { class: "flex flex-col items-center",
                                 icons::Badge {}

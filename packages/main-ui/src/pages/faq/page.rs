@@ -3,6 +3,7 @@ use crate::components::headings::Heading1;
 
 use super::controller::*;
 use super::i18n::*;
+use by_components::meta::MetaPage;
 use dioxus::prelude::*;
 use dioxus_translate::*;
 
@@ -12,6 +13,7 @@ pub fn FaqPage(lang: Language) -> Element {
     let tr: FaqTranslate = translate(&lang);
 
     rsx! {
+        MetaPage { title: "{tr.title}" }
         div {
             id: "faq",
             class: "flex flex-col gap-[80px] items-center justify-start",

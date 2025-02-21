@@ -56,6 +56,7 @@ pub fn ShopPage(lang: Language) -> Element {
     .collect::<Vec<Element>>();
 
     rsx! {
+        by_components::meta::MetaPage { title: "{tr.title}", description: "{tr.desc}" }
         div {
             id: "shop",
             class: "flex flex-col gap-[50px] items-center justify-center w-full",

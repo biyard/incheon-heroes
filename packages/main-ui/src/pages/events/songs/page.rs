@@ -27,6 +27,7 @@ pub fn SongsPage(lang: Language) -> Element {
     }
 
     rsx! {
+        by_components::meta::MetaPage { title: "{tr.title}", description: "{tr.description}" }
         div {
             id: "songs",
             class: "w-full flex flex-col gap-[30px] items-center justify-center",

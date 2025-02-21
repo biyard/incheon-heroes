@@ -10,6 +10,7 @@ pub fn StoriesPage(lang: Language) -> Element {
     let tr: StoriesTranslate = translate(&lang);
 
     rsx! {
+        by_components::meta::MetaPage { title: "{tr.title}", description: "{tr.desc}" }
         div {
             id: "stories",
 

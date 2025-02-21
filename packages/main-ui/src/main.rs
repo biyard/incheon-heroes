@@ -35,15 +35,6 @@ fn app() -> Element {
     Klaytn::init();
 
     rsx! {
-        document::Title { "Incheon Heroes" }
-        document::Meta { name: "description", content: "Incheon heroes ...." }
-        document::Meta {
-            content: "Incheon, Heroes, 인천, 히어로즈, 유니버스",
-            name: "keywords",
-        }
-        document::Meta { content: "index, follow", name: "robots" }
-        document::Link { href: "https://incheonheroes.world", rel: "canonical" }
-
         document::Meta {
             name: "viewport",
             content: "width=device-width, initial-scale=1.0",
@@ -72,7 +63,6 @@ fn app() -> Element {
         document::Link { id: "favicon", rel: "icon", href: "{assets::FAVICON}" }
         document::Link { rel: "stylesheet", href: asset!("/public/main.css") }
         document::Link { rel: "stylesheet", href: asset!("/public/tailwind.css") }
-        document::Script { src: asset!("/public/dep.js") }
 
         document::Script { src: "https://cdn.tailwindcss.com/3.4.16" }
         document::Link {
