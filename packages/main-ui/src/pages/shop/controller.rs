@@ -6,6 +6,7 @@ use crate::services::{klaytn::Klaytn, shop_contract::ShopItem};
 #[derive(Clone, Copy, DioxusController)]
 pub struct Controller {
     pub items: Resource<Vec<ShopItem>>,
+    #[allow(dead_code)]
     pub klaytn: Klaytn,
 }
 

@@ -2,7 +2,7 @@ use dioxus::prelude::*;
 use dioxus_translate::Translate;
 use dto::*;
 
-use crate::{config, models::nft_metadata::NftMetadata};
+use crate::models::nft_metadata::NftMetadata;
 
 #[derive(Debug, Clone, Copy)]
 pub struct LeaderBoardController {
