@@ -70,7 +70,7 @@ jobs:
           ENV: prod
           SERVICE: main-ui
           DOMAIN: incheonheroes.world
-          KAKAO_CLIENT_ID: 376264d68e7b4ad09d856a757f1b0ce7
+          KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}
           KAKAO_REDIRECT_URI: https://incheonheroes.world/oauth/kakao
           API_PREFIX: /api
           ENABLE_S3: true
