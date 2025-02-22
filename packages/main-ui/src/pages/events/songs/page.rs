@@ -226,10 +226,8 @@ pub fn SongCard(
             div { class: "flex flex-row gap-[10px] justify-between px-[30px] py-[10px] text-white font-bold",
                 div { class: "flex flex-row gap-[10px] items-center",
                     img {
-                        src: asset!(
-                            "/public/images/play_count.png", ImageAssetOptions::new()
-                            .with_size(ImageSize::Manual { width : 15, height : 15 })
-                        ),
+                        class: "w-[15px] h-[15px]",
+                        src: asset!("/public/images/play_count.png"),
                     }
                     span { "{song.play_count}" }
                 }

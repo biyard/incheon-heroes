@@ -1,15 +1,21 @@
 #![allow(non_snake_case)]
 use crate::components::headings::Heading1;
-use crate::services::backend_api::AccountHint;
 
 use super::controller::*;
 use super::i18n::*;
+use super::models::LoginProvider;
 use dioxus::prelude::*;
 use dioxus_translate::*;
 
 #[component]
-pub fn LoginPage(lang: Language, hint: AccountHint) -> Element {
-    let mut ctrl = Controller::new(lang, hint)?;
+pub fn LoginPage(
+    lang: Language,
+    id: String,
+    provider: LoginProvider,
+    hint: String,
+    address: String,
+) -> Element {
+    let mut ctrl = Controller::new(lang, id, provider, hint, address)?;
     let tr: LoginTranslate = translate(&lang);
 
     rsx! {

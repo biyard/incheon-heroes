@@ -1,4 +1,4 @@
-use crate::{pages::*, services::backend_api::AccountHint};
+use crate::pages::*;
 use dioxus::prelude::*;
 use dioxus_oauth::component::OAuthPopup;
 use dioxus_translate::Language;
@@ -50,8 +50,11 @@ pub enum Route {
     #[route("/connect")]
     ConnectPage { lang: Language },
 
-    #[route("/connect/login")]
-    LoginPage { lang: Language, hint: AccountHint },
+    #[route("/connect/login?:id&:provider&:hint&:address")]
+    LoginPage { lang: Language,id:String, provider: LoginProvider, hint: String, address: String },
+
+    #[route("/my-profile")]
+    MyProfilePage { lang: Language },
 
     #[end_layout]
     #[end_nest]
@@ -67,9 +70,21 @@ pub enum Route {
 impl Route {
     pub fn switch_lang(self) -> Self {
         match self {
-            Route::LoginPage { lang, hint } => Route::LoginPage {
+            Route::MyProfilePage { lang } => Route::MyProfilePage {
                 lang: lang.switch(),
+            },
+            Route::LoginPage {
+                lang,
+                id,
+                provider,
                 hint,
+                address,
+            } => Route::LoginPage {
+                lang: lang.switch(),
+                provider,
+                id,
+                hint,
+                address,
             },
             Route::ConnectPage { lang } => Route::ConnectPage {
                 lang: lang.switch(),

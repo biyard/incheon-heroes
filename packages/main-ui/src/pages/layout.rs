@@ -5,6 +5,7 @@ use crate::assets::*;
 use crate::components::icons;
 use crate::components::icons::arrows::{ArrowDirection, SingleSimpleArrow};
 use crate::route::Route;
+use crate::services::user_service::UserService;
 use by_components::loaders::cube_loader::CubeLoader;
 use by_components::meta::MetaSeoTemplate;
 use by_components::theme::ColorTheme;
@@ -59,13 +60,9 @@ pub fn Header(
 ) -> Element {
     let route: Route = use_route();
     let nav = use_navigator();
+    let user_wallet: UserService = use_context();
     let tr: HeaderTranslate = translate(&lang);
     let mut expanded = use_signal(|| false);
-    let submenu_class = if expanded() {
-        "h-fit opacity-100"
-    } else {
-        "h-[0px] opacity-0"
-    };
 
     let handle_select_menu = move |_| {
         expanded.set(false);
@@ -79,46 +76,16 @@ pub fn Header(
                 img { src: "{LOGO}", class: "w-[145px] h-[50px]" }
             }
 
-            div { class: "grow flex flex-col items-center justify-center px-[30px]",
-                div { id: "menus", class: "w-full grid grid-cols-5 h-[70px]",
-                    ExpandableMenu {
-                        expanded: expanded(),
-                        onclick: move |_| {
-                            expanded.set(!expanded());
-                        },
-                        "{tr.history}"
-                    }
-
-                    ExpandableMenu {
-                        expanded: expanded(),
-                        onclick: move |_| {
-                            expanded.set(!expanded());
-                        },
-                        "{tr.event}"
-                    }
-                    Menu {
-                        to: Route::ShopPage { lang },
-                        onclick: handle_select_menu,
-                        "{tr.shop}"
-                    }
-                    Menu {
-                        to: Route::MyNftsPage { lang },
-                        onclick: handle_select_menu,
-                        "{tr.my_nfts}"
-                    }
-                    ExpandableMenu {
-                        expanded: expanded(),
-                        onclick: move |_| {
-                            expanded.set(!expanded());
-                        },
-                        "{tr.info}"
-                    }
-                }
-
+            div { class: "grow flex flex-col items-center justify-center px-[100px]",
                 div {
-                    id: "submenus",
-                    class: "transition-all w-full grid grid-cols-5 {submenu_class} overflow-hidden",
-                    div { class: "col-span-1 flex flex-col items-start justify-start",
+                    id: "menus",
+                    class: "w-full flex flex-row justify-start h-[70px]",
+                    ExpandableMenu {
+                        expanded: expanded(),
+                        onclick: move |_| {
+                            expanded.set(!expanded());
+                        },
+                        name: "{tr.history}",
                         SubMenu {
                             to: Route::NoticesPage { lang },
                             onclick: handle_select_menu,
@@ -134,9 +101,14 @@ pub fn Header(
                             onclick: handle_select_menu,
                             "{tr.top_contributor}"
                         }
-
                     }
-                    div { class: "col-span-3 flex flex-col justify-start",
+
+                    ExpandableMenu {
+                        expanded: expanded(),
+                        onclick: move |_| {
+                            expanded.set(!expanded());
+                        },
+                        name: "{tr.event}",
                         // SubMenu {
                         //     to: Route::CalendarPage { lang },
                         //     onclick: handle_select_menu,
@@ -147,8 +119,26 @@ pub fn Header(
                             onclick: handle_select_menu,
                             "{tr.contest_voting}"
                         }
+
                     }
-                    div { class: "col-span-1 flex flex-col justify-start",
+                    Menu {
+                        to: Route::ShopPage { lang },
+                        onclick: handle_select_menu,
+                        "{tr.shop}"
+                    }
+                    if user_wallet.is_logined() {
+                        Menu {
+                            to: Route::MyNftsPage { lang },
+                            onclick: handle_select_menu,
+                            "{tr.my_nfts}"
+                        }
+                    }
+                    ExpandableMenu {
+                        expanded: expanded(),
+                        onclick: move |_| {
+                            expanded.set(!expanded());
+                        },
+                        name: "{tr.info}",
                         SubMenu {
                             to: Route::FaqPage { lang },
                             onclick: handle_select_menu,
@@ -162,8 +152,10 @@ pub fn Header(
                             onclick: handle_select_menu,
                             "{tr.docs}"
                         }
+
                     }
-                } // end of submenus
+                }
+
             } // end of grow
 
             div { class: "flex flex-row gap-[15px] items-center h-full",
@@ -171,13 +163,22 @@ pub fn Header(
                     onclick: move |_| {
                         nav.push(Route::ConnectPage { lang });
                     },
-                    icons::Connect {}
+                    icons::Connect { fill: if user_wallet.is_logined() { "#CEF7E3" } else { "black" } }
                 }
                 Link {
                     class: "flex flex-row gap-[10px] items-center",
                     to: route.switch_lang(),
                     icons::Language {}
                     span { class: "font-bold text-[16px]", "{tr.lang}" }
+                }
+
+                if user_wallet.is_logined() {
+                    Link { to: Route::MyProfilePage { lang },
+                        img {
+                            class: "w-[28px] h-[28px] rounded-full",
+                            src: asset!("/public/images/profile.png"),
+                        }
+                    }
                 }
             }
         }
@@ -188,14 +189,22 @@ pub fn Header(
 pub fn ExpandableMenu(
     expanded: bool,
     children: Element,
+    name: String,
     onclick: EventHandler<MouseEvent>,
 ) -> Element {
     rsx! {
-        div {
-            class: "flex flex-row items-center justify-start text-[16px] font-bold col-span-1 gap-[10px] cursor-pointer",
-            onclick,
-            {children}
-            SingleSimpleArrow { direction: if expanded { ArrowDirection::Up } else { ArrowDirection::Down } }
+        div { class: "relative w-full flex flex-col gap-[20px] items-start justify-center",
+            div {
+                class: "flex flex-row items-center justify-start text-[16px] font-bold gap-[10px] cursor-pointer",
+                onclick,
+                "{name}"
+                SingleSimpleArrow { direction: if expanded { ArrowDirection::Up } else { ArrowDirection::Down } }
+            }
+            if expanded {
+                div { class: "absolute top-[70px] left-0 w-full flex flex-col gap-[15px]",
+                    {children}
+                }
+            }
         }
     }
 }
@@ -220,7 +229,7 @@ pub fn Menu(
     rsx! {
         Link {
             to,
-            class: "flex flex-row items-center justify-start text-[16px] font-bold col-span-1 gap-[10px]",
+            class: "flex flex-row items-center justify-start text-[16px] font-bold gap-[10px]",
             onclick,
             {children}
         }

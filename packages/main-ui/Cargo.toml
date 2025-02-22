@@ -38,6 +38,8 @@ serde_json.workspace = true
 ethers = "2.0.14"
 hex = "0.4.3"
 tiny-keccak = "2.0.2"
+bip32 = "0.5.3"
+k256 = "0.13.4"
 
 [features]
 default = []

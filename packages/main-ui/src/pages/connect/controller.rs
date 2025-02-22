@@ -2,7 +2,7 @@ use by_macros::*;
 use dioxus::prelude::*;
 use dioxus_translate::Language;
 
-use crate::{config, route::Route, services::backend_api::BackendApi};
+use crate::{config, pages::LoginProvider, route::Route, services::backend_api::BackendApi};
 
 #[derive(Clone, Copy, DioxusController)]
 pub struct Controller {
@@ -80,7 +80,10 @@ impl Controller {
 
         self.nav.replace(Route::LoginPage {
             lang: self.lang,
-            hint,
+            provider: LoginProvider::Kakao,
+            id: hint.id,
+            hint: hint.private_key_hint,
+            address: hint.address.unwrap_or_default(),
         });
     }
 
