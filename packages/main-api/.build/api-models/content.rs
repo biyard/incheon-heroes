@@ -53,24 +53,29 @@ impl Content
 derive(schemars :: JsonSchema, aide :: OperationIo))] pub struct
 ContentRepositoryUpdateRequest
 {
-    pub title : Option < String > , pub thumbnail_image : Option < String > ,
-    pub source : Option < String >
+    pub address : Option < String > , pub title : Option < String > , pub
+    thumbnail_image : Option < String > , pub source : Option < String > , pub
+    description : Option < String >
 } impl ContentRepositoryUpdateRequest
 {
     pub fn new() -> Self { Self :: default() } pub fn
+    with_address(mut self, address : String) -> Self
+    { self.address = Some(address); self } pub fn
     with_title(mut self, title : String) -> Self
     { self.title = Some(title); self } pub fn
     with_thumbnail_image(mut self, thumbnail_image : String) -> Self
     { self.thumbnail_image = Some(thumbnail_image); self } pub fn
     with_source(mut self, source : String) -> Self
-    { self.source = Some(source); self }
+    { self.source = Some(source); self } pub fn
+    with_description(mut self, description : String) -> Self
+    { self.description = Some(description); self }
 } impl ContentRepository
 {
     pub fn new(pool : sqlx :: Pool < sqlx :: Postgres >) -> Self
     { Self { pool } } pub fn queries(& self) -> Vec < & 'static str >
     {
         vec!
-        ["CREATE TABLE IF NOT EXISTS contents (id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY NOT NULL,created_at BIGINT NOT NULL,updated_at BIGINT NOT NULL,title TEXT NOT NULL,thumbnail_image TEXT NOT NULL,source TEXT NOT NULL);",
+        ["CREATE TABLE IF NOT EXISTS contents (id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY NOT NULL,created_at BIGINT NOT NULL,updated_at BIGINT NOT NULL,address TEXT NULL,title TEXT NOT NULL,thumbnail_image TEXT NOT NULL,source TEXT NOT NULL,description TEXT NOT NULL);",
         "DO $$\nBEGIN\n    IF NOT EXISTS (\n        SELECT 1\n        FROM pg_trigger\n        WHERE tgname = 'trigger_created_at_on_contents'\n        AND tgrelid = 'contents'::regclass\n    ) THEN\n        CREATE TRIGGER trigger_created_at_on_contents\n        BEFORE INSERT ON contents\n        FOR EACH ROW\n        EXECUTE FUNCTION set_created_at();\n    END IF;\nEND $$",
         "DO $$\nBEGIN\n    IF NOT EXISTS (\n        SELECT 1\n        FROM pg_trigger\n        WHERE tgname = 'trigger_updated_at_on_contents'\n        AND tgrelid = 'contents'::regclass\n    ) THEN\n        CREATE TRIGGER trigger_updated_at_on_contents\n        BEFORE INSERT OR UPDATE ON contents\n        FOR EACH ROW\n        EXECUTE FUNCTION set_updated_at();\n    END IF;\nEND $$"]
     } pub async fn create_this_table(& self) -> std :: result :: Result < (),
@@ -78,9 +83,9 @@ ContentRepositoryUpdateRequest
     {
         tracing :: trace!
         ("Create table: {}",
-        "CREATE TABLE IF NOT EXISTS contents (id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY NOT NULL,created_at BIGINT NOT NULL,updated_at BIGINT NOT NULL,title TEXT NOT NULL,thumbnail_image TEXT NOT NULL,source TEXT NOT NULL);");
+        "CREATE TABLE IF NOT EXISTS contents (id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY NOT NULL,created_at BIGINT NOT NULL,updated_at BIGINT NOT NULL,address TEXT NULL,title TEXT NOT NULL,thumbnail_image TEXT NOT NULL,source TEXT NOT NULL,description TEXT NOT NULL);");
         sqlx ::
-        query("CREATE TABLE IF NOT EXISTS contents (id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY NOT NULL,created_at BIGINT NOT NULL,updated_at BIGINT NOT NULL,title TEXT NOT NULL,thumbnail_image TEXT NOT NULL,source TEXT NOT NULL);").execute(&
+        query("CREATE TABLE IF NOT EXISTS contents (id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY NOT NULL,created_at BIGINT NOT NULL,updated_at BIGINT NOT NULL,address TEXT NULL,title TEXT NOT NULL,thumbnail_image TEXT NOT NULL,source TEXT NOT NULL,description TEXT NOT NULL);").execute(&
         self.pool).await ? ; Ok(())
     } pub async fn create_related_tables(& self) -> std :: result :: Result <
     (), sqlx :: Error >
@@ -96,7 +101,7 @@ ContentRepositoryUpdateRequest
     :: Error >
     {
         sqlx ::
-        query("CREATE TABLE IF NOT EXISTS contents (id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY NOT NULL,created_at BIGINT NOT NULL,updated_at BIGINT NOT NULL,title TEXT NOT NULL,thumbnail_image TEXT NOT NULL,source TEXT NOT NULL);").execute(&
+        query("CREATE TABLE IF NOT EXISTS contents (id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY NOT NULL,created_at BIGINT NOT NULL,updated_at BIGINT NOT NULL,address TEXT NULL,title TEXT NOT NULL,thumbnail_image TEXT NOT NULL,source TEXT NOT NULL,description TEXT NOT NULL);").execute(&
         self.pool).await ? ; for query in
         ["DO $$\nBEGIN\n    IF NOT EXISTS (\n        SELECT 1\n        FROM pg_trigger\n        WHERE tgname = 'trigger_created_at_on_contents'\n        AND tgrelid = 'contents'::regclass\n    ) THEN\n        CREATE TRIGGER trigger_created_at_on_contents\n        BEFORE INSERT ON contents\n        FOR EACH ROW\n        EXECUTE FUNCTION set_created_at();\n    END IF;\nEND $$",
         "DO $$\nBEGIN\n    IF NOT EXISTS (\n        SELECT 1\n        FROM pg_trigger\n        WHERE tgname = 'trigger_updated_at_on_contents'\n        AND tgrelid = 'contents'::regclass\n    ) THEN\n        CREATE TRIGGER trigger_updated_at_on_contents\n        BEFORE INSERT OR UPDATE ON contents\n        FOR EACH ROW\n        EXECUTE FUNCTION set_updated_at();\n    END IF;\nEND $$"]
@@ -111,63 +116,102 @@ ContentRepositoryUpdateRequest
         query("DROP TABLE IF EXISTS contents;").execute(& self.pool).await ? ;
         Ok(())
     } pub async fn
-    insert(& self, title : String, thumbnail_image : String, source : String)
-    -> Result < Content >
+    insert(& self, address : Option < String > , title : String,
+    thumbnail_image : String, source : String, description : String) ->
+    crate::Result < Content >
     {
-        tracing :: trace!
-        ("insert query: {}",
-        "INSERT INTO contents (title, thumbnail_image, source) VALUES ($1, $2, $3) RETURNING id, created_at, updated_at, title, thumbnail_image, source");
-        let row = sqlx ::
-        query("INSERT INTO contents (title, thumbnail_image, source) VALUES ($1, $2, $3) RETURNING id, created_at, updated_at, title, thumbnail_image, source").bind(title).bind(thumbnail_image).bind(source).map(|
-        row : sqlx :: postgres :: PgRow |
+        let mut i = 4; let mut insert_fields = vec!
+        ["title", "thumbnail_image", "source", "description"]; let mut
+        insert_values = vec!
+        ["$1", "$2", "$3", "$4"].iter().map(| f | f.to_string()).collect :: <
+        Vec < String >> (); if let Some(address) = & address
+        {
+            i += 1; insert_fields.push("address");
+            insert_values.push(format! ("${}", i));
+        } let query = format!
+        ("INSERT INTO contents ({}) VALUES ({}) RETURNING id, created_at, updated_at, address, title, thumbnail_image, source, description",
+        insert_fields.join(", "), insert_values.join(", "),); tracing ::
+        trace! ("insert query: {}", query); let mut q = sqlx ::
+        query(&
+        query).bind(title).bind(thumbnail_image).bind(source).bind(description);
+        if let Some(address) = & address { q = q.bind(address); } let row =
+        q.map(| row : sqlx :: postgres :: PgRow |
         {
             use sqlx :: Row; Content
             {
                 id : row.try_get("id").unwrap_or_default(), created_at :
                 row.try_get("created_at").unwrap_or_default(), updated_at :
-                row.try_get("updated_at").unwrap_or_default(), title :
+                row.try_get("updated_at").unwrap_or_default(), address :
+                row.try_get("address").unwrap_or_default(), title :
                 row.try_get("title").unwrap_or_default(), thumbnail_image :
                 row.try_get("thumbnail_image").unwrap_or_default(), source :
-                row.try_get("source").unwrap_or_default()
+                row.try_get("source").unwrap_or_default(), description :
+                row.try_get("description").unwrap_or_default()
             }
         }).fetch_one(& self.pool).await ? ; Ok(row)
     } pub async fn insert_with_tx < 'e, 'c : 'e, E >
-    (& self, tx : E, title : String, thumbnail_image : String, source :
-    String) -> Result < Option < Content >> where E : sqlx :: Executor < 'c,
+    (& self, tx : E, address : Option < String > , title : String,
+    thumbnail_image : String, source : String, description : String) ->
+    crate::Result < Option < Content >> where E : sqlx :: Executor < 'c,
     Database = sqlx :: postgres :: Postgres > ,
     {
-        tracing :: trace!
-        ("insert query: {}",
-        "INSERT INTO contents (title, thumbnail_image, source) VALUES ($1, $2, $3) RETURNING id, created_at, updated_at, title, thumbnail_image, source");
-        let row = sqlx ::
-        query("INSERT INTO contents (title, thumbnail_image, source) VALUES ($1, $2, $3) RETURNING id, created_at, updated_at, title, thumbnail_image, source").bind(title).bind(thumbnail_image).bind(source).map(|
-        row : sqlx :: postgres :: PgRow |
+        let mut i = 4; let mut insert_fields = vec!
+        ["title", "thumbnail_image", "source", "description"]; let mut
+        insert_values = vec!
+        ["$1", "$2", "$3", "$4"].iter().map(| f | f.to_string()).collect :: <
+        Vec < String >> (); if let Some(address) = & address
+        {
+            i += 1; insert_fields.push("address");
+            insert_values.push(format! ("${}", i));
+        } let query = format!
+        ("INSERT INTO contents ({}) VALUES ({}) RETURNING id, created_at, updated_at, address, title, thumbnail_image, source, description",
+        insert_fields.join(", "), insert_values.join(", "),); tracing ::
+        trace! ("insert query: {}", query); let mut q = sqlx ::
+        query(&
+        query).bind(title).bind(thumbnail_image).bind(source).bind(description);
+        if let Some(address) = & address { q = q.bind(address); } let row =
+        q.map(| row : sqlx :: postgres :: PgRow |
         {
             use sqlx :: Row; Content
             {
                 id : row.try_get("id").unwrap_or_default(), created_at :
                 row.try_get("created_at").unwrap_or_default(), updated_at :
-                row.try_get("updated_at").unwrap_or_default(), title :
+                row.try_get("updated_at").unwrap_or_default(), address :
+                row.try_get("address").unwrap_or_default(), title :
                 row.try_get("title").unwrap_or_default(), thumbnail_image :
                 row.try_get("thumbnail_image").unwrap_or_default(), source :
-                row.try_get("source").unwrap_or_default()
+                row.try_get("source").unwrap_or_default(), description :
+                row.try_get("description").unwrap_or_default()
             }
         }).fetch_optional(tx).await ? ; Ok(row)
     } pub async fn
-    insert_without_returning(& self, title : String, thumbnail_image : String,
-    source : String) -> Result < () >
+    insert_without_returning(& self, address : Option < String > , title :
+    String, thumbnail_image : String, source : String, description : String)
+    -> crate::Result < () >
     {
-        tracing :: trace!
-        ("insert query: {}",
-        "INSERT INTO contents (title, thumbnail_image, source) VALUES ($1, $2, $3) RETURNING id, created_at, updated_at, title, thumbnail_image, source");
-        sqlx ::
-        query("INSERT INTO contents (title, thumbnail_image, source) VALUES ($1, $2, $3)").bind(title).bind(thumbnail_image).bind(source).execute(&
-        self.pool).await ? ; Ok(())
+        let mut i = 4; let mut insert_fields = vec!
+        ["title", "thumbnail_image", "source", "description"]; let mut
+        insert_values = vec!
+        ["$1", "$2", "$3", "$4"].iter().map(| f | f.to_string()).collect :: <
+        Vec < String >> (); if let Some(address) = & address
+        {
+            i += 1; insert_fields.push("address");
+            insert_values.push(format! ("${}", i));
+        } let query = format!
+        ("INSERT INTO contents ({}) VALUES ({})", insert_fields.join(", "),
+        insert_values.join(", "),); tracing :: trace!
+        ("insert query: {}", query); let mut q = sqlx ::
+        query(&
+        query).bind(title).bind(thumbnail_image).bind(source).bind(description);
+        if let Some(address) = & address { q = q.bind(address); }
+        q.execute(& self.pool).await ? ; Ok(())
     } pub async fn
     update(& self, id : i64, content_repository_update_request :
-    ContentRepositoryUpdateRequest) -> Result < Content >
+    ContentRepositoryUpdateRequest) -> crate::Result < Content >
     {
         let mut i = 1; let mut update_values = vec! []; if
+        content_repository_update_request.address.is_some()
+        { i += 1; update_values.push(format! ("{} = ${}", "address", i)); } if
         content_repository_update_request.title.is_some()
         { i += 1; update_values.push(format! ("{} = ${}", "title", i)); } if
         content_repository_update_request.thumbnail_image.is_some()
@@ -175,37 +219,45 @@ ContentRepositoryUpdateRequest
             i += 1;
             update_values.push(format! ("{} = ${}", "thumbnail_image", i));
         } if content_repository_update_request.source.is_some()
-        { i += 1; update_values.push(format! ("{} = ${}", "source", i)); } let
-        query = format!
-        ("UPDATE contents SET {} WHERE id = $1 RETURNING id, created_at, updated_at, title, thumbnail_image, source",
+        { i += 1; update_values.push(format! ("{} = ${}", "source", i)); } if
+        content_repository_update_request.description.is_some()
+        {
+            i += 1;
+            update_values.push(format! ("{} = ${}", "description", i));
+        } let query = format!
+        ("UPDATE contents SET {} WHERE id = $1 RETURNING id, created_at, updated_at, address, title, thumbnail_image, source, description",
         update_values.join(", "),); tracing :: trace!
         ("insert query: {}", query); let mut q = sqlx ::
-        query(& query).bind(id); if let Some(title) =
-        content_repository_update_request.title { q = q.bind(title); } if let
-        Some(thumbnail_image) =
+        query(& query).bind(id); if let Some(address) =
+        content_repository_update_request.address { q = q.bind(address); } if
+        let Some(title) = content_repository_update_request.title
+        { q = q.bind(title); } if let Some(thumbnail_image) =
         content_repository_update_request.thumbnail_image
         { q = q.bind(thumbnail_image); } if let Some(source) =
-        content_repository_update_request.source { q = q.bind(source); } let
-        row =
+        content_repository_update_request.source { q = q.bind(source); } if
+        let Some(description) = content_repository_update_request.description
+        { q = q.bind(description); } let row =
         q.map(| row : sqlx :: postgres :: PgRow |
         {
             use sqlx :: Row; Content
             {
                 id : row.try_get("id").unwrap_or_default(), created_at :
                 row.try_get("created_at").unwrap_or_default(), updated_at :
-                row.try_get("updated_at").unwrap_or_default(), title :
+                row.try_get("updated_at").unwrap_or_default(), address :
+                row.try_get("address").unwrap_or_default(), title :
                 row.try_get("title").unwrap_or_default(), thumbnail_image :
                 row.try_get("thumbnail_image").unwrap_or_default(), source :
-                row.try_get("source").unwrap_or_default()
+                row.try_get("source").unwrap_or_default(), description :
+                row.try_get("description").unwrap_or_default()
             }
         }).fetch_one(& self.pool).await ? ; Ok(row)
-    } pub async fn delete(& self, id : i64) -> Result < () >
+    } pub async fn delete(& self, id : i64) -> crate::Result < () >
     {
         sqlx ::
         query("DELETE FROM contents WHERE id = $1").bind(id).execute(&
         self.pool).await ? ; Ok(())
-    } pub async fn find_one(& self, param : & ContentReadAction) -> Result <
-    Content >
+    } pub async fn find_one(& self, param : & ContentReadAction) ->
+    crate::Result < Content >
     {
         let mut query = format! ("{}", Content :: base_sql());
         query.push_str(" "); query.push_str(Content :: group_by().as_str());
@@ -218,13 +270,15 @@ ContentRepositoryUpdateRequest
             {
                 id : row.try_get("id").unwrap_or_default(), created_at :
                 row.try_get("created_at").unwrap_or_default(), updated_at :
-                row.try_get("updated_at").unwrap_or_default(), title :
+                row.try_get("updated_at").unwrap_or_default(), address :
+                row.try_get("address").unwrap_or_default(), title :
                 row.try_get("title").unwrap_or_default(), thumbnail_image :
                 row.try_get("thumbnail_image").unwrap_or_default(), source :
-                row.try_get("source").unwrap_or_default()
+                row.try_get("source").unwrap_or_default(), description :
+                row.try_get("description").unwrap_or_default()
             }
         }).fetch_one(& self.pool).await ? ; Ok(row)
-    } pub async fn find(& self, param : & ContentQuery) -> Result <
+    } pub async fn find(& self, param : & ContentQuery) -> crate::Result <
     by_types::QueryResponse<ContentSummary> >
     {
         let query = format!
@@ -248,10 +302,12 @@ ContentRepositoryUpdateRequest
         {
             id : row.try_get("id").unwrap_or_default(), created_at :
             row.try_get("created_at").unwrap_or_default(), updated_at :
-            row.try_get("updated_at").unwrap_or_default(), title :
+            row.try_get("updated_at").unwrap_or_default(), address :
+            row.try_get("address").unwrap_or_default(), title :
             row.try_get("title").unwrap_or_default(), thumbnail_image :
             row.try_get("thumbnail_image").unwrap_or_default(), source :
-            row.try_get("source").unwrap_or_default()
+            row.try_get("source").unwrap_or_default(), description :
+            row.try_get("description").unwrap_or_default()
         }
     }
 } impl From < sqlx :: postgres :: PgRow > for ContentSummary
@@ -559,6 +615,54 @@ pub struct ContentRepositoryQueryBuilder
             self.order = by_types :: Order ::
             Desc(vec! ["updated_at".to_string()]);
         } self
+    } pub fn address_equals(mut self, address : String) -> Self
+    {
+        self.conditions.push(by_types :: Conditions ::
+        EqualsText("address".to_string(), address)); self
+    } pub fn address_not_equals(mut self, address : String) -> Self
+    {
+        self.conditions.push(by_types :: Conditions ::
+        NotEqualsText("address".to_string(), address)); self
+    } pub fn address_contains(mut self, address : String) -> Self
+    {
+        self.conditions.push(by_types :: Conditions ::
+        ContainsText("address".to_string(), address)); self
+    } pub fn address_not_contains(mut self, address : String) -> Self
+    {
+        self.conditions.push(by_types :: Conditions ::
+        NotContainsText("address".to_string(), address)); self
+    } pub fn address_starts_with(mut self, address : String) -> Self
+    {
+        self.conditions.push(by_types :: Conditions ::
+        StartsWithText("address".to_string(), address)); self
+    } pub fn address_not_starts_with(mut self, address : String) -> Self
+    {
+        self.conditions.push(by_types :: Conditions ::
+        NotStartsWithText("address".to_string(), address)); self
+    } pub fn address_ends_with(mut self, address : String) -> Self
+    {
+        self.conditions.push(by_types :: Conditions ::
+        EndsWithText("address".to_string(), address)); self
+    } pub fn address_not_ends_with(mut self, address : String) -> Self
+    {
+        self.conditions.push(by_types :: Conditions ::
+        NotEndsWithText("address".to_string(), address)); self
+    } pub fn order_by_address_asc(mut self) -> Self
+    {
+        if let by_types :: Order :: Asc(ref mut field) = self.order
+        { field.push(format! (",{}", "address")); } else
+        {
+            self.order = by_types :: Order ::
+            Asc(vec! ["address".to_string()]);
+        } self
+    } pub fn order_by_address_desc(mut self) -> Self
+    {
+        if let by_types :: Order :: Desc(ref mut field) = self.order
+        { field.push(format! (",{}", "address")); } else
+        {
+            self.order = by_types :: Order ::
+            Desc(vec! ["address".to_string()]);
+        } self
     } pub fn title_equals(mut self, title : String) -> Self
     {
         self.conditions.push(by_types :: Conditions ::
@@ -711,6 +815,55 @@ pub struct ContentRepositoryQueryBuilder
             self.order = by_types :: Order ::
             Desc(vec! ["source".to_string()]);
         } self
+    } pub fn description_equals(mut self, description : String) -> Self
+    {
+        self.conditions.push(by_types :: Conditions ::
+        EqualsText("description".to_string(), description)); self
+    } pub fn description_not_equals(mut self, description : String) -> Self
+    {
+        self.conditions.push(by_types :: Conditions ::
+        NotEqualsText("description".to_string(), description)); self
+    } pub fn description_contains(mut self, description : String) -> Self
+    {
+        self.conditions.push(by_types :: Conditions ::
+        ContainsText("description".to_string(), description)); self
+    } pub fn description_not_contains(mut self, description : String) -> Self
+    {
+        self.conditions.push(by_types :: Conditions ::
+        NotContainsText("description".to_string(), description)); self
+    } pub fn description_starts_with(mut self, description : String) -> Self
+    {
+        self.conditions.push(by_types :: Conditions ::
+        StartsWithText("description".to_string(), description)); self
+    } pub fn description_not_starts_with(mut self, description : String) ->
+    Self
+    {
+        self.conditions.push(by_types :: Conditions ::
+        NotStartsWithText("description".to_string(), description)); self
+    } pub fn description_ends_with(mut self, description : String) -> Self
+    {
+        self.conditions.push(by_types :: Conditions ::
+        EndsWithText("description".to_string(), description)); self
+    } pub fn description_not_ends_with(mut self, description : String) -> Self
+    {
+        self.conditions.push(by_types :: Conditions ::
+        NotEndsWithText("description".to_string(), description)); self
+    } pub fn order_by_description_asc(mut self) -> Self
+    {
+        if let by_types :: Order :: Asc(ref mut field) = self.order
+        { field.push(format! (",{}", "description")); } else
+        {
+            self.order = by_types :: Order ::
+            Asc(vec! ["description".to_string()]);
+        } self
+    } pub fn order_by_description_desc(mut self) -> Self
+    {
+        if let by_types :: Order :: Desc(ref mut field) = self.order
+        { field.push(format! (",{}", "description")); } else
+        {
+            self.order = by_types :: Order ::
+            Desc(vec! ["description".to_string()]);
+        } self
     }
 } /// Content is a generated struct that represents the model
 ///
@@ -726,44 +879,106 @@ PartialEq)]
 #[cfg_attr(feature = "server",
 derive(schemars :: JsonSchema, aide :: OperationIo))] pub struct Content
 {
-    pub id : i64, pub created_at : i64, pub updated_at : i64, pub title :
-    String, #[validate(url)] pub thumbnail_image : String, #[validate(url)]
-    pub source : String
+    pub id : i64, pub created_at : i64, pub updated_at : i64, pub address :
+    Option < String > , pub title : String, #[validate(url)] pub
+    thumbnail_image : String, #[validate(url)] pub source : String,
+    #[validate(length(min = 1, max = 300))] pub description : String
 } #[derive(Debug, Clone, serde :: Serialize, serde :: Deserialize, PartialEq)]
 #[serde(rename_all = "snake_case")]
 #[cfg_attr(feature = "server",
 derive(schemars :: JsonSchema, aide :: OperationIo))] pub enum ContentAction
-{ Create(ContentCreateRequest), } impl validator :: Validate for ContentAction
+{ CreateBulk(ContentCreateBulkRequest), Create(ContentCreateRequest), } impl
+validator :: Validate for ContentAction
 {
     fn validate(& self) -> std :: result :: Result < (), validator ::
     ValidationErrors >
-    { match self { ContentAction :: Create(req) => req.validate(), } }
+    {
+        match self
+        {
+            ContentAction :: CreateBulk(req) => req.validate(), ContentAction
+            :: Create(req) => req.validate(),
+        }
+    }
 } #[derive(validator :: Validate)]
+#[derive(Debug, Clone, serde :: Serialize, serde :: Deserialize, Default,
+PartialEq)]
+#[cfg_attr(feature = "server",
+derive(schemars :: JsonSchema, aide :: OperationIo))] pub struct
+ContentCreateBulkRequest { pub items : Vec<ContentCreateRequest> , }
+#[derive(validator :: Validate)]
 #[derive(Debug, Clone, serde :: Serialize, serde :: Deserialize, Default,
 PartialEq)]
 #[cfg_attr(feature = "server",
 derive(schemars :: JsonSchema, aide :: OperationIo))] pub struct
 ContentCreateRequest
 {
-    pub title : String, #[validate(url)] pub thumbnail_image : String,
-    #[validate(url)] pub source : String,
+    pub address : Option < String > , pub title : String, #[validate(url)] pub
+    thumbnail_image : String, #[validate(url)] pub source : String,
+    #[validate(length(min = 1, max = 300))] pub description : String,
 } impl ContentClient
 {
-    pub async fn act(& self, params : ContentAction) -> crate :: Result <
+    pub async fn act(& self, params : ContentAction) -> crate::Result <
     Content >
     {
         let path = format! ("/v1/contents",); let endpoint = format!
         ("{}{}", self.endpoint, path); rest_api ::
         post(& endpoint, params).await
-    } pub async fn
-    create(& self, title : String, thumbnail_image : String, source : String,)
-    -> crate :: Result < Content >
+    } pub async fn create_bulk(& self, items : Vec<ContentCreateRequest> ,) ->
+    crate::Result < Content >
     {
         let path = format! ("/v1/contents",); let endpoint = format!
         ("{}{}", self.endpoint, path); let req = ContentAction ::
-        Create(ContentCreateRequest { title, thumbnail_image, source, });
-        rest_api :: post(& endpoint, req).await
+        CreateBulk(ContentCreateBulkRequest { items, }); rest_api ::
+        post(& endpoint, req).await
+    } pub async fn
+    create(& self, address : Option < String > , title : String,
+    thumbnail_image : String, source : String, description : String,) ->
+    crate::Result < Content >
+    {
+        let path = format! ("/v1/contents",); let endpoint = format!
+        ("{}{}", self.endpoint, path); let req = ContentAction ::
+        Create(ContentCreateRequest
+        { address, title, thumbnail_image, source, description, }); rest_api
+        :: post(& endpoint, req).await
     }
+} #[derive(Debug, Clone, serde :: Serialize, serde :: Deserialize, PartialEq)]
+#[serde(rename_all = "snake_case")]
+#[cfg_attr(feature = "server",
+derive(schemars :: JsonSchema, aide :: OperationIo))] pub enum
+ContentByIdAction { Mint(ContentMintRequest), } impl validator :: Validate for
+ContentByIdAction
+{
+    fn validate(& self) -> std :: result :: Result < (), validator ::
+    ValidationErrors >
+    { match self { ContentByIdAction :: Mint(req) => req.validate(), } }
+} #[derive(validator :: Validate)]
+#[derive(Debug, Clone, serde :: Serialize, serde :: Deserialize, Default,
+PartialEq)]
+#[cfg_attr(feature = "server",
+derive(schemars :: JsonSchema, aide :: OperationIo))] pub struct
+ContentMintRequest {} impl Into < ContentRepositoryUpdateRequest > for
+ContentMintRequest
+{
+    fn into(self) -> ContentRepositoryUpdateRequest
+    { ContentRepositoryUpdateRequest { .. Default :: default() } }
+} impl ContentClient
+{
+    pub async fn act_by_id(& self, id : i64, params : ContentByIdAction) ->
+    crate::Result < Content >
+    {
+        let path = format! ("/v1/contents",); let endpoint = format!
+        ("{}{}/{}", self.endpoint, path, id); rest_api ::
+        post(& endpoint, params).await
+    } pub async fn mint(& self, id : i64,) -> crate::Result < Content >
+    {
+        let path = format! ("/v1/contents",); let endpoint = format!
+        ("{}{}/{}", self.endpoint, path, id); let req = ContentByIdAction ::
+        Mint(ContentMintRequest {}); rest_api :: post(& endpoint, req).await
+    }
+} impl Into < ContentRepositoryUpdateRequest > for ContentByIdAction
+{
+    fn into(self) -> ContentRepositoryUpdateRequest
+    { match self { ContentByIdAction :: Mint(req) => req.into(), } }
 }
 #[derive(Debug, Clone, serde :: Serialize, serde :: Deserialize, Default,
 PartialEq)]
@@ -834,14 +1049,14 @@ result :: Result < usize, D :: Error > where D : serde :: Deserializer < 'de >
 PartialEq)] pub struct ContentClient { pub endpoint : String, } impl
 ContentClient
 {
-    pub async fn query(& self, params : ContentQuery,) -> crate :: Result <
+    pub async fn query(& self, params : ContentQuery,) -> crate::Result <
     by_types::QueryResponse<ContentSummary> >
     {
         let path = format! ("/v1/contents",); let endpoint = format!
         ("{}{}", self.endpoint, path); let query = format!
         ("{}?{}", endpoint, ContentParam :: Query(params)); rest_api ::
         get(& query).await
-    } pub async fn get(& self, id : i64) -> crate :: Result < Content >
+    } pub async fn get(& self, id : i64) -> crate::Result < Content >
     {
         let path = format! ("/v1/contents",); let endpoint = format!
         ("{}{}/{}", self.endpoint, path, id); rest_api ::

@@ -50,7 +50,6 @@ async fn main() -> Result<()> {
             v1::ContentController::new(pool.clone()).route()?,
         )
         .layer(middleware::from_fn(authorization_middleware));
-
     let port = option_env!("PORT").unwrap_or("3000");
     let listener = TcpListener::bind(format!("0.0.0.0:{}", port))
         .await

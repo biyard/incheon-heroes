@@ -12,6 +12,7 @@ pub use content::*;
 pub type Result<T> = std::result::Result<T, Error>;
 #[cfg(feature = "server")]
 use by_axum::aide;
+use validator::ValidationErrors;
 
 #[derive(Debug, ThisError, Clone, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "server", derive(schemars::JsonSchema, aide::OperationIo))]
@@ -30,8 +31,12 @@ pub enum Error {
     DatabaseError(String),
     #[error("Asset error: {0}")]
     AssetError(String),
+    #[error("Validation error: {0}")]
+    ValidationError(String),
     #[error("Unknown error: {0}")]
     Unknown(String),
+    #[error("No content after insert")]
+    NoContentAfterInsert,
 }
 
 impl From<reqwest::Error> for Error {
@@ -43,6 +48,12 @@ impl From<reqwest::Error> for Error {
 impl From<String> for Error {
     fn from(e: String) -> Self {
         Self::PrincipalError(e)
+    }
+}
+
+impl From<ValidationErrors> for Error {
+    fn from(e: ValidationErrors) -> Self {
+        Self::ValidationError(e.to_string())
     }
 }
 

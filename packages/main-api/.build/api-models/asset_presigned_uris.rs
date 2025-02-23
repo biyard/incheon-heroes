@@ -66,15 +66,15 @@ serde :: Deserializer < 'de > ,
 PartialEq)] pub struct AssetPresignedUrisClient { pub endpoint : String, }
 impl AssetPresignedUrisClient
 {
-    pub async fn query(& self, params : AssetPresignedUrisQuery,) -> crate ::
-    Result < by_types::QueryResponse<AssetPresignedUrisSummary> >
+    pub async fn query(& self, params : AssetPresignedUrisQuery,) ->
+    crate::Result < by_types::QueryResponse<AssetPresignedUrisSummary> >
     {
         let path = format! ("/v1/metadata",); let endpoint = format!
         ("{}{}", self.endpoint, path); let query = format!
         ("{}?{}", endpoint, AssetPresignedUrisParam :: Query(params));
         rest_api :: get(& query).await
-    } pub async fn get(& self, id : i64) -> crate :: Result <
-    AssetPresignedUris >
+    } pub async fn get(& self, id : i64) -> crate::Result < AssetPresignedUris
+    >
     {
         let path = format! ("/v1/metadata",); let endpoint = format!
         ("{}{}/{}", self.endpoint, path, id); rest_api ::
@@ -139,7 +139,7 @@ AssetPresignedUrisClient
 {
     pub async fn
     get_presigned_uris(& self, total_count : usize, file_type : FileType,) ->
-    crate :: Result < AssetPresignedUris >
+    crate::Result < AssetPresignedUris >
     {
         let path = format! ("/v1/metadata",); let endpoint = format!
         ("{}{}", self.endpoint, path); let params =
