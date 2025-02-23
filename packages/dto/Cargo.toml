@@ -12,3 +12,19 @@ reqwest.workspace = true
 thiserror = "2.0.11"
 serde.workspace = true
 candid.workspace = true
+by-macros.workspace = true
+serde_urlencoded = "0.7.1"
+rest-api = "0.1.8"
+validator = { version = "0.20.0", features = ["derive"] }
+bigdecimal = { version = "0.4.7", optional = true }
+regex = "1.11.1"
+sqlx = { workspace = true, optional = true }
+by-axum = { workspace = true, optional = true }
+schemars = { version = "0.8.21", optional = true }
+by-types.workspace = true
+tracing = "0.1.41"
+serde_json.workspace = true
+dioxus-translate.workspace = true
+
+[features]
+server = ["by-macros/server", "sqlx", "by-axum", "schemars", "bigdecimal"]

@@ -130,6 +130,11 @@ pub fn Header(
                             onclick: handle_select_menu,
                             "{tr.shop}"
                         }
+                        Menu {
+                            to: Route::ContentsPage { lang },
+                            onclick: handle_select_menu,
+                            "{tr.contents}"
+                        }
                         if user_wallet.is_logined() {
                             Menu {
                                 to: Route::MyNftsPage { lang },

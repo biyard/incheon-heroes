@@ -56,6 +56,9 @@ pub enum Route {
     #[route("/my-profile")]
     MyProfilePage { lang: Language },
 
+    #[route("/contents")]
+    ContentsPage { lang: Language },
+
     #[end_layout]
     #[end_nest]
 
@@ -70,6 +73,9 @@ pub enum Route {
 impl Route {
     pub fn switch_lang(self) -> Self {
         match self {
+            Route::ContentsPage { lang } => Route::ContentsPage {
+                lang: lang.switch(),
+            },
             Route::MyProfilePage { lang } => Route::MyProfilePage {
                 lang: lang.switch(),
             },

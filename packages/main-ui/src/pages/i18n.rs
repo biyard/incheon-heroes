@@ -66,6 +66,11 @@ translate! {
         ko: "KOR",
         en: "ENG",
     },
+
+    contents: {
+        ko: "CONTENTS",
+        en: "CONTENTS",
+    },
 }
 
 translate! {
