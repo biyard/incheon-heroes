@@ -1,3 +1,6 @@
+pub mod dao;
+pub mod nft;
+
 // FIXME: fix the error type to be more specific
 pub type Result<T> = std::result::Result<T, Error>;
 

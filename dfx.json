@@ -1,0 +1,37 @@
+{
+  "canisters": {
+    "iu-canister": {
+      "candid": ".build/did/iu-canister.did",
+      "package": "iu-canister",
+      "type": "rust",
+      "init_arg": "record{custodians=null}",
+      "optimize": "cycles"
+    }
+  },
+  "defaults": {
+    "build": {
+      "args": "",
+      "packtool": ""
+    }
+  },
+  "networks": {
+    "stage": {
+      "providers": ["https://icp0.io"],
+      "type": "persistent"
+    },
+    "dev": {
+      "providers": [
+        "https://icp.biyard.co"
+      ],
+      "type": "persistent"
+    },
+    "test": {
+      "providers": [
+        "https://icp.biyard.co"
+      ],
+      "type": "ephemeral"
+    }
+  },
+  "output_env_file": ".env",
+  "version": 1
+}

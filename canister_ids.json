@@ -1,0 +1,13 @@
+{
+  "__Candid_UI": {
+    "dev": "c5kvi-uuaaa-aaaaa-qaaia-cai"
+  },
+  "internet_identity": {
+    "stage": "htum7-3iaaa-aaaap-qhmoa-cai"
+  },
+  "iu-canister": {
+    "dev": "mkam6-f4aaa-aaaaa-qablq-cai",
+    "ic": "5wtzb-piaaa-aaaap-qhjfq-cai",
+    "stage": "h5wbx-ayaaa-aaaap-qhmpa-cai"
+  }
+}

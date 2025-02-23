@@ -11,3 +11,4 @@ license.workspace = true
 reqwest.workspace = true
 thiserror = "2.0.11"
 serde.workspace = true
+candid.workspace = true

@@ -104,6 +104,7 @@ impl UserService {
             evm_nfts,
             sbts,
         };
+
         #[cfg(feature = "web")]
         use_effect(move || {
             let mut srv = srv;

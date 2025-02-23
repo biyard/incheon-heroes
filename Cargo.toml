@@ -1,5 +1,5 @@
 [workspace]
-members = [ "packages/dto","packages/main-ui"]
+members = [ "packages/*"]
 resolver = "2"
 exclude = ["deps"]
 
@@ -26,6 +26,7 @@ dto = { path = "./packages/dto" }
 reqwest = { version = "0.12.5", features = ["blocking", "json", "multipart"] }
 dioxus = { version = "0.6.3" }
 dioxus-web = { version = "0.6.3" }
+candid = "0.10.13"
 
 [profile.wasm-dev]
 inherits = "dev"
