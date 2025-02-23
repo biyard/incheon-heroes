@@ -1,9 +1,12 @@
 #![allow(non_snake_case)]
+
 use by_macros::DioxusController;
 use dioxus::prelude::*;
 
 use candid::{encode_args, utils::ArgumentEncoder, CandidType, Decode, Principal};
-use ic_agent::{Agent, Identity};
+use dto::*;
+use ic_agent::Agent;
+use nft::Nft;
 use serde::Deserialize;
 
 use crate::config;
@@ -30,79 +33,53 @@ impl IcpCanister {
                 .expect("invalid canister id"),
             agent: use_signal(move || agent),
         };
+
         use_context_provider(move || srv);
     }
 
-    pub fn set_identity<I>(&mut self, id: I)
-    where
-        I: 'static + Identity,
-    {
-        self.agent().set_identity(id);
+    pub async fn list_nfts_by_address(&self, principal: String) -> Result<Vec<Nft>> {
+        let principal =
+            Principal::from_text(&principal).map_err(|e| Error::PrincipalError(e.to_string()))?;
+        self.query("list_tokens_by", (principal,)).await
     }
 
-    pub async fn update<'a, Tuple: ArgumentEncoder, I, R>(
+    pub async fn update<'a, Tuple: ArgumentEncoder, R>(
         &self,
         method: &'a str,
         args: Tuple,
-        inter_output: &'a mut Vec<u8>,
-    ) -> Result<R, String>
+    ) -> Result<R>
     where
         R: 'static + Deserialize<'a> + CandidType + std::fmt::Debug + ToOwned<Owned = R>,
     {
-        *inter_output = match self
+        let inter_output = self
             .agent()
             .update(&self.canister_id, method.to_string())
-            .with_arg(match encode_args(args) {
-                Ok(args) => args,
-                Err(e) => {
-                    return Err(e.to_string());
-                }
-            })
+            .with_arg(encode_args(args).map_err(|e| Error::CandidError(e.to_string()))?)
             .call_and_wait()
             .await
-        {
-            Ok(blob) => blob,
-            Err(e) => {
-                return Err(e.to_string());
-            }
-        };
+            .map_err(|e| Error::AgentError(e.to_string()))?;
+        let inter_output = Box::leak(Box::new(inter_output));
 
-        match candid::Decode!(inter_output, R) {
-            Ok(obj) => Ok(obj),
-            Err(e) => return Err(e.to_string()),
-        }
+        candid::Decode!(inter_output, R).map_err(|e| Error::CandidError(e.to_string()))
     }
 
-    pub async fn query<'a, Tuple: ArgumentEncoder, I, R>(
+    pub async fn query<'a, Tuple: ArgumentEncoder, R>(
         &self,
         method: &'a str,
         args: Tuple,
-        inter_output: &'a mut Vec<u8>,
-    ) -> Result<R, String>
+    ) -> Result<R>
     where
         R: 'static + Deserialize<'a> + CandidType + std::fmt::Debug + ToOwned<Owned = R>,
     {
-        *inter_output = match self
+        let inter_output = self
             .agent()
             .query(&self.canister_id, method.to_string())
-            .with_arg(match encode_args(args) {
-                Ok(args) => args,
-                Err(e) => {
-                    return Err(e.to_string());
-                }
-            })
+            .with_arg(encode_args(args).map_err(|e| Error::CandidError(e.to_string()))?)
             .call()
             .await
-        {
-            Ok(blob) => blob,
-            Err(e) => {
-                return Err(e.to_string());
-            }
-        };
+            .map_err(|e| Error::AgentError(e.to_string()))?;
+        let inter_output = Box::leak(Box::new(inter_output));
 
-        match candid::Decode!(inter_output, R) {
-            Ok(obj) => Ok(obj),
-            Err(e) => return Err(e.to_string()),
-        }
+        candid::Decode!(inter_output, R).map_err(|e| Error::CandidError(e.to_string()))
     }
 }

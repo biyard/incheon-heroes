@@ -95,21 +95,18 @@ impl Controller {
             }
         }
 
-        let icp_wallet = create_identity(&hex::encode(&seed));
+        let icp_wallet = create_identity(&wallet.seed);
 
         if self.address().is_none() {
             self.signup_handler(&wallet).await;
         }
 
-        self.user_wallet.set_wallet(
-            UserWallet::SocialWallet {
-                private_key: wallet.private_key,
-                seed: wallet.seed,
-                checksum_address: wallet.checksum_address,
-                principal: icp_wallet.sender().unwrap().to_text(),
-            },
-            icp_wallet,
-        );
+        self.user_wallet.set_wallet(UserWallet::SocialWallet {
+            private_key: wallet.private_key,
+            seed: wallet.seed,
+            checksum_address: wallet.checksum_address,
+            principal: icp_wallet.sender().unwrap().to_text(),
+        });
 
         if self.nav.can_go_back() {
             self.nav.go_back();

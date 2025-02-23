@@ -13,7 +13,7 @@ impl SbtContract {
     pub fn new(contract_address: &str, provider: Arc<Provider<Http>>) -> Self {
         let contract = Contract::new(
             contract_address.parse::<Address>().unwrap(),
-            serde_json::from_str::<Abi>(include_str!("../abi/holder.json")).unwrap(),
+            serde_json::from_str::<Abi>(include_str!("../abi/sbt.json")).unwrap(),
             provider.clone(),
         );
 

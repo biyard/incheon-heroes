@@ -10,7 +10,9 @@ pub mod services;
 use crate::route::Route;
 use by_components::theme::{CardColorTheme, ColorTheme, TextColorTheme};
 use dioxus::prelude::*;
-use services::{backend_api::BackendApi, klaytn::Klaytn, user_service::UserService};
+use services::{
+    backend_api::BackendApi, icp_canister::IcpCanister, klaytn::Klaytn, user_service::UserService,
+};
 
 fn main() {
     dioxus_logger::init(config::log_level()).expect("failed to init logger");
@@ -34,6 +36,7 @@ fn app() -> Element {
     });
     Klaytn::init();
     BackendApi::init();
+    IcpCanister::init();
     UserService::init();
 
     rsx! {

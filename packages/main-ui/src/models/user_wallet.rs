@@ -29,6 +29,13 @@ impl UserWallet {
         }
     }
 
+    pub fn icp_identity(&self) -> Option<BasicIdentity> {
+        match self {
+            UserWallet::SocialWallet { seed, .. } => Some(create_identity(seed)),
+            _ => None,
+        }
+    }
+
     pub fn evm_address(&self) -> Option<String> {
         match self {
             UserWallet::SocialWallet {

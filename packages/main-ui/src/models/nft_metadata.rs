@@ -1,3 +1,5 @@
+use dto::nft::Nft;
+
 use crate::config;
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize, Default)]
@@ -5,6 +7,7 @@ pub struct NftMetadata {
     pub name: String,
     pub image: String,
     pub description: String,
+    #[serde(default)]
     pub attributes: Vec<NftAttribute>,
 }
 
@@ -31,5 +34,16 @@ impl NftMetadata {
             .find(|attr| attr.trait_type == "Character")
             .map(|attr| attr.value.clone())
             .unwrap_or_else(|| "Unknown".to_string())
+    }
+}
+
+impl From<Nft> for NftMetadata {
+    fn from(value: Nft) -> Self {
+        Self {
+            name: value.metadata.name,
+            image: value.metadata.image,
+            description: value.metadata.description,
+            attributes: vec![],
+        }
     }
 }

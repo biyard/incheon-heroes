@@ -8,21 +8,38 @@ use dioxus_translate::*;
 
 #[component]
 pub fn MyNftsPage(lang: Language) -> Element {
-    let ctrl = Controller::new()?;
+    let ctrl = Controller::new(lang)?;
     let tr: MyNftsTranslate = translate(&lang);
 
     rsx! {
         div { id: "my-nfts", class: "flex flex-col gap-[80px]",
             Heading1 { lang, "{tr.title}" }
-            div {
-                for sbt in ctrl.user_service.sbts()? {
-                    "{sbt:?}"
+            div { class: "flex flex-col gap-[20px]",
+                div {
+                    "SBTs"
+                    for sbt in ctrl.user_service.sbts()? {
+                        "{sbt:?}"
+                    }
                 }
 
-                for nft in ctrl.user_service.evm_nfts()? {
-                    "{nft:?}"
+                div {
+                    "ICP NFTs"
+                    for nft in ctrl.user_service.icp_nfts()? {
+                        "{nft:?}"
+                    }
                 }
+
+
+                div {
+                    "EVM NFTs"
+                    for nft in ctrl.user_service.evm_nfts()? {
+                        "{nft:?}"
+                    }
+                }
+
             }
+
+
         }
     }
 }
