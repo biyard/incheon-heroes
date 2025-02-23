@@ -6,7 +6,12 @@ use dioxus::prelude::*;
 use gloo_storage::{LocalStorage, Storage};
 use ic_agent::identity::BasicIdentity;
 
-use crate::models::user_wallet::{create_identity, UserWallet};
+use crate::models::{
+    nft_metadata::NftMetadata,
+    user_wallet::{create_identity, UserWallet},
+};
+
+use super::klaytn::Klaytn;
 
 const USER_WALLET_KEY: &str = "user_wallet";
 
@@ -14,13 +19,90 @@ const USER_WALLET_KEY: &str = "user_wallet";
 pub struct UserService {
     wallet: Signal<UserWallet>,
     icp_wallet: Signal<Option<Arc<BasicIdentity>>>,
+    evm_nfts: Resource<Vec<NftMetadata>>,
+    sbts: Resource<Vec<NftMetadata>>,
 }
 
 impl UserService {
     pub fn init() {
+        let wallet = use_signal(|| UserWallet::None);
+        let icp_wallet = use_signal(|| None);
+        let klaytn: Klaytn = use_context();
+
+        let sbts = use_resource(move || async move {
+            let w = wallet();
+            let address = match w.evm_address() {
+                Some(address) => address,
+                None => return vec![],
+            };
+            let sbt = klaytn.sbt();
+
+            match sbt.list_token_ids_by_address(address).await {
+                Ok(ids) => {
+                    let mut nfts = vec![];
+                    for id in ids {
+                        let uri = match sbt.get_token_uri(id).await {
+                            Ok(uri) => uri,
+                            Err(e) => {
+                                tracing::error!("Failed to fetch nft({id}) uri: {e:?}");
+                                continue;
+                            }
+                        };
+
+                        match NftMetadata::fetch_by_uri(&uri).await {
+                            Ok(nft) => nfts.push(nft),
+                            Err(e) => {
+                                tracing::error!("Failed to fetch nft({id}) metadata: {e:?}");
+                            }
+                        }
+                    }
+
+                    nfts
+                }
+                Err(e) => {
+                    tracing::error!("Failed to get token ids: {e:?}");
+                    vec![]
+                }
+            }
+        });
+
+        let evm_nfts = use_resource(move || async move {
+            let w = wallet();
+            let address = match w.evm_address() {
+                Some(address) => address,
+                None => return vec![],
+            };
+
+            match klaytn.holder().list_token_ids_by_address(address).await {
+                Ok(ids) => {
+                    let mut nfts = vec![];
+                    for id in ids {
+                        match NftMetadata::fetch(id.as_u64().try_into().unwrap()).await {
+                            Ok(nft) => nfts.push(nft),
+                            Err(e) => {
+                                tracing::error!("Failed to fetch nft({id}) metadata: {e:?}");
+                            }
+                        }
+                    }
+
+                    nfts
+                }
+                Err(e) => {
+                    tracing::error!("Failed to get token ids: {e:?}");
+                    vec![]
+                }
+            }
+        });
+
+        // let _icp_nfts = use_resource(move || async move {
+        //     let _w = icp_wallet();
+        // });
+
         let srv = Self {
-            wallet: use_signal(|| UserWallet::None),
-            icp_wallet: use_signal(|| None),
+            wallet,
+            icp_wallet,
+            evm_nfts,
+            sbts,
         };
         #[cfg(feature = "web")]
         use_effect(move || {

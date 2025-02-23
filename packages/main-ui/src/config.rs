@@ -21,8 +21,16 @@ pub struct KlaytnConfig {
 }
 
 #[derive(Debug, serde::Deserialize, serde::Serialize)]
+pub struct IcpConfig {
+    pub endpoint: &'static str,
+    pub canister_id: &'static str,
+}
+
+#[derive(Debug, serde::Deserialize, serde::Serialize)]
 pub struct ContractConfig {
     pub shop: &'static str,
+    pub holder: &'static str,
+    pub sbt: &'static str,
 }
 
 #[derive(Debug, serde::Deserialize, serde::Serialize)]
@@ -35,6 +43,7 @@ pub struct Config {
     pub klaytn: KlaytnConfig,
     pub contracts: ContractConfig,
     pub kakao: KakaoConfig,
+    pub icp: IcpConfig,
 }
 
 impl Default for Config {
@@ -73,11 +82,17 @@ impl Default for Config {
             },
             contracts: ContractConfig {
                 shop: option_env!("CONTRACT_SHOP").expect("You must set CONTRACT_SHOP"),
+                holder: option_env!("CONTRACT_HOLDER").expect("You must set CONTRACT_HOLDER"),
+                sbt: option_env!("CONTRACT_SBT").expect("You must set CONTRACT_SBT"),
             },
             kakao: KakaoConfig {
                 client_id: option_env!("KAKAO_CLIENT_ID").expect("You must set KAKAO_CLIENT_ID"),
                 redirect_uri: option_env!("KAKAO_REDIRECT_URI")
                     .expect("You must set KAKAO_REDIRECT_URI"),
+            },
+            icp: IcpConfig {
+                endpoint: option_env!("ICP_ENDPOINT").expect("You must set ICP_ENDPOINT"),
+                canister_id: option_env!("ICP_CANISTER_ID").expect("You must set ICP_CANISTER_ID"),
             },
         }
     }

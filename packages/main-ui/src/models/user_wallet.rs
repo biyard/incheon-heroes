@@ -28,6 +28,22 @@ impl UserWallet {
             _ => None,
         }
     }
+
+    pub fn evm_address(&self) -> Option<String> {
+        match self {
+            UserWallet::SocialWallet {
+                checksum_address, ..
+            } => Some(checksum_address.clone()),
+            _ => None,
+        }
+    }
+
+    pub fn principal(&self) -> Option<String> {
+        match self {
+            UserWallet::SocialWallet { principal, .. } => Some(principal.clone()),
+            _ => None,
+        }
+    }
 }
 
 pub fn create_identity(seed_hexstr: &str) -> BasicIdentity {

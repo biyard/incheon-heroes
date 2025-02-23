@@ -1,12 +1,17 @@
 use dioxus::prelude::*;
 
-#[derive(Debug, Clone, Copy)]
-pub struct Controller {}
+use crate::services::user_service::UserService;
+
+#[derive(Clone, Copy)]
+pub struct Controller {
+    pub user_service: UserService,
+}
 
 impl Controller {
     pub fn new() -> std::result::Result<Self, RenderError> {
-        let ctrl = Self {};
-        use_context_provider(|| ctrl);
+        let ctrl = Self {
+            user_service: use_context(),
+        };
 
         Ok(ctrl)
     }

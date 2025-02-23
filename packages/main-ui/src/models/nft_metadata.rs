@@ -21,6 +21,10 @@ impl NftMetadata {
         rest_api::get(&url).await
     }
 
+    pub async fn fetch_by_uri(url: &str) -> dto::Result<Self> {
+        rest_api::get(&url).await
+    }
+
     pub fn character(&self) -> String {
         self.attributes
             .iter()
