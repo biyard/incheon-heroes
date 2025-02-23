@@ -30,7 +30,7 @@ pub fn RootLayout(lang: Language) -> Element {
             background: "{theme.background}",
             color: "{theme.text.primary}",
             Header {
-                class: "w-full min-h-[70px] flex flex-row items-center justify-center max-w-[1440px] max-[1440px]:px-[20px]",
+                class: "w-full min-h-[70px] flex flex-row items-center justify-center bg-white",
                 lang,
             }
             div {
@@ -70,116 +70,122 @@ pub fn Header(
 
     rsx! {
         div { id, class,
-            Link {
-                class: "flex items-center justify-center h-[70px]",
-                to: Route::HomePage { lang },
-                img { src: "{LOGO}", class: "w-[145px] h-[50px]" }
+            if expanded() {
+                div { class: "absolute top-0 left-0 w-full h-[200px] bg-white z-[0]" }
             }
-
-            div { class: "grow flex flex-col items-center justify-center px-[100px]",
-                div {
-                    id: "menus",
-                    class: "w-full flex flex-row justify-start h-[70px]",
-                    ExpandableMenu {
-                        expanded: expanded(),
-                        onclick: move |_| {
-                            expanded.set(!expanded());
-                        },
-                        name: "{tr.history}",
-                        SubMenu {
-                            to: Route::NoticesPage { lang },
-                            onclick: handle_select_menu,
-                            "{tr.notice}"
-                        }
-                        SubMenu {
-                            to: Route::StoriesPage { lang },
-                            onclick: handle_select_menu,
-                            "{tr.story}"
-                        }
-                        SubMenu {
-                            to: Route::ContributorsPage { lang },
-                            onclick: handle_select_menu,
-                            "{tr.top_contributor}"
-                        }
-                    }
-
-                    ExpandableMenu {
-                        expanded: expanded(),
-                        onclick: move |_| {
-                            expanded.set(!expanded());
-                        },
-                        name: "{tr.event}",
-                        // SubMenu {
-                        //     to: Route::CalendarPage { lang },
-                        //     onclick: handle_select_menu,
-                        //     "{tr.calendar}"
-                        // }
-                        SubMenu {
-                            to: Route::SongsPage { lang },
-                            onclick: handle_select_menu,
-                            "{tr.contest_voting}"
-                        }
-
-                    }
-                    Menu {
-                        to: Route::ShopPage { lang },
-                        onclick: handle_select_menu,
-                        "{tr.shop}"
-                    }
-                    if user_wallet.is_logined() {
-                        Menu {
-                            to: Route::MyNftsPage { lang },
-                            onclick: handle_select_menu,
-                            "{tr.my_nfts}"
-                        }
-                    }
-                    ExpandableMenu {
-                        expanded: expanded(),
-                        onclick: move |_| {
-                            expanded.set(!expanded());
-                        },
-                        name: "{tr.info}",
-                        SubMenu {
-                            to: Route::FaqPage { lang },
-                            onclick: handle_select_menu,
-                            "{tr.faq}"
-                        }
-
-                        a {
-                            href: "https://incheon-universe.gitbook.io/incheon-universe",
-                            target: "_blank",
-                            class: "text-[14px] font-regular",
-                            onclick: handle_select_menu,
-                            "{tr.docs}"
-                        }
-
-                    }
-                }
-
-            } // end of grow
-
-            div { class: "flex flex-row gap-[15px] items-center h-full",
-                button {
-                    onclick: move |_| {
-                        nav.push(Route::ConnectPage { lang });
-                    },
-                    icons::Connect { fill: if user_wallet.is_logined() { "#CEF7E3" } else { "black" } }
-                }
+            div { class: "w-full flex flex-row items-center justify-center max-w-[1440px] max-[1440px]:px-[20px]",
                 Link {
-                    class: "flex flex-row gap-[10px] items-center",
-                    to: route.switch_lang(),
-                    icons::Language {}
-                    span { class: "font-bold text-[16px]", "{tr.lang}" }
+                    class: "flex items-center justify-center h-[70px] z-[1]",
+                    to: Route::HomePage { lang },
+                    img { src: "{LOGO}", class: "w-[145px] h-[50px]" }
                 }
 
-                if user_wallet.is_logined() {
-                    Link { to: Route::MyProfilePage { lang },
-                        img {
-                            class: "w-[28px] h-[28px] rounded-full",
-                            src: asset!("/public/images/profile.png"),
+                div { class: "grow flex flex-col items-center justify-center px-[100px]",
+                    div {
+                        id: "menus",
+                        class: "w-full flex flex-row justify-start h-[70px]",
+                        ExpandableMenu {
+                            expanded: expanded(),
+                            onclick: move |_| {
+                                expanded.set(!expanded());
+                            },
+                            name: "{tr.history}",
+                            SubMenu {
+                                to: Route::NoticesPage { lang },
+                                onclick: handle_select_menu,
+                                "{tr.notice}"
+                            }
+                            SubMenu {
+                                to: Route::StoriesPage { lang },
+                                onclick: handle_select_menu,
+                                "{tr.story}"
+                            }
+                            SubMenu {
+                                to: Route::ContributorsPage { lang },
+                                onclick: handle_select_menu,
+                                "{tr.top_contributor}"
+                            }
+                        }
+
+                        ExpandableMenu {
+                            expanded: expanded(),
+                            onclick: move |_| {
+                                expanded.set(!expanded());
+                            },
+                            name: "{tr.event}",
+                            // SubMenu {
+                            //     to: Route::CalendarPage { lang },
+                            //     onclick: handle_select_menu,
+                            //     "{tr.calendar}"
+                            // }
+                            SubMenu {
+                                to: Route::SongsPage { lang },
+                                onclick: handle_select_menu,
+                                "{tr.contest_voting}"
+                            }
+
+                        }
+                        Menu {
+                            to: Route::ShopPage { lang },
+                            onclick: handle_select_menu,
+                            "{tr.shop}"
+                        }
+                        if user_wallet.is_logined() {
+                            Menu {
+                                to: Route::MyNftsPage { lang },
+                                onclick: handle_select_menu,
+                                "{tr.my_nfts}"
+                            }
+                        }
+                        ExpandableMenu {
+                            expanded: expanded(),
+                            onclick: move |_| {
+                                expanded.set(!expanded());
+                            },
+                            name: "{tr.info}",
+                            SubMenu {
+                                to: Route::FaqPage { lang },
+                                onclick: handle_select_menu,
+                                "{tr.faq}"
+                            }
+
+                            a {
+                                href: "https://incheon-universe.gitbook.io/incheon-universe",
+                                target: "_blank",
+                                class: "text-[14px] font-regular",
+                                onclick: handle_select_menu,
+                                "{tr.docs}"
+                            }
+
+                        }
+                    }
+
+                } // end of grow
+
+                div { class: "flex flex-row gap-[15px] items-center h-full z-[1]",
+                    button {
+                        onclick: move |_| {
+                            nav.push(Route::ConnectPage { lang });
+                        },
+                        icons::Connect { fill: if user_wallet.is_logined() { "#CEF7E3" } else { "black" } }
+                    }
+                    Link {
+                        class: "flex flex-row gap-[10px] items-center",
+                        to: route.switch_lang(),
+                        icons::Language {}
+                        span { class: "font-bold text-[16px]", "{tr.lang}" }
+                    }
+
+                    if user_wallet.is_logined() {
+                        Link { to: Route::MyProfilePage { lang },
+                            img {
+                                class: "w-[28px] h-[28px] rounded-full",
+                                src: asset!("/public/images/profile.png"),
+                            }
                         }
                     }
                 }
+
             }
         }
     }
@@ -195,7 +201,7 @@ pub fn ExpandableMenu(
     rsx! {
         div { class: "relative w-full flex flex-col gap-[20px] items-start justify-center",
             div {
-                class: "flex flex-row items-center justify-start text-[16px] font-bold gap-[10px] cursor-pointer",
+                class: "h-[70px] w-full flex flex-row items-center justify-start text-[16px] font-bold gap-[10px] cursor-pointer",
                 onclick,
                 "{name}"
                 SingleSimpleArrow { direction: if expanded { ArrowDirection::Up } else { ArrowDirection::Down } }
@@ -229,7 +235,7 @@ pub fn Menu(
     rsx! {
         Link {
             to,
-            class: "flex flex-row items-center justify-start text-[16px] font-bold gap-[10px]",
+            class: "w-full flex flex-row items-center justify-start text-[16px] font-bold gap-[10px]",
             onclick,
             {children}
         }

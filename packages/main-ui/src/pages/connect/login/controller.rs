@@ -1,12 +1,13 @@
 #![allow(dead_code)]
+use crate::models::user_wallet::{create_evm_wallet, create_identity, EvmWallet, UserWallet};
 use crate::route::Route;
 use crate::services::backend_api::BackendApi;
-use crate::services::user_service::{UserService, UserWallet};
+use crate::services::user_service::UserService;
 use by_macros::*;
 use dioxus::prelude::*;
 use dioxus_translate::Language;
-use ethers::prelude::*;
-use ethers::utils::{keccak256, to_checksum};
+use ethers::utils::keccak256;
+use ic_agent::Identity;
 
 use super::models::LoginProvider;
 
@@ -65,7 +66,7 @@ impl Controller {
         Ok(ctrl)
     }
 
-    pub async fn signup_handler(&self, wallet: &Wallet) {
+    pub async fn signup_handler(&self, wallet: &EvmWallet) {
         if let Err(e) = self
             .backend_api
             .notify_address(&self.id(), &wallet.address)
@@ -84,7 +85,7 @@ impl Controller {
     pub async fn handle_login(&mut self) {
         let seed = self.create_seed(self.password());
         tracing::debug!("Seed: {:?}", hex::encode(&seed));
-        let wallet = create_wallet_from_seed(&seed).unwrap();
+        let wallet = create_evm_wallet(&seed).unwrap();
         tracing::debug!("Wallet: {:?}", wallet);
 
         if let Some(address) = self.address() {
@@ -94,15 +95,21 @@ impl Controller {
             }
         }
 
+        let icp_wallet = create_identity(&hex::encode(&seed));
+
         if self.address().is_none() {
             self.signup_handler(&wallet).await;
         }
 
-        self.user_wallet.wallet.set(UserWallet::SocialWallet {
-            private_key: wallet.private_key,
-            seed: wallet.seed,
-            checksum_address: wallet.checksum_address,
-        });
+        self.user_wallet.set_wallet(
+            UserWallet::SocialWallet {
+                private_key: wallet.private_key,
+                seed: wallet.seed,
+                checksum_address: wallet.checksum_address,
+                principal: icp_wallet.sender().unwrap().to_text(),
+            },
+            icp_wallet,
+        );
 
         if self.nav.can_go_back() {
             self.nav.go_back();
@@ -130,38 +137,4 @@ impl Controller {
     pub async fn backup_google(&self) {
         // TODO: save the google account
     }
-}
-
-#[derive(Debug)]
-pub struct Wallet {
-    pub private_key: String,
-    pub seed: String,
-    pub checksum_address: String,
-    pub address: String,
-}
-
-/// Creates a wallet from a seed by performing BIP32 derivation and then computing
-/// the associated ECDSA key pair and Ethereum address. The derivation path used is "m/44'/60'/0'/0/0".
-pub fn create_wallet_from_seed(seed: &[u8]) -> Result<Wallet, Box<dyn std::error::Error>> {
-    use bip32::{DerivationPath, XPrv};
-    use std::str::FromStr;
-
-    // Create a BIP32 root key from the seed.
-    // Derive the child key using the Ethereum derivation path.
-    let derivation_path = DerivationPath::from_str("m/44'/60'/0'/0/0")?;
-    let child_xprv = XPrv::derive_from_path(seed, &derivation_path)?;
-
-    // Get the 32-byte private key.
-    let private_key = hex::encode(child_xprv.private_key().to_bytes());
-    let wallet: LocalWallet = private_key.parse().unwrap();
-
-    let address = wallet.address();
-    let checksum_address = to_checksum(&address, None);
-
-    Ok(Wallet {
-        private_key,
-        seed: format!("0x{}", hex::encode(seed)),
-        address: checksum_address.to_lowercase(),
-        checksum_address,
-    })
 }

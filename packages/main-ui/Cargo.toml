@@ -39,10 +39,13 @@ ethers = "2.0.14"
 hex = "0.4.3"
 tiny-keccak = "2.0.2"
 bip32 = "0.5.3"
-k256 = "0.13.4"
+gloo-storage = "0.3.0"
+ic-agent = "0.39.3"
+ed25519-consensus = "2.1.0"
+sha2 = "0.10.8"
 
 [features]
 default = []
-web = ["dioxus-aws/web", "dioxus-translate/web", "dioxus-oauth/web"]
+web = ["dioxus-aws/web", "dioxus-translate/web", "dioxus-oauth/web", "ic-agent/wasm-bindgen"]
 server = ["dioxus-aws/server"]
 lambda = ["server", "dioxus-aws/lambda"]
