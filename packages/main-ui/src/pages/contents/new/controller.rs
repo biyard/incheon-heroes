@@ -12,11 +12,15 @@ use crate::config;
 pub struct Controller {
     #[allow(dead_code)]
     pub lang: Language,
+    pub len: Signal<usize>,
 }
 
 impl Controller {
     pub fn new(lang: Language) -> std::result::Result<Self, RenderError> {
-        let ctrl = Self { lang };
+        let ctrl = Self {
+            lang,
+            len: Signal::new(1),
+        };
 
         Ok(ctrl)
     }

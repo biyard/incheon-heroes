@@ -13,7 +13,7 @@ AWS_REGION ?= $(shell aws configure get region)
 
 BASE_DOMAIN ?= incheonheroes.world
 BUCKET_EXPIRE ?= 3600
-ASSET_DIR ?= metadata
+ASSET_DIR ?= assets
 
 RUST_LOG ?= debug
 

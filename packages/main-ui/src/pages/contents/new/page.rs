@@ -1,5 +1,7 @@
 #![allow(non_snake_case)]
 
+use crate::components::headings::Heading1;
+
 use super::controller::*;
 use super::i18n::*;
 use by_components::files::DropZone;
@@ -9,13 +11,35 @@ use dto::ContentCreateRequest;
 
 #[component]
 pub fn NewContentsPage(lang: Language) -> Element {
-    let _ctrl = Controller::new(lang)?;
+    let mut ctrl = Controller::new(lang)?;
     let tr: NewContentsTranslate = translate(&lang);
 
     rsx! {
         by_components::meta::MetaPage { title: "{tr.title}" }
 
-        SingleContent { lang, onchange: |_| {} }
+        div {
+            id: "new-contents",
+            class: "w-full flex flex-col items-start gap-[10px]",
+            div { class: "flex flex-col items-start gap-[20px]",
+                Heading1 { lang, "{tr.title}" }
+                pre {
+                    class: "text-black text-[14px] font-normal",
+                    font_family: "Pretendard",
+                    "{tr.description}"
+                }
+            }
+            div { class: "w-full flex flex-row justify-end",
+                button {
+                    class: "min-w-[125px] px-[20px] h-[44px] bg-white text-black font-bold text-[16px] rounded-[12px] hover:bg-[#24B28C] hover:text-white transition-all duration-500 ease-in-out",
+                    box_shadow: "0px 4px 20px rgba(84, 157, 159, 0.25)",
+                    onclick: move |_| ctrl.len.set(ctrl.len() + 1),
+                    "{tr.btn_add_nft}"
+                }
+            }
+            for _i in 0..ctrl.len() {
+                SingleContent { lang, onchange: |_| {} }
+            }
+        }
     }
 }
 
@@ -32,12 +56,18 @@ pub fn SingleContent(lang: Language, onchange: EventHandler<ContentCreateRequest
     let mut description = use_signal(|| "".to_string());
     let mut thumbnail = use_signal(|| None);
 
-    rsx! {
-        by_components::meta::MetaPage { title: "{tr.title}" }
+    let send = move || {
+        let req = ContentCreateRequest {
+            title: title(),
+            description: description(),
+            thumbnail_image: thumbnail().unwrap_or_default(),
+            ..Default::default()
+        };
+        onchange.call(req);
+    };
 
-        div {
-            id: "new",
-            class: "flex flex-col items-start justify-start gap-[30px] bg-white rounded-[12px] py-[30px] px-[20px]",
+    rsx! {
+        div { class: "w-full flex flex-col items-start justify-start gap-[30px] bg-white rounded-[12px] py-[30px] px-[20px]",
             InputWithLabel {
                 label: "{tr.label_title}",
                 placeholder: "{tr.placeholder_title}",
@@ -45,6 +75,7 @@ pub fn SingleContent(lang: Language, onchange: EventHandler<ContentCreateRequest
                 oninput: move |e| {
                     if title().chars().count() < 30 {
                         title.set(e);
+                        send();
                     }
                 },
                 value: title(),
@@ -53,7 +84,6 @@ pub fn SingleContent(lang: Language, onchange: EventHandler<ContentCreateRequest
             }
 
             div { class: "w-full flex flex-col gap-[10px] items-start justify-start",
-
                 label { class: "text-[#5B5B5B] font-bold text-[14px] font-bold flex flex-row items-center",
                     span { "{tr.label_thumbnail}" }
                     span { class: "text-[#FF0000]", "*" }
@@ -68,12 +98,13 @@ pub fn SingleContent(lang: Language, onchange: EventHandler<ContentCreateRequest
                         onupload: move |(file_bytes, ext)| async move {
                             let uri = handle_upload(file_bytes, ext).await?;
                             thumbnail.set(Some(uri));
+                            send();
                             Ok(())
                         },
                         onchange: move |hover| dropping.set(hover),
                         if let Some(image) = thumbnail() {
                             img {
-                                class: "w-[100px] h-[100px] object-cover rounded-[12px]",
+                                class: "w-full object-cover rounded-[12px]",
                                 src: image,
                             }
                         } else {
@@ -86,7 +117,6 @@ pub fn SingleContent(lang: Language, onchange: EventHandler<ContentCreateRequest
                         }
                     }
                 }
-
             }
 
             InputWithLabel {
@@ -96,6 +126,7 @@ pub fn SingleContent(lang: Language, onchange: EventHandler<ContentCreateRequest
                 oninput: move |e| {
                     if description().chars().count() < 300 {
                         description.set(e);
+                        send();
                     }
                 },
                 value: description(),
