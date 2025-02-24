@@ -4,6 +4,7 @@ pub mod asset;
 pub mod content;
 pub mod dao;
 pub mod nft;
+pub mod user;
 
 pub use asset::*;
 pub use content::*;

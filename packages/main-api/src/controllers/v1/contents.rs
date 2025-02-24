@@ -20,7 +20,6 @@ pub struct ContentPath {
 
 #[derive(Clone, Debug)]
 pub struct ContentController {
-    #[allow(dead_code)]
     repo: ContentRepository,
     pool: sqlx::Pool<sqlx::Postgres>,
 }
