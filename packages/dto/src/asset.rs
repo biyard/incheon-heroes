@@ -3,7 +3,7 @@ use by_axum::aide;
 use by_macros::api_model;
 use dioxus_translate::Translate;
 
-#[api_model(base = "/v1/metadata", database = skip)]
+#[api_model(base = "/v1/assets", database = skip)]
 pub struct AssetPresignedUris {
     pub presigned_uris: Vec<String>,
     pub uris: Vec<String>,

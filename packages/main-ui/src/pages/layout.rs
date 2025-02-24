@@ -16,9 +16,12 @@ use dioxus_translate::*;
 pub fn RootLayout(lang: Language) -> Element {
     let theme: ColorTheme = use_context();
     let path: Route = use_route();
+    let logo = asset!("/public/logos/logo_symbol_color.png");
 
     rsx! {
         MetaSeoTemplate {
+            lang,
+            logo_url: "{logo}",
             title: "Incheon Heroes",
             canonical: "https://incheonheroes.world",
             keywords: "Incheon, Heroes, 인천, 히어로즈, 유니버스",
@@ -36,17 +39,26 @@ pub fn RootLayout(lang: Language) -> Element {
             div {
                 class: "w-full max-w-[1440px] py-[70px] max-[1440px]:px-[20px]",
                 min_height: "calc(100vh - 190px)",
-                SuspenseBoundary {
-                    fallback: |_| rsx! {
-                        div { class: "absolute left-0 top-0 w-full h-full flex items-center justify-center",
-                            CubeLoader {}
-                        }
+                ErrorBoundary {
+                    handle_error: |errors: ErrorContext| rsx! {
+                    "Oops, we encountered an error. Please report {errors:?} to the developer of this application"
                     },
 
-                    Outlet::<Route> {}
+                    SuspenseBoundary {
+                        fallback: |_| rsx! {
+                            div { class: "absolute left-0 top-0 w-full h-full flex items-center justify-center",
+                                CubeLoader {}
+                            }
+                        },
+
+                        Outlet::<Route> {}
+                    }
                 }
             }
-            Footer { lang }
+
+            if !path.should_hide_footer() {
+                Footer { lang }
+            }
         }
     }
 }

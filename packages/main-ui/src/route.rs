@@ -73,6 +73,14 @@ pub enum Route {
 }
 
 impl Route {
+    pub fn should_hide_footer(&self) -> bool {
+        match self {
+            Route::NewContentsPage { .. } => true,
+            Route::ContentsPage { .. } => true,
+            _ => false,
+        }
+    }
+
     pub fn switch_lang(self) -> Self {
         match self {
             Route::NewContentsPage { lang } => Route::NewContentsPage {
