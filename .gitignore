@@ -24,3 +24,4 @@ tailwind.css
 node_modules/
 /packages/main-ui/public/dep.js
 dist/
+.build/

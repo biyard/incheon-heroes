@@ -40,10 +40,13 @@ setup.tool:
 serve: clean public/tailwind.css
 	$(BUILD_ENV) dx serve --addr 0.0.0.0 --platform web  --client-features web-only
 
-run: clean public
+run: clean node_modules public
 	$(BUILD_ENV) dx serve --fullstack
 
-build: clean public
+node_modules:
+	npm i
+
+build: clean node_modules public
 	$(BUILD_ENV) dx build --release --fullstack --server-features lambda
 	cp -r $(WORKSPACE_ROOT)/target/dx/$(SERVICE)/release/web $(ARTIFACT_DIR)
 	mv $(ARTIFACT_DIR)/server $(ARTIFACT_DIR)/bootstrap

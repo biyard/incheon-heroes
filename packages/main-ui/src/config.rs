@@ -38,6 +38,7 @@ pub struct Config {
     pub env: &'static str,
     pub domain: &'static str,
     pub main_api_endpoint: &'static str,
+    pub new_api_endpoint: &'static str,
     pub nft_metadata_base_url: &'static str,
     pub firebase: FirebaseConfig,
     pub klaytn: KlaytnConfig,
@@ -51,6 +52,8 @@ impl Default for Config {
         Config {
             env: option_env!("ENV").expect("You must set ENV"),
             domain: option_env!("DOMAIN").expect("You must set DOMAIN"),
+            new_api_endpoint: option_env!("NEW_API_ENDPOINT")
+                .unwrap_or("https://api.incheonheroes.world"),
             main_api_endpoint: option_env!("MAIN_API_ENDPOINT")
                 .unwrap_or("https://api.incheon.world"),
             nft_metadata_base_url: option_env!("NFT_BASE_URI").expect("You must set NFT_BASE_URI"),
