@@ -3,26 +3,54 @@ use std::str::FromStr;
 use by_macros::*;
 use dioxus::{prelude::*, CapturedError};
 use dioxus_translate::Language;
-use dto::AssetPresignedUris;
+use dto::{AssetPresignedUris, Content, ContentCreateRequest};
 use reqwest::header::{HeaderMap, HeaderValue, CONTENT_TYPE};
 
-use crate::config;
+use crate::{config, route::Route};
 
 #[derive(Clone, Copy, DioxusController)]
 pub struct Controller {
-    #[allow(dead_code)]
     pub lang: Language,
-    pub len: Signal<usize>,
+    pub contents: Signal<Vec<ContentCreateRequest>>,
+    pub nav: Navigator,
 }
 
 impl Controller {
     pub fn new(lang: Language) -> std::result::Result<Self, RenderError> {
         let ctrl = Self {
             lang,
-            len: Signal::new(1),
+            nav: use_navigator(),
+            contents: use_signal(|| vec![ContentCreateRequest::default()]),
         };
 
         Ok(ctrl)
+    }
+
+    pub fn add_content(&mut self) {
+        self.contents.push(ContentCreateRequest::default());
+    }
+
+    pub fn set_content(&mut self, idx: usize, content: ContentCreateRequest) {
+        self.contents.with_mut(move |contents| {
+            contents[idx] = content;
+        });
+    }
+
+    pub fn handle_cancel(&self) {
+        if self.nav.can_go_back() {
+            self.nav.go_back();
+        } else {
+            self.nav.push(Route::ContentsPage { lang: self.lang });
+        }
+    }
+
+    pub async fn handle_submit(&self) -> std::result::Result<(), CapturedError> {
+        let endpoint = config::get().new_api_endpoint;
+        Content::get_client(endpoint)
+            .create_bulk(self.contents())
+            .await?;
+
+        Ok(())
     }
 }
 

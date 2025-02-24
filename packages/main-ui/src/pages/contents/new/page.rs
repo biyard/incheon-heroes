@@ -19,7 +19,7 @@ pub fn NewContentsPage(lang: Language) -> Element {
 
         div {
             id: "new-contents",
-            class: "w-full flex flex-col items-start gap-[10px]",
+            class: "w-full flex flex-col items-start gap-[10px] pb-[50px]",
             div { class: "flex flex-col items-start gap-[20px]",
                 Heading1 { lang, "{tr.title}" }
                 pre {
@@ -32,12 +32,34 @@ pub fn NewContentsPage(lang: Language) -> Element {
                 button {
                     class: "min-w-[125px] px-[20px] h-[44px] bg-white text-black font-bold text-[16px] rounded-[12px] hover:bg-[#24B28C] hover:text-white transition-all duration-500 ease-in-out",
                     box_shadow: "0px 4px 20px rgba(84, 157, 159, 0.25)",
-                    onclick: move |_| ctrl.len.set(ctrl.len() + 1),
+                    onclick: move |_| ctrl.add_content(),
                     "{tr.btn_add_nft}"
                 }
             }
-            for _i in 0..ctrl.len() {
-                SingleContent { lang, onchange: |_| {} }
+            for i in 0..ctrl.contents().len() {
+                SingleContent { lang, onchange: move |req| ctrl.set_content(i, req) }
+            }
+
+            div { class: "fixed bottom-0 left-0 w-full h-[110px] bg-white z-[10] flex flex-row items-center justify-center",
+                div { class: "w-full max-w-[1440px] flex flex-row justify-between items-center max-[1440px]:px-[20px]",
+                    div {
+                    }
+
+                    div { class: "flex flex-row items-center gap-[20px] text-white font-bold text-[16px]",
+                        button {
+                            class: "bg-gray-500 h-[50px] py-[15px] px-[24px] hover:bg-gray-700 rounded-[12px]",
+                            onclick: move |_| ctrl.handle_cancel(),
+                            "{tr.btn_cancel}"
+                        }
+                        button {
+                            class: "bg-[#24B28C] h-[50px] py-[15px] px-[24px] hover:bg-[#34a39d] rounded-[12px]",
+                            onclick: move |_| async move { ctrl.handle_submit().await },
+                            "{tr.btn_submit_nft}"
+                        }
+                    }
+                }
+
+
             }
         }
     }

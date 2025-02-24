@@ -59,8 +59,8 @@ translate! {
     },
 
     btn_submit_nft: {
-        ko: "NFT 등록하기",
-        en: "Submit NFT",
+        ko: "NFT 만들기",
+        en: "Create your NFT",
     },
 
     btn_cancel: {
