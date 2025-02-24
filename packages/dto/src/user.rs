@@ -21,6 +21,7 @@ pub struct User {
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, ApiModel, Default)]
+#[cfg_attr(feature = "server", derive(schemars::JsonSchema, aide::OperationIo))]
 pub enum Provider {
     #[default]
     Kakao = 1,

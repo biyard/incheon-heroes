@@ -58,6 +58,8 @@ pub enum Route {
 
     #[route("/contents")]
     ContentsPage { lang: Language },
+    #[route("/contents/new")]
+    NewContentsPage { lang: Language },
 
     #[end_layout]
     #[end_nest]
@@ -73,6 +75,9 @@ pub enum Route {
 impl Route {
     pub fn switch_lang(self) -> Self {
         match self {
+            Route::NewContentsPage { lang } => Route::NewContentsPage {
+                lang: lang.switch(),
+            },
             Route::ContentsPage { lang } => Route::ContentsPage {
                 lang: lang.switch(),
             },
