@@ -33,7 +33,7 @@ pub fn ConnectPage(lang: Language) -> Element {
                     onclick: move |_| async move {
                         ctrl.handle_google().await;
                     },
-                    icons::Google { size: 35 }
+                    icons::logo::Google { size: 35 }
                     p { "{tr.google}" }
                 }
 
@@ -42,7 +42,7 @@ pub fn ConnectPage(lang: Language) -> Element {
                     onclick: move |_| async move {
                         ctrl.handle_kakao().await;
                     },
-                    icons::Kakao { size: 35 }
+                    icons::logo::Kakao { size: 35 }
                     p { "{tr.kakao}" }
                 }
                 button {
@@ -50,7 +50,7 @@ pub fn ConnectPage(lang: Language) -> Element {
                     onclick: move |_| async move {
                         ctrl.handle_kaikas().await;
                     },
-                    icons::Kaikas { size: 35 }
+                    icons::logo::Kaikas { size: 35 }
                     p { "{tr.kaikas}" }
                 }
                 button {
@@ -58,7 +58,7 @@ pub fn ConnectPage(lang: Language) -> Element {
                     onclick: move |_| async move {
                         ctrl.handle_internet_identity().await;
                     },
-                    icons::InternetIdentity { size: 35 }
+                    icons::logo::InternetIdentity { size: 35 }
                     p { "{tr.ii}" }
                 }
 

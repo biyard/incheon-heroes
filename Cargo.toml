@@ -21,7 +21,7 @@ rest-api = { path = "deps/rust-sdk/packages/rest-api" }
 by-macros = { path = "deps/rust-sdk/packages/by-macros" }
 by-axum = { path = "deps/rust-sdk/packages/by-axum" }
 by-types = { path = "deps/rust-sdk/packages/by-types" }
-
+validator = { version = "0.20.0", features = ["derive"] }
 serde = { version = "1.0.197", features = ["derive"] }
 serde_json = "1.0.133"
 dto = { path = "./packages/dto" }

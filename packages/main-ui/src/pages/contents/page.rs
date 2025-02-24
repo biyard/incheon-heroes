@@ -16,6 +16,10 @@ pub fn ContentsPage(lang: Language) -> Element {
 
         div { id: "contents", class: "flex flex-col",
             "{tr.title} PAGE"
+            for content in _ctrl.contents()?.items.iter() {
+                p { "{content:?}" }
+            }
+
             CreateNftButton { lang, label: "{tr.btn_create}" }
         } // end of this page
     }

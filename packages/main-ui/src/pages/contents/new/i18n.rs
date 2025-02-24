@@ -33,12 +33,22 @@ translate! {
         en: "File Upload",
     },
 
+    label_source: {
+        ko: "원본 파일",
+        en: "Source File",
+    },
+
+    placeholder_source: {
+        ko: "원본 파일(SVG, AI 등)을 업로드하세요",
+        en: "Upload the source file like SVG, AI, etc.",
+    },
+
     placeholder_title: {
         ko: "제목을 입력하세요",
         en: "Enter the title",
     },
 
-    palceholder_fileupload: {
+    placeholder_fileupload: {
         ko: "클릭하여 파일 선택하기 또는 여기로 파일 드래그",
         en: "Click to select a file or drag a file here",
     }

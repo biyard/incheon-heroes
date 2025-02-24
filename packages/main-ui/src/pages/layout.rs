@@ -40,8 +40,15 @@ pub fn RootLayout(lang: Language) -> Element {
                 class: "w-full max-w-[1440px] py-[70px] max-[1440px]:px-[20px]",
                 min_height: "calc(100vh - 190px)",
                 ErrorBoundary {
-                    handle_error: |errors: ErrorContext| rsx! {
-                    "Oops, we encountered an error. Please report {errors:?} to the developer of this application"
+                    handle_error: move |errors: ErrorContext| {
+                        let nav = use_navigator();
+                        errors.clear_errors();
+                        use_effect(move || {
+                            nav.push(Route::HomePage { lang });
+                        });
+                        rsx! {
+                        "Oops, we encountered an error. Please report {errors:?} to the developer of this application"
+                        }
                     },
 
                     SuspenseBoundary {

@@ -9,6 +9,7 @@ use by_axum::{
 };
 use by_types::QueryResponse;
 use dto::*;
+use sqlx::postgres::PgRow;
 use validator::Validate;
 
 #[derive(
@@ -69,6 +70,27 @@ impl ContentController {
     async fn mint(&self, _auth: Option<Authorization>, _id: i64) -> Result<Json<Content>> {
         todo!()
     }
+
+    async fn query(
+        &self,
+        _auth: Option<Authorization>,
+        _param: ContentQuery,
+    ) -> Result<QueryResponse<ContentSummary>> {
+        let mut total_count = 0;
+        let items: Vec<ContentSummary> = ContentSummary::query_builder()
+            .order_by_created_at_desc()
+            .with_count()
+            .query()
+            .map(|row: PgRow| {
+                use sqlx::Row;
+                total_count = row.get("total_count");
+                row.into()
+            })
+            .fetch_all(&self.pool)
+            .await?;
+
+        Ok(QueryResponse { total_count, items })
+    }
 }
 
 impl ContentController {
@@ -124,12 +146,16 @@ impl ContentController {
     }
 
     pub async fn list_content(
-        State(_ctrl): State<ContentController>,
-        Extension(_auth): Extension<Option<Authorization>>,
+        State(ctrl): State<ContentController>,
+        Extension(auth): Extension<Option<Authorization>>,
         Query(q): Query<ContentParam>,
     ) -> Result<Json<ContentGetResponse>> {
         tracing::debug!("list_content {:?}", q);
 
-        Ok(Json(ContentGetResponse::Query(QueryResponse::default())))
+        match q {
+            ContentParam::Query(param) => Ok(Json(ContentGetResponse::Query(
+                ctrl.query(auth, param).await?,
+            ))),
+        }
     }
 }

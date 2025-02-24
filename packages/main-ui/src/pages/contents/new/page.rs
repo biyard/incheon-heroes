@@ -5,6 +5,8 @@ use crate::components::headings::Heading1;
 use super::controller::*;
 use super::i18n::*;
 use by_components::files::DropZone;
+#[allow(unused_imports)]
+use by_components::icons;
 use dioxus::prelude::*;
 use dioxus_translate::*;
 use dto::ContentCreateRequest;
@@ -53,7 +55,9 @@ pub fn NewContentsPage(lang: Language) -> Element {
                         }
                         button {
                             class: "bg-[#24B28C] h-[50px] py-[15px] px-[24px] hover:bg-[#34a39d] rounded-[12px]",
-                            onclick: move |_| async move { ctrl.handle_submit().await },
+                            onclick: move |_| async move {
+                                let _ = ctrl.handle_submit().await;
+                            },
                             "{tr.btn_submit_nft}"
                         }
                     }
@@ -77,12 +81,18 @@ pub fn SingleContent(lang: Language, onchange: EventHandler<ContentCreateRequest
     let mut title = use_signal(|| "".to_string());
     let mut description = use_signal(|| "".to_string());
     let mut thumbnail = use_signal(|| None);
+    let mut source: Signal<Option<(String, String)>> = use_signal(|| None);
 
     let send = move || {
         let req = ContentCreateRequest {
             title: title(),
             description: description(),
             thumbnail_image: thumbnail().unwrap_or_default(),
+            source: if source().is_some() {
+                source().unwrap().0
+            } else {
+                thumbnail().unwrap_or_default()
+            },
             ..Default::default()
         };
         onchange.call(req);
@@ -118,7 +128,7 @@ pub fn SingleContent(lang: Language, onchange: EventHandler<ContentCreateRequest
                     DropZone {
                         class: "w-full border-[1px] rounded-[14px] flex flex-col items-center justify-center  border-dashed flex flex-col gap-[16px] {bg}",
                         onupload: move |(file_bytes, ext)| async move {
-                            let uri = handle_upload(file_bytes, ext).await?;
+                            let (uri, _) = handle_upload(file_bytes, ext).await?;
                             thumbnail.set(Some(uri));
                             send();
                             Ok(())
@@ -133,8 +143,54 @@ pub fn SingleContent(lang: Language, onchange: EventHandler<ContentCreateRequest
                             div { class: "h-[145px] flex flex-col items-center justify-center gap-[16px]",
                                 Document {}
                                 p { class: "text-[14px] text-[#8d8d8d]",
-                                    "{tr.palceholder_fileupload}"
+                                    "{tr.placeholder_fileupload}"
                                 }
+                            }
+                        }
+                    }
+                }
+            }
+
+            div { class: "w-full flex flex-col gap-[10px] items-start justify-start",
+                label { class: "text-[#5B5B5B] font-bold text-[14px] font-bold flex flex-row items-center",
+                    span { "{tr.label_thumbnail}" }
+                    span { class: "text-[#FF0000]", "*" }
+                }
+
+                div { class: "w-full p-[16px] flex flex-col items-start justify-start rounded-[12px] border-[1px] border-[#dfdfdf] text-[#979797] font-normal text-[15px] bg-transparent gap-[16px]",
+
+                    p { class: "font-bold text-[14px] text-[#8d8d8d]", "{tr.label_source}" }
+
+                    if let Some(ref s) = source() {
+                        div { class: "flex flex-row gap-[10px] items-center justify-between w-full px-[20px] border-[1px] py-[10px] rounded-[12px] border-[#dfdfdf] text-[#979797] font-normal text-[15px] bg-transparent",
+                            div { class: "flex flex-col gap-[10px]",
+                                p { class: "text-[14px] font-bold", "{s.0}" }
+                                p { class: "text-[12px] ", "{s.1}" }
+                            }
+                            div {
+                                class: "cursor-pointer",
+                                onclick: move |_| source.set(None),
+                                icons::symbols::CloseCircle {}
+                            }
+                        }
+                    } else {
+                        DropZone {
+                            class: "w-full border-[1px] rounded-[14px] flex flex-col items-center justify-center  border-dashed flex flex-col gap-[16px] {bg}",
+                            onupload: move |(file_bytes, ext)| async move {
+                                match handle_upload(file_bytes, ext).await {
+                                    Ok(uri) => {
+                                        source.set(Some(uri));
+                                        send();
+                                    }
+                                    Err(e) => {
+                                        tracing::error!("Failed to upload source file: {:?}", e);
+                                    }
+                                }
+                            },
+                            onchange: move |hover| dropping.set(hover),
+                            div { class: "h-[145px] flex flex-col items-center justify-center gap-[16px]",
+                                Document {}
+                                p { class: "text-[14px] text-[#8d8d8d]", "{tr.placeholder_source}" }
                             }
                         }
                     }

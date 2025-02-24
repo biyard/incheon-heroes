@@ -5,6 +5,7 @@ use dioxus::{prelude::*, CapturedError};
 use dioxus_translate::Language;
 use dto::{AssetPresignedUris, Content, ContentCreateRequest};
 use reqwest::header::{HeaderMap, HeaderValue, CONTENT_TYPE};
+use validator::Validate;
 
 use crate::{config, route::Route};
 
@@ -45,10 +46,20 @@ impl Controller {
     }
 
     pub async fn handle_submit(&self) -> std::result::Result<(), CapturedError> {
+        for content in self.contents() {
+            content.validate()?;
+        }
+
         let endpoint = config::get().new_api_endpoint;
-        Content::get_client(endpoint)
+        if let Err(e) = Content::get_client(endpoint)
             .create_bulk(self.contents())
-            .await?;
+            .await
+        {
+            tracing::error!("Failed to create content: {:?}", e);
+            return Ok(());
+        }
+
+        self.nav.replace(Route::ContentsPage { lang: self.lang });
 
         Ok(())
     }
@@ -57,7 +68,7 @@ impl Controller {
 pub async fn handle_upload(
     file_bytes: Vec<u8>,
     ext: String,
-) -> std::result::Result<String, CapturedError> {
+) -> std::result::Result<(String, String), CapturedError> {
     let cli = AssetPresignedUris::get_client(config::get().new_api_endpoint);
     let res = match cli
         .get_presigned_uris(1, dto::FileType::from_str(&ext).unwrap_or_default())
@@ -94,5 +105,5 @@ pub async fn handle_upload(
         .await
         .context("Failed to upload file")?;
 
-    Ok(uri.to_string())
+    Ok((uri.to_string(), content_type))
 }
