@@ -3,25 +3,90 @@ use crate::route::Route;
 
 use super::controller::*;
 use super::i18n::*;
+use by_components::icons;
 use dioxus::prelude::*;
 use dioxus_translate::*;
+use dto::ContentSummary;
 
 #[component]
 pub fn ContentsPage(lang: Language) -> Element {
-    let mut _ctrl = Controller::new(lang)?;
+    let mut ctrl = Controller::new(lang)?;
     let tr: ContentsTranslate = translate(&lang);
+
+    let contents = ctrl.contents_by_cols()?;
 
     rsx! {
         by_components::meta::MetaPage { title: "{tr.title}" }
 
-        div { id: "contents", class: "flex flex-col",
-            "{tr.title} PAGE"
-            for content in _ctrl.contents()?.items.iter() {
-                p { "{content:?}" }
+        div { id: "contents", class: "w-full flex flex-col gap-[50px]",
+            SearchBar {
+                class: "w-full bg-white h-[48px] rounded-[12px]",
+                onsearch: move |query| async move {
+                    ctrl.search(query).await;
+                },
+            }
+
+
+            div {
+                class: "w-full grid grid-cols-4 max-[1200px]:grid-cols-3 max-[700px]:grid-cols-2 max-[400px]:grid-cols-1 gap-[24px]",
+                onresize: move |e| {
+                    let border_box = e.get_border_box_size().unwrap_or_default();
+                    ctrl.resize(border_box.width);
+                },
+                for contents in contents.iter() {
+                    div { class: "w-full col-span-1 flex flex-col justify-start gap-[24px]",
+                        for content in contents.iter() {
+                            ContentCard { class: "w-full", content: content.clone() }
+                        }
+                    }
+                }
             }
 
             CreateNftButton { lang, label: "{tr.btn_create}" }
         } // end of this page
+    }
+}
+
+#[component]
+pub fn ContentCard(
+    #[props(extends = GlobalAttributes)] attributes: Vec<Attribute>,
+    content: ContentSummary,
+    children: Element,
+) -> Element {
+    rsx! {
+        div {..attributes,
+            div { class: "",
+                img {
+                    src: "{content.thumbnail_image}",
+                    alt: "{content.title}",
+                    class: "w-full object-cover bg-white rounded-[12px]",
+                }
+            }
+        }
+    }
+}
+
+#[component]
+pub fn SearchBar(
+    #[props(extends = GlobalAttributes)] attributes: Vec<Attribute>,
+    onsearch: EventHandler<String>,
+    #[props(default = "#979797".to_string())] color: String,
+) -> Element {
+    rsx! {
+        div {..attributes,
+            div { class: "relative w-full h-full",
+                input {
+                    class: "w-full h-full px-[20px] text-[#16775D] bg-transparent font-semibold focus:outline-none",
+                    color: "{color}",
+                    placeholder: "Search",
+                    oninput: move |e| onsearch(e.value()),
+                }
+
+                div { class: "absolute top-0 right-[10px] h-full flex items-center justify-center",
+                    icons::edit::Search { color: "{color}" }
+                }
+            }
+        }
     }
 }
 

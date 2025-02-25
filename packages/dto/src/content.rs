@@ -1,3 +1,4 @@
+#![allow(unused_variables)]
 #[cfg(feature = "server")]
 use by_axum::aide;
 use by_macros::api_model;
@@ -25,7 +26,7 @@ pub struct Content {
     #[validate(url)]
     pub source: String,
 
-    #[api_model(action = create)]
+    #[api_model(action = create, query_action = search)]
     #[validate(length(min = 1, max = 300))]
     pub description: String,
 }
