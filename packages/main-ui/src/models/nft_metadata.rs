@@ -2,7 +2,7 @@ use dto::nft::Nft;
 
 use crate::config;
 
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, Default)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, Default, PartialEq)]
 pub struct NftMetadata {
     pub name: String,
     pub image: String,
@@ -11,7 +11,7 @@ pub struct NftMetadata {
     pub attributes: Vec<NftAttribute>,
 }
 
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, PartialEq)]
 pub struct NftAttribute {
     pub trait_type: String,
     pub value: String,
