@@ -7,15 +7,19 @@ use crate::config;
 
 #[derive(Clone, Copy, DioxusController)]
 pub struct Controller {
-    #[allow(dead_code)]
     pub lang: Language,
     pub rsc: Resource<(Content, UserContents)>,
 }
 
 impl Controller {
     pub fn new(lang: Language, id: i64) -> std::result::Result<Self, RenderError> {
+        tracing::debug!("log1");
         let rsc = use_server_future(move || async move {
+            tracing::debug!("log2");
+
             let endpoint = config::get().new_api_endpoint;
+            tracing::debug!("endpoint: {endpoint}");
+
             let content = Content::get_client(endpoint)
                 .get(id)
                 .await
@@ -31,5 +35,11 @@ impl Controller {
         let ctrl = Self { lang, rsc };
 
         Ok(ctrl)
+    }
+    pub fn get_nft_data(&self) -> (Content, UserContents) {
+        match self.rsc.value()() {
+            Some(v) => v,
+            None => (Content::default(), UserContents::default()),
+        }
     }
 }
