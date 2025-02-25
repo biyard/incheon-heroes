@@ -2,6 +2,8 @@
 use dioxus::prelude::*;
 
 pub mod arrows;
+pub mod heart;
+pub mod send;
 
 #[component]
 pub fn Transfer(
