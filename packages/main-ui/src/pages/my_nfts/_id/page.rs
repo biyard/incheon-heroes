@@ -11,7 +11,7 @@ use dioxus::prelude::*;
 use dioxus_translate::*;
 
 #[derive(Debug, Clone)]
-pub struct Character {
+pub struct CharacterName {
     pub name: String,
     pub description: String,
 }
@@ -177,22 +177,22 @@ pub fn MetadataSection(
                 let attribute = metadata.attributes[0].clone();
 
                 if attribute.value == "Ainy" {
-                    character.set(Some(Character {
+                    character.set(Some(CharacterName {
                         name: "Ainy".to_string(),
                         description: tr.ainy_description.to_string(),
                     }));
                 } else if attribute.value == "Bumy" {
-                    character.set(Some(Character {
+                    character.set(Some(CharacterName {
                         name: "Bumy".to_string(),
                         description: tr.bumy_description.to_string(),
                     }));
                 } else if attribute.value == "Comy" {
-                    character.set(Some(Character {
+                    character.set(Some(CharacterName {
                         name: "Comy".to_string(),
                         description: tr.comy_description.to_string(),
                     }));
                 } else {
-                    character.set(Some(Character {
+                    character.set(Some(CharacterName {
                         name: "DngDaery".to_string(),
                         description: tr.dngdaery_description.to_string(),
                     }));

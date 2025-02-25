@@ -23,9 +23,8 @@ enum PopupState {
 #[component]
 pub fn ContentsByIdPage(id: i64, lang: Language) -> Element {
     let ctrl = Controller::new(lang, id)?;
-    tracing::debug!("log");
     let tr: ContentsByIdTranslate = translate(&lang);
-    let (content, user) = ctrl.get_nft_data();
+    let (content, user) = ctrl.rsc()?;
 
     rsx! {
         by_components::meta::MetaPage { title: "{tr.title}" }
@@ -51,7 +50,6 @@ pub fn NFTDescription(content: Content, user: UserContents, lang: Language) -> E
     let title = content.title;
     let thumbnail_image = content.thumbnail_image;
     let description = content.description;
-    let id = user.id;
 
     rsx! {
         div { class: "w-[1200px] h-full flex flex-row justify-center items-start gap-[48px] mb-[80px]",
