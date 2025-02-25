@@ -31,6 +31,9 @@ pub struct ContractConfig {
     pub shop: &'static str,
     pub holder: &'static str,
     pub sbt: &'static str,
+    pub experience: &'static str,
+    pub nft: &'static str,
+    pub mission: &'static str,
 }
 
 #[derive(Debug, serde::Deserialize, serde::Serialize)]
@@ -39,6 +42,8 @@ pub struct Config {
     pub domain: &'static str,
     pub main_api_endpoint: &'static str,
     pub new_api_endpoint: &'static str,
+    pub discord_api_endpoint: &'static str,
+    pub logs_api_endpoint: &'static str,
     pub nft_metadata_base_url: &'static str,
     pub firebase: FirebaseConfig,
     pub klaytn: KlaytnConfig,
@@ -56,6 +61,10 @@ impl Default for Config {
                 .unwrap_or("https://api.incheonheroes.world"),
             main_api_endpoint: option_env!("MAIN_API_ENDPOINT")
                 .unwrap_or("https://api.incheon.world"),
+            discord_api_endpoint: option_env!("DISCORD_API_ENDPOINT")
+                .unwrap_or("https://api.incheon.world"),
+            logs_api_endpoint: option_env!("LOGS_API_ENDPOINT")
+                .unwrap_or("https://logs-api.incheon.world"),
             nft_metadata_base_url: option_env!("NFT_BASE_URI").expect("You must set NFT_BASE_URI"),
             firebase: FirebaseConfig {
                 api_key: option_env!("FIREBASE_API_KEY")
@@ -87,6 +96,10 @@ impl Default for Config {
                 shop: option_env!("CONTRACT_SHOP").expect("You must set CONTRACT_SHOP"),
                 holder: option_env!("CONTRACT_HOLDER").expect("You must set CONTRACT_HOLDER"),
                 sbt: option_env!("CONTRACT_SBT").expect("You must set CONTRACT_SBT"),
+                experience: option_env!("CONTRACT_EXPERIENCE")
+                    .expect("You must set CONTRACT_EXPERIENCE"),
+                nft: option_env!("CONTRACT_NFT").expect("You must set CONTRACT_NFT"),
+                mission: option_env!("CONTRACT_MISSION").expect("You must set CONTRACT_MISSION"),
             },
             kakao: KakaoConfig {
                 client_id: option_env!("KAKAO_CLIENT_ID").expect("You must set KAKAO_CLIENT_ID"),

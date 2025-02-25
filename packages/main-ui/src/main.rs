@@ -50,6 +50,7 @@ fn app() -> Element {
             href: "https://fonts.gstatic.com",
             rel: "preconnect",
         }
+        document::Script { src: "https://d3js.org/d3.v7.min.js" }
         document::Link {
             href: "https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Russo+One&display=swap",
             rel: "stylesheet",
