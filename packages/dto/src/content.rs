@@ -2,6 +2,7 @@
 #[cfg(feature = "server")]
 use by_axum::aide;
 use by_macros::api_model;
+use dioxus_translate::Translate;
 use validator::Validate;
 
 #[derive(Validate)]
@@ -29,4 +30,16 @@ pub struct Content {
     #[api_model(action = create, query_action = search)]
     #[validate(length(min = 1, max = 300))]
     pub description: String,
+}
+
+#[derive(
+    Debug, Clone, Copy, Eq, PartialEq, serde::Serialize, serde::Deserialize, Translate, Default,
+)]
+#[serde(rename_all = "snake_case")]
+pub enum ContentSorter {
+    #[default]
+    #[translate(ko => "인기순")]
+    Popular,
+    #[translate(ko => "최신순")]
+    Newest,
 }

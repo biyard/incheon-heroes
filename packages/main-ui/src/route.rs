@@ -30,22 +30,18 @@ pub enum Route {
     SongsByIdPage { lang: Language, id: String },
     #[end_nest]
 
-    #[nest("/shop")]
-    #[route("/")]
+    #[route("/shop")]
     ShopPage { lang: Language },
-    #[route("/:id")]
+    #[route("/shop/:id")]
     ShopByIdPage { lang: Language, id: String },
-    #[end_nest]
 
     #[route("/faq")]
     FaqPage { lang: Language },
 
-    #[nest("/my-nfts")]
-    #[route("/")]
+    #[route("/my-nfts")]
     MyNftsPage { lang: Language },
-    #[route("/:id")]
+    #[route("/my-nfts/:id")]
     MyNftsByIdPage { lang: Language, id: String },
-    #[end_nest]
 
     #[route("/connect")]
     ConnectPage { lang: Language },
@@ -60,6 +56,9 @@ pub enum Route {
     ContentsPage { lang: Language },
     #[route("/contents/new")]
     NewContentsPage { lang: Language },
+
+    #[route("/contents/:id")]
+    ContentsByIdPage { id: i64, lang: Language },
 
     #[end_layout]
     #[end_nest]
@@ -83,6 +82,10 @@ impl Route {
 
     pub fn switch_lang(self) -> Self {
         match self {
+            Route::ContentsByIdPage { id, lang } => Route::ContentsByIdPage {
+                id,
+                lang: lang.switch(),
+            },
             Route::NewContentsPage { lang } => Route::NewContentsPage {
                 lang: lang.switch(),
             },

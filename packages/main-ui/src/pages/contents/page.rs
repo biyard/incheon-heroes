@@ -6,6 +6,7 @@ use super::i18n::*;
 use by_components::icons;
 use dioxus::prelude::*;
 use dioxus_translate::*;
+use dto::ContentSorter;
 use dto::ContentSummary;
 
 #[component]
@@ -26,6 +27,30 @@ pub fn ContentsPage(lang: Language) -> Element {
                 },
             }
 
+            div { class: " w-full flex flex-row justify-end items-center",
+                details { class: "dropdown",
+                    summary { class: "btn m-1 text-[#16775D] w-[117px] bg-transparent border-[#16775D] flex flex-row justify-center items-center hover:bg-[#E4F4E4]",
+
+                        {ctrl.sorter().translate(&lang)}
+                        icons::arrows::ChevronDown { color: "#16775D", width: "12", height: "12" }
+                    }
+                    ul {
+                        class: "menu dropdown-content bg-white rounded-[12px] z-[1] w-[117px] shadow",
+                        padding: "0px",
+                        for option in ContentSorter::VARIANTS {
+                            li {
+                                class: "hover:bg-[#E4F4E4] px-[20px] py-[15px] cursor-pointer",
+                                role: "button",
+                                onclick: move |_| {
+                                    ctrl.sorter.set(*option);
+                                },
+                                "{option.translate(&lang)}"
+
+                            }
+                        }
+                    }
+                }
+            }
 
             div {
                 class: "w-full grid grid-cols-4 max-[1200px]:grid-cols-3 max-[700px]:grid-cols-2 max-[400px]:grid-cols-1 gap-[24px]",
@@ -36,7 +61,14 @@ pub fn ContentsPage(lang: Language) -> Element {
                 for contents in contents.iter() {
                     div { class: "w-full col-span-1 flex flex-col justify-start gap-[24px]",
                         for content in contents.iter() {
-                            ContentCard { class: "w-full", content: content.clone() }
+                            ContentCard {
+                                to: Route::ContentsByIdPage {
+                                    lang,
+                                    id: content.id,
+                                },
+                                class: "w-full",
+                                content: content.clone(),
+                            }
                         }
                     }
                 }
@@ -49,13 +81,14 @@ pub fn ContentsPage(lang: Language) -> Element {
 
 #[component]
 pub fn ContentCard(
+    #[props(into)] to: NavigationTarget,
     #[props(extends = GlobalAttributes)] attributes: Vec<Attribute>,
     content: ContentSummary,
     children: Element,
 ) -> Element {
     rsx! {
         div {..attributes,
-            div { class: "",
+            Link { class: "", to,
                 img {
                     src: "{content.thumbnail_image}",
                     alt: "{content.title}",
