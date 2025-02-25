@@ -25,6 +25,9 @@ by-types.workspace = true
 tracing = "0.1.41"
 serde_json.workspace = true
 dioxus-translate.workspace = true
+ethers = "2.0.14"
+hex = "0.4.3"
+rlp = "0.5.2"
 
 [features]
 server = ["by-macros/server", "sqlx", "by-axum", "schemars", "bigdecimal"]

@@ -1,10 +1,14 @@
 pub mod controllers;
 
+use std::sync::Arc;
+
 use controllers::*;
 
 use by_axum::{auth::authorization_middleware, axum::middleware};
 use by_types::DatabaseConfig;
 use dto::*;
+use ethers::providers::Http;
+use ethers::providers::Provider;
 use sqlx::postgres::PgPoolOptions;
 use tokio::net::TcpListener;
 
@@ -41,6 +45,8 @@ async fn main() -> Result<()> {
     };
 
     migration(&pool).await?;
+    let provider = Provider::<Http>::try_from(conf.klaytn.endpoint).unwrap();
+    let provider = Arc::new(provider);
 
     let app = app
         .nest("/v1/users", v1::UserController::new(pool.clone()).route()?)
@@ -52,7 +58,15 @@ async fn main() -> Result<()> {
         )
         .nest(
             "/v1/contents",
-            v1::ContentController::new(pool.clone()).route()?,
+            v1::ContentController::new(
+                pool.clone(),
+                &conf.aws,
+                &conf.bucket,
+                provider,
+                &conf.contracts,
+            )
+            .await
+            .route()?,
         )
         .layer(middleware::from_fn(authorization_middleware));
     let port = option_env!("PORT").unwrap_or("3000");

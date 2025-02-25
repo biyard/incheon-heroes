@@ -67,9 +67,11 @@ jobs:
           FIREBASE_APP_ID: "${{ secrets.FIREBASE_APP_ID }}"
           FIREBASE_MEASUREMENT_ID: "${{ secrets.FIREBASE_MEASUREMENT_ID }}"
           MAIN_API_ENDPOINT: https://api.dev.incheon.world
-          ENV: dev
+          ENV: env
           SERVICE: main-ui
           DOMAIN: dev.incheonheroes.world
+          KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}
+          KAKAO_REDIRECT_URI: https://dev.incheonheroes.world/oauth/kakao
           API_PREFIX: /api
           ENABLE_S3: true
           ENABLE_FARGATE: false
@@ -79,11 +81,60 @@ jobs:
           npm i -g aws-cdk @tailwindcss/cli
           make deploy-web
 
+  main-api:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+          ssh-key: ${{ secrets.PULL_KEY_REPO }}
+
+      - uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          components: clippy, rustfmt
+          target: wasm32-unknown-unknown
+          toolchain: stable
+
+      - uses: cargo-bins/cargo-binstall@main
+
+      - name: Cache builder
+        id: main-ui-build-cache
+        uses: actions/cache@v3
+        with:
+          key: main-api-build-cache
+          path: |
+            packages/main-api/target
+
+      - name: Deploy APIs
+        env:
+          REGION: ap-northeast-2
+          ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          BASE_DOMAIN: dev.incheonheroes.world
+          MAIN_API_ENDPOINT: https://api.dev.incheon.world
+          ENV: prod
+          SERVICE: main-api
+          DOMAIN: api.dev.incheonheroes.world
+          DATABASE_TYPE: postgres
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          ENABLE_S3: false
+          ENABLE_LAMBDA: true
+        run: |
+          npm i -g aws-cdk
+          make deploy
+
   create-release-pr:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/dev'
     needs:
-      [main-ui]
+      [main-ui,main-api]
     steps:
       - uses: actions/checkout@v3
         with:

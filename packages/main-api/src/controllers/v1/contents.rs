@@ -1,3 +1,6 @@
+use std::sync::Arc;
+
+use aws_sdk_s3::primitives::ByteStream;
 use by_axum::aide;
 use by_axum::{
     auth::Authorization,
@@ -7,10 +10,14 @@ use by_axum::{
         Extension, Json,
     },
 };
-use by_types::QueryResponse;
+use by_types::{AwsConfig, QueryResponse};
+use contracts::incheon_contents::IncheonContentsContract;
 use dto::*;
+use ethers::prelude::*;
 use sqlx::postgres::PgRow;
 use validator::Validate;
+
+use crate::config::{BucketConfig, ContractConfig};
 
 #[derive(
     Debug, Clone, serde::Deserialize, serde::Serialize, schemars::JsonSchema, aide::OperationIo,
@@ -22,19 +29,24 @@ pub struct ContentPath {
 #[derive(Clone, Debug)]
 pub struct ContentController {
     repo: ContentRepository,
+    #[allow(unused)]
+    contract: IncheonContentsContract,
     pool: sqlx::Pool<sqlx::Postgres>,
+    cli: aws_sdk_s3::Client,
+    bucket_name: &'static str,
+    asset_dir: &'static str,
 }
 
 impl ContentController {
     async fn create_bulk(
         &self,
         _auth: Option<Authorization>,
-        _body: Vec<ContentCreateRequest>,
+        body: Vec<ContentCreateRequest>,
     ) -> Result<Json<Content>> {
         let mut tx = self.pool.begin().await?;
         let mut docs = vec![];
 
-        for item in _body {
+        for item in body {
             item.validate()?;
             let ContentCreateRequest {
                 creator_id,
@@ -61,6 +73,37 @@ impl ContentController {
         }
 
         tx.commit().await?;
+
+        for doc in docs.clone() {
+            let path = format!("{}/json/{}.json", self.asset_dir, doc.id);
+            match self
+                .cli
+                .put_object()
+                .bucket(self.bucket_name)
+                .key(&path)
+                .body(ByteStream::from(
+                    serde_json::json!({
+                        "name": doc.title,
+                        "image": doc.thumbnail_image,
+                        "source": doc.source,
+                        "description": doc.description,
+                    })
+                    .to_string()
+                    .as_bytes()
+                    .to_vec(),
+                ))
+                .content_type("application/json")
+                .send()
+                .await
+            {
+                Ok(_) => {
+                    tracing::debug!("Uploaded to s3: {}", path);
+                }
+                Err(e) => {
+                    tracing::warn!("Failed to upload to s3 for {}: {}", doc.id, e);
+                }
+            }
+        }
 
         Ok(Json(
             docs.last().ok_or(Error::NoContentAfterInsert)?.clone(),
@@ -94,10 +137,45 @@ impl ContentController {
 }
 
 impl ContentController {
-    pub fn new(pool: sqlx::Pool<sqlx::Postgres>) -> Self {
+    pub async fn new(
+        pool: sqlx::Pool<sqlx::Postgres>,
+        config: &AwsConfig,
+        &BucketConfig {
+            name, asset_dir, ..
+        }: &BucketConfig,
+        provider: Arc<Provider<Http>>,
+        &ContractConfig {
+            incheon_contents, ..
+        }: &ContractConfig,
+    ) -> Self {
         let repo = Content::get_repository(pool.clone());
+        use aws_config::BehaviorVersion;
+        use aws_config::{defaults, Region};
+        use aws_sdk_s3::config::Credentials;
 
-        Self { repo, pool }
+        let config = defaults(BehaviorVersion::latest())
+            .region(Region::new(config.region))
+            .credentials_provider(Credentials::new(
+                config.access_key_id,
+                config.secret_access_key,
+                None,
+                None,
+                "credential",
+            ));
+
+        let config = config.load().await;
+        let cli = aws_sdk_s3::Client::new(&config);
+
+        let contract = IncheonContentsContract::new(incheon_contents, provider);
+
+        Self {
+            repo,
+            contract,
+            pool,
+            cli,
+            bucket_name: name,
+            asset_dir,
+        }
     }
 
     pub fn route(&self) -> Result<by_axum::axum::Router> {

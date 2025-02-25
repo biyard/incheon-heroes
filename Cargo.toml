@@ -1,7 +1,7 @@
 [workspace]
 members = [ "packages/*"]
 resolver = "2"
-exclude = ["deps"]
+exclude = ["deps", "contracts"]
 
 [workspace.package]
 authors = ["Biyard"]

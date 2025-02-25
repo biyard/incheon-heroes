@@ -6,6 +6,22 @@ pub struct Config {
     pub aws: AwsConfig,
     pub database: DatabaseConfig,
     pub bucket: BucketConfig,
+    pub klaytn: KlaytnConfig,
+    pub contracts: ContractConfig,
+}
+
+#[derive(Debug)]
+pub struct ContractConfig {
+    pub incheon_contents: &'static str,
+}
+
+#[derive(Debug)]
+pub struct KlaytnConfig {
+    pub endpoint: &'static str,
+    pub owner_key: &'static str,
+    pub owner_address: &'static str,
+    pub feepayer_key: &'static str,
+    pub feepayer_address: &'static str,
 }
 
 #[derive(Debug)]
@@ -21,6 +37,16 @@ impl Default for Config {
             env: option_env!("ENV").expect("You must set ENV"),
             // base_domain: option_env!("BASE_DOMAIN").expect("You must set BASE_DOMAIN"),
             // asset_dir: option_env!("ASSET_DIR").expect("You must set ASSET_DIR"),
+            klaytn: KlaytnConfig {
+                endpoint: option_env!("KLAYTN_ENDPOINT").expect("You must set KLAYTN_ENDPOINT"),
+                owner_key: option_env!("KLAYTN_OWNER_KEY").expect("You must set KLAYTN_OWNER_KEY"),
+                owner_address: option_env!("KLAYTN_OWNER_ADDRESS").expect("You must set KLAYTN_OWNER_ADDRESS"),
+                feepayer_key: option_env!("KLAYTN_FEEPAYER_KEY").expect("You must set KLAYTN_FEEPAYER_KEY"),
+                feepayer_address: option_env!("KLAYTN_FEEPAYER_ADDRESS").expect("You must set KLAYTN_FEEPAYER_ADDRESS"),
+            },
+            contracts: ContractConfig {
+                incheon_contents: option_env!("CONTRACT_INCHEON_CONTENTS").expect("You must set CONTRACT_INCHEON_CONTENTS"),
+            },
             aws: AwsConfig::default(),
             database: DatabaseConfig::default(),
             bucket: BucketConfig {

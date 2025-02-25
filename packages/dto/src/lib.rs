@@ -2,6 +2,7 @@ use thiserror::Error as ThisError;
 
 pub mod asset;
 pub mod content;
+pub mod contracts;
 pub mod dao;
 pub mod nft;
 pub mod user;
