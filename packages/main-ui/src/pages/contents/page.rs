@@ -14,8 +14,6 @@ pub fn ContentsPage(lang: Language) -> Element {
     let mut ctrl = Controller::new(lang)?;
     let tr: ContentsTranslate = translate(&lang);
 
-    let contents = ctrl.contents_by_cols()?;
-
     rsx! {
         by_components::meta::MetaPage { title: "{tr.title}" }
 
@@ -52,30 +50,52 @@ pub fn ContentsPage(lang: Language) -> Element {
                 }
             }
 
-            div {
-                class: "w-full grid grid-cols-4 max-[1200px]:grid-cols-3 max-[700px]:grid-cols-2 max-[400px]:grid-cols-1 gap-[24px]",
-                onresize: move |e| {
-                    let border_box = e.get_border_box_size().unwrap_or_default();
-                    ctrl.resize(border_box.width);
-                },
-                for contents in contents.iter() {
-                    div { class: "w-full col-span-1 flex flex-col justify-start gap-[24px]",
-                        for content in contents.iter() {
-                            ContentCard {
-                                to: Route::ContentsByIdPage {
-                                    lang,
-                                    id: content.id,
-                                },
-                                class: "w-full",
-                                content: content.clone(),
-                            }
+            ColGridCards { lang, contents: ctrl.contents()?.items }
+
+            CreateNftButton { lang, label: "{tr.btn_create}" }
+        } // end of this page
+    }
+}
+
+#[component]
+pub fn ColGridCards(lang: Language, contents: Vec<ContentSummary>) -> Element {
+    let mut cols: Signal<usize> = use_signal(|| 4);
+    let mut cols_contents = vec![vec![]; cols()];
+    for (i, content) in contents.iter().enumerate() {
+        cols_contents[i % cols()].push(content.clone());
+    }
+
+    rsx! {
+        div {
+            class: "w-full grid grid-cols-4 max-[1200px]:grid-cols-3 max-[700px]:grid-cols-2 max-[400px]:grid-cols-1 gap-[24px]",
+            onresize: move |e| {
+                let width = e.get_border_box_size().unwrap_or_default().width;
+                let c: usize = if width > 1200.0 {
+                    4
+                } else if width > 700.0 {
+                    3
+                } else if width > 400.0 {
+                    2
+                } else {
+                    1
+                };
+                cols.set(c);
+            },
+            for contents in cols_contents.iter() {
+                div { class: "w-full col-span-1 flex flex-col justify-start gap-[24px]",
+                    for content in contents.iter() {
+                        ContentCard {
+                            to: Route::ContentsByIdPage {
+                                lang,
+                                id: content.id,
+                            },
+                            class: "w-full",
+                            content: content.clone(),
                         }
                     }
                 }
             }
-
-            CreateNftButton { lang, label: "{tr.btn_create}" }
-        } // end of this page
+        }
     }
 }
 

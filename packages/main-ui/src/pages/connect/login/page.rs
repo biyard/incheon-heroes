@@ -14,8 +14,10 @@ pub fn LoginPage(
     provider: LoginProvider,
     hint: String,
     address: String,
+    email: String,
+    picture: String,
 ) -> Element {
-    let mut ctrl = Controller::new(lang, id, provider, hint, address)?;
+    let mut ctrl = Controller::new(lang, id, provider, hint, address, email, picture)?;
     let tr: LoginTranslate = translate(&lang);
 
     rsx! {

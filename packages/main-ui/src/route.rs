@@ -46,8 +46,8 @@ pub enum Route {
     #[route("/connect")]
     ConnectPage { lang: Language },
 
-    #[route("/connect/login?:id&:provider&:hint&:address")]
-    LoginPage { lang: Language,id:String, provider: LoginProvider, hint: String, address: String },
+    #[route("/connect/login?:id&:provider&:hint&:address&:email&:picture")]
+    LoginPage { lang: Language, id:String, provider: LoginProvider, hint: String, address: String, email: String, picture: String },
 
     #[route("/my-profile")]
     MyProfilePage { lang: Language },
@@ -101,12 +101,16 @@ impl Route {
                 provider,
                 hint,
                 address,
+                email,
+                picture,
             } => Route::LoginPage {
                 lang: lang.switch(),
                 provider,
                 id,
                 hint,
                 address,
+                email,
+                picture,
             },
             Route::ConnectPage { lang } => Route::ConnectPage {
                 lang: lang.switch(),

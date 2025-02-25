@@ -1,4 +1,5 @@
 #![allow(dead_code)]
+use crate::config;
 use crate::models::user_wallet::{create_evm_wallet, create_identity, EvmWallet, UserWallet};
 use crate::route::Route;
 use crate::services::backend_api::BackendApi;
@@ -6,6 +7,7 @@ use crate::services::user_service::UserService;
 use by_macros::*;
 use dioxus::prelude::*;
 use dioxus_translate::Language;
+use dto::User;
 use ethers::utils::keccak256;
 use ic_agent::Identity;
 
@@ -19,6 +21,8 @@ pub struct Controller {
     pub hint: Signal<String>,
     pub address: Signal<Option<String>>,
     pub password: Signal<String>,
+    pub email: Signal<String>,
+    pub picture: Signal<String>,
     pub backend_api: BackendApi,
     pub user_wallet: UserService,
     pub nav: Navigator,
@@ -31,6 +35,8 @@ impl Controller {
         provider: LoginProvider,
         hint: String,
         address: String,
+        email: String,
+        picture: String,
     ) -> std::result::Result<Self, RenderError> {
         tracing::debug!("Hint: {:?}", hint);
         let nav = use_navigator();
@@ -59,6 +65,8 @@ impl Controller {
                 }
             }),
             password: use_signal(|| "".to_string()),
+            email: use_signal(move || email),
+            picture: use_signal(move || picture),
             backend_api: use_context(),
             user_wallet: use_context(),
         };
@@ -104,9 +112,28 @@ impl Controller {
         self.user_wallet.set_wallet(UserWallet::SocialWallet {
             private_key: wallet.private_key,
             seed: wallet.seed,
-            checksum_address: wallet.checksum_address,
+            checksum_address: wallet.checksum_address.clone(),
             principal: icp_wallet.sender().unwrap().to_text(),
         });
+
+        let endpoint = config::get().new_api_endpoint;
+        match User::get_client(endpoint)
+            .signup_or_login(
+                wallet.checksum_address,
+                self.email(),
+                self.id(),
+                self.picture(),
+                self.provider.into(),
+            )
+            .await
+        {
+            Ok(user) => {
+                self.user_wallet.set_user(user);
+            }
+            Err(e) => {
+                tracing::error!("Failed to signup or login: {:?}", e);
+            }
+        }
 
         if self.nav.can_go_back() {
             self.nav.go_back();

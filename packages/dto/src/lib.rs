@@ -8,6 +8,7 @@ pub mod user;
 
 pub use asset::*;
 pub use content::*;
+pub use user::*;
 
 // FIXME: fix the error type to be more specific
 pub type Result<T> = std::result::Result<T, Error>;

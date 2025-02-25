@@ -84,6 +84,8 @@ impl Controller {
             id: hint.id,
             hint: hint.private_key_hint,
             address: hint.address.unwrap_or_default(),
+            email: oid_response.email.unwrap_or_default(),
+            picture: oid_response.picture.unwrap_or_default(),
         });
     }
 

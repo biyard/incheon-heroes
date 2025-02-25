@@ -37,7 +37,7 @@ impl ContentController {
         for item in _body {
             item.validate()?;
             let ContentCreateRequest {
-                address,
+                creator_id,
                 title,
                 thumbnail_image,
                 source,
@@ -48,11 +48,11 @@ impl ContentController {
                 .repo
                 .insert_with_tx(
                     &mut *tx,
-                    address,
                     title,
                     thumbnail_image,
                     source,
                     description,
+                    creator_id,
                 )
                 .await?
             {

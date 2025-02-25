@@ -3,12 +3,16 @@ use std::sync::Arc;
 
 use by_macros::DioxusController;
 use dioxus::prelude::*;
+use dto::User;
 use gloo_storage::{LocalStorage, Storage};
 use ic_agent::{identity::BasicIdentity, Identity};
 
-use crate::models::{
-    nft_metadata::NftMetadata,
-    user_wallet::{create_identity, UserWallet},
+use crate::{
+    config,
+    models::{
+        nft_metadata::NftMetadata,
+        user_wallet::{create_identity, UserWallet},
+    },
 };
 
 use super::{icp_canister::IcpCanister, klaytn::Klaytn};
@@ -23,6 +27,7 @@ pub struct UserService {
     sbts: Resource<Vec<(u64, NftMetadata)>>,
     icp_nfts: Resource<Vec<(u64, NftMetadata)>>,
     icp_canister: IcpCanister,
+    user: Signal<Option<User>>,
 }
 
 impl UserService {
@@ -119,6 +124,7 @@ impl UserService {
         });
 
         let srv = Self {
+            user: use_signal(|| None),
             wallet,
             icp_wallet,
             icp_canister,
@@ -137,8 +143,8 @@ impl UserService {
     }
 
     pub fn is_logined(&self) -> bool {
-        match self.wallet() {
-            UserWallet::None => false,
+        match self.user() {
+            None => false,
             _ => true,
         }
     }
@@ -151,7 +157,26 @@ impl UserService {
                 self.icp_wallet.set(Some(Arc::new(icp_wallet)));
             }
             self.wallet.set(wallet);
+
+            let mut ctrl = *self;
+
+            spawn(async move {
+                let addr = ctrl.evm_address().unwrap();
+                let endpoint = config::get().new_api_endpoint;
+                match User::get_client(endpoint).get_user_by_address(addr).await {
+                    Ok(user) => {
+                        ctrl.user.set(Some(user));
+                    }
+                    Err(e) => {
+                        tracing::error!("Failed to get user by address: {e}");
+                    }
+                }
+            });
         }
+    }
+
+    pub fn set_user(&mut self, user: User) {
+        self.user.set(Some(user));
     }
 
     pub fn set_wallet(&mut self, wallet: UserWallet) {

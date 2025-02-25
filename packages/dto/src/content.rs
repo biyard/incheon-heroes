@@ -15,9 +15,6 @@ pub struct Content {
     #[api_model(summary, auto = [insert, update])]
     pub updated_at: i64,
 
-    #[api_model(action = create)]
-    pub address: Option<String>,
-
     #[api_model(summary, action = create)]
     pub title: String,
     #[api_model(summary, action = create)]
@@ -30,6 +27,9 @@ pub struct Content {
     #[api_model(action = create, query_action = search)]
     #[validate(length(min = 1, max = 300))]
     pub description: String,
+
+    #[api_model(many_to_one = users, action = create)]
+    pub creator_id: i64,
 }
 
 #[derive(

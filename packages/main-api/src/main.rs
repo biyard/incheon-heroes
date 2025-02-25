@@ -13,9 +13,13 @@ pub mod config;
 async fn migration(pool: &sqlx::Pool<sqlx::Postgres>) -> Result<()> {
     tracing::info!("Running migration");
     let c = Content::get_repository(pool.clone());
+    let u = User::get_repository(pool.clone());
 
+    u.create_this_table().await?;
     c.create_this_table().await?;
-    c.create_related_tables().await?;
+
+    u.create_table().await?;
+    c.create_table().await?;
 
     tracing::info!("Migration done");
     Ok(())
@@ -39,6 +43,7 @@ async fn main() -> Result<()> {
     migration(&pool).await?;
 
     let app = app
+        .nest("/v1/users", v1::UserController::new(pool.clone()).route()?)
         .nest(
             "/v1/assets",
             v1::AssetController::new(&conf.aws, &conf.bucket)
