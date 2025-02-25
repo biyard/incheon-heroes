@@ -149,6 +149,24 @@ impl UserService {
         use_context_provider(move || srv);
     }
 
+    pub fn get_evm_nfts(&self) -> Vec<(u64, NftMetadata)> {
+        let nfts = match self.evm_nfts.value()() {
+            Some(v) => v,
+            None => vec![],
+        };
+
+        nfts
+    }
+
+    pub fn get_icp_nfts(&self) -> Vec<(u64, NftMetadata)> {
+        let nfts = match self.icp_nfts.value()() {
+            Some(v) => v,
+            None => vec![],
+        };
+
+        nfts
+    }
+
     pub fn is_logined(&self) -> bool {
         match self.user() {
             None => false,

@@ -1,0 +1,91 @@
+[
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "stateAddr",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "experienceAddress",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "nftAddress",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        }
+      ],
+      "name": "listDailyMissions",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "string",
+              "name": "mission",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "missionDescription",
+              "type": "string"
+            },
+            {
+              "internalType": "uint256",
+              "name": "exp",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "times",
+              "type": "uint256[]"
+            }
+          ],
+          "internalType": "struct MissionData[]",
+          "name": "",
+          "type": "tuple[]"
+        },
+        {
+          "components": [
+            {
+              "internalType": "string",
+              "name": "mission",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "missionDescription",
+              "type": "string"
+            },
+            {
+              "internalType": "uint256",
+              "name": "exp",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "times",
+              "type": "uint256[]"
+            }
+          ],
+          "internalType": "struct MissionData[]",
+          "name": "",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+]
