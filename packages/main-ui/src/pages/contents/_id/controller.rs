@@ -1,7 +1,7 @@
 use by_macros::*;
 use dioxus::prelude::*;
 use dioxus_translate::Language;
-use dto::{Content, UserContents};
+use dto::{Content, ContentSummary, UserContents};
 
 use crate::config;
 
@@ -38,7 +38,49 @@ impl Controller {
     }
     pub fn get_nft_data(&self) -> (Content, UserContents) {
         match self.rsc.value()() {
-            Some(v) => v,
+            Some(v) => (
+                Content {
+                    id: 1,
+                    created_at: 1740478684,
+                    updated_at: 1740478684,
+                    title: "Heroes".to_string(),
+                    thumbnail_image: "https://metadata.dagit.club/images/c5ebc4d0-7492-4dea-8b9a-6da41b7a5acf.jpg".to_string(),
+                    source: "dagit.club".to_string(),
+                    description: "Text".to_string(),
+                    creator_id: 1,
+                },
+                UserContents { 
+                    id: 1, 
+                    profile_url: "https://metadata.dagit.club/images/c5ebc4d0-7492-4dea-8b9a-6da41b7a5acf.jpg".to_string(), 
+                    evm_address: "0x07e3274ae79ddac23344039a2d134ec3dbb83575".to_string(), 
+                    contents: vec![
+                        ContentSummary{ 
+                        id: 1, 
+                        created_at: 1740478684, 
+                        updated_at: 1740478684, 
+                        title: "text".to_string(), 
+                        thumbnail_image: "https://metadata.dagit.club/images/c5ebc4d0-7492-4dea-8b9a-6da41b7a5acf.jpg".to_string(), 
+                        source: "dagit.club".to_string() 
+                        },
+                        ContentSummary{ 
+                            id: 2, 
+                            created_at: 1740478684, 
+                            updated_at: 1740478684, 
+                            title: "text".to_string(), 
+                            thumbnail_image: "https://metadata.dagit.club/images/c5ebc4d0-7492-4dea-8b9a-6da41b7a5acf.jpg".to_string(), 
+                            source: "dagit.club".to_string() 
+                            },
+                            ContentSummary{ 
+                                id: 3, 
+                                created_at: 1740478684, 
+                                updated_at: 1740478684, 
+                                title: "text".to_string(), 
+                                thumbnail_image: "https://metadata.dagit.club/images/c5ebc4d0-7492-4dea-8b9a-6da41b7a5acf.jpg".to_string(), 
+                                source: "dagit.club".to_string() 
+                                }
+                        ] },
+            ),
+
             None => (Content::default(), UserContents::default()),
         }
     }

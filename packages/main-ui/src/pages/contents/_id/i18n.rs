@@ -23,6 +23,11 @@ translate! {
     MintNowButtonTranslate;
 
     button_text : {
+        ko: "Mint Now",
+        en: "Mint Now",
+    }
+
+    confirm_text : {
         ko: "확인",
         en: "Confirm",
     }
