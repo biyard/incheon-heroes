@@ -4,8 +4,8 @@ use by_axum::{
     aide,
     auth::Authorization,
     axum::{
-        extract::{Query, State},
-        routing::post,
+        extract::{Path, Query, State},
+        routing::{get, post},
         Extension, Json,
     },
 };
@@ -81,6 +81,7 @@ impl UserController {
     pub fn route(&self) -> Result<by_axum::axum::Router> {
         Ok(by_axum::axum::Router::new()
             .route("/", post(Self::act_user).get(Self::get_user))
+            .route("/:id", get(Self::get_user_by_id))
             .with_state(self.clone())
             .nest(
                 "/contents",
@@ -97,6 +98,22 @@ impl UserController {
         match body {
             UserAction::SignupOrLogin(req) => _ctrl.signup_or_login(_auth, req).await,
         }
+    }
+    pub async fn get_user_by_id(
+        State(ctrl): State<UserController>,
+        Extension(_auth): Extension<Option<Authorization>>,
+        Path(UserPath { id }): Path<UserPath>,
+    ) -> Result<Json<User>> {
+        tracing::debug!("get_content {:?}", id);
+
+        Ok(Json(
+            User::query_builder()
+                .id_equals(id)
+                .query()
+                .map(User::from)
+                .fetch_one(&ctrl.pool)
+                .await?,
+        ))
     }
 
     pub async fn get_user(

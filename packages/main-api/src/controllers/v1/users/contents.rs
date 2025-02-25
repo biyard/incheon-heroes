@@ -2,7 +2,7 @@ use by_axum::{
     aide,
     auth::Authorization,
     axum::{
-        extract::{Query, State},
+        extract::{Path, Query, State},
         routing::get,
         Extension, Json,
     },
@@ -45,7 +45,24 @@ impl UserContentsController {
     pub fn route(&self) -> Result<by_axum::axum::Router> {
         Ok(by_axum::axum::Router::new()
             .route("/", get(Self::list_user_contents))
+            .with_state(self.clone())
+            .route("/:id", get(Self::get_user_contents))
             .with_state(self.clone()))
+    }
+
+    pub async fn get_user_contents(
+        State(ctrl): State<UserContentsController>,
+        Extension(_auth): Extension<Option<Authorization>>,
+        Path(UserContentsPath { id }): Path<UserContentsPath>,
+    ) -> Result<Json<UserContents>> {
+        Ok(Json(
+            UserContents::query_builder()
+                .id_equals(id)
+                .query()
+                .map(UserContents::from)
+                .fetch_one(&ctrl.pool)
+                .await?,
+        ))
     }
 
     pub async fn list_user_contents(

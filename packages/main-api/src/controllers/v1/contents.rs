@@ -137,12 +137,20 @@ impl ContentController {
     }
 
     pub async fn get_content(
-        State(_ctrl): State<ContentController>,
+        State(ctrl): State<ContentController>,
         Extension(_auth): Extension<Option<Authorization>>,
         Path(ContentPath { id }): Path<ContentPath>,
     ) -> Result<Json<Content>> {
         tracing::debug!("get_content {:?}", id);
-        Ok(Json(Content::default()))
+
+        Ok(Json(
+            Content::query_builder()
+                .id_equals(id)
+                .query()
+                .map(Content::from)
+                .fetch_one(&ctrl.pool)
+                .await?,
+        ))
     }
 
     pub async fn list_content(

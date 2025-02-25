@@ -39,9 +39,14 @@ pub enum UserAuthProvider {
 }
 
 /// UserContents is read-only model for users table with contents.
-#[derive(Validate)]
 #[api_model(base = "/v1/users/contents", table = users)]
 pub struct UserContents {
+    #[api_model(summary, primary_key)]
+    pub id: i64,
+
+    #[api_model(action = signup_or_login)]
+    pub profile_url: String,
+
     #[api_model(read_action = contents_by)]
     pub evm_address: String,
 
