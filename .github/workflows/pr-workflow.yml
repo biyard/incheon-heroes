@@ -1,15 +1,17 @@
-name: PR Testing
+
+name: Prod deploy
 
 on:
-  pull_request:
-      types: [opened, synchronize, reopened]
+  push:
+    branches:
+      - main
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
   main-ui:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v3
@@ -17,20 +19,24 @@ jobs:
           submodules: recursive
           ssh-key: ${{ secrets.PULL_KEY_REPO }}
 
+      - uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+
       - uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           components: clippy, rustfmt
           target: wasm32-unknown-unknown
           toolchain: stable
 
-      - name: Install binstall
-        run: |
-          cargo install cargo-binstall
+      - uses: cargo-bins/cargo-binstall@main
 
       - name: Install dioxus-cli
         run: |
-          cargo binstall dioxus-cli --version 0.6.1
-          cargo install toml-cli
+          cargo binstall dioxus-cli --force
+          cargo binstall toml-cli --force
 
       - name: Checking violate
         env:
@@ -44,11 +50,73 @@ jobs:
       - name: Deploy APIs
         env:
           REGION: ap-northeast-2
-          ACCESS_KEY_ID: ""
-          SECRET_ACCESS_KEY: ""
-          ENV: dev
+          ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          FIREBASE_API_KEY: "${{ secrets.FIREBASE_API_KEY }}"
+          FIREBASE_AUTH_DOMAIN: "${{ secrets.FIREBASE_AUTH_DOMAIN }}"
+          FIREBASE_PROJECT_ID: "${{ secrets.FIREBASE_PROJECT_ID }}"
+          FIREBASE_STORAGE_BUCKET: "${{ secrets.FIREBASE_STORAGE_BUCKET }}"
+          FIREBASE_MESSAGING_SENDER_ID: "${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}"
+          FIREBASE_APP_ID: "${{ secrets.FIREBASE_APP_ID }}"
+          FIREBASE_MEASUREMENT_ID: "${{ secrets.FIREBASE_MEASUREMENT_ID }}"
+          MAIN_API_ENDPOINT: https://api.incheon.world
+          ENV: prod
           SERVICE: main-ui
+          DOMAIN: incheonheroes.world
+          KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}
+          KAKAO_REDIRECT_URI: https://incheonheroes.world/oauth/kakao
           API_PREFIX: /api
+          ENABLE_S3: true
+          ENABLE_FARGATE: false
+          ENABLE_DYNAMO: false
+          ENABLE_LAMBDA: true
         run: |
-          npm i -g tailwindcss
+          npm i -g aws-cdk @tailwindcss/cli
+          make build
+
+  main-api:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+          ssh-key: ${{ secrets.PULL_KEY_REPO }}
+
+      - uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          components: clippy, rustfmt
+          target: wasm32-unknown-unknown
+          toolchain: stable
+
+      - uses: cargo-bins/cargo-binstall@main
+
+      - name: Deploy APIs
+        env:
+          REGION: ap-northeast-2
+          ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          KLAYTN_FEEPAYER_KEY: ${{ secrets.DEV_KLAYTN_FEEPAYER_KEY }}
+          KLAYTN_FEEPAYER_ADDR: ${{ secrets.DEV_KLAYTN_FEEPAYER_KEY }}
+          KLAYTN_OWNER_KEY: ${{ secrets.DEV_KLAYTN_FEEPAYER_KEY }}
+          KLAYTN_OWNER_ADDR: ${{ secrets.DEV_KLAYTN_FEEPAYER_KEY }}
+          KLAYTN_ENDPOINT: https://public-en-kairos.node.kaia.io
+          CONTRACT_INCHEON_CONTENTS: 0x54a01cd46b7f585584Fe4a3F7dafC25EE1fac0c9
+          BASE_DOMAIN: incheonheroes.world
+          MAIN_API_ENDPOINT: https://api.incheon.world
+          ENV: prod
+          SERVICE: main-api
+          DOMAIN: api.incheonheroes.world
+          DATABASE_TYPE: postgres
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          ENABLE_S3: false
+          ENABLE_LAMBDA: true
+        run: |
+          npm i -g aws-cdk
           make build

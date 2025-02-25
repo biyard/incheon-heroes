@@ -124,6 +124,13 @@ jobs:
           DOMAIN: api.incheonheroes.world
           DATABASE_TYPE: postgres
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          KLAYTN_FEEPAYER_KEY: ${{ secrets.KLAYTN_FEEPAYER_KEY }}
+          KLAYTN_FEEPAYER_ADDR: ${{ secrets.KLAYTN_FEEPAYER_KEY }}
+          KLAYTN_OWNER_KEY: ${{ secrets.KLAYTN_FEEPAYER_KEY }}
+          KLAYTN_OWNER_ADDR: ${{ secrets.KLAYTN_FEEPAYER_KEY }}
+          KLAYTN_ENDPOINT: https://public-en.node.kaia.io
+          CONTRACT_INCHEON_CONTENTS: ""
+
           ENABLE_S3: false
           ENABLE_LAMBDA: true
         run: |

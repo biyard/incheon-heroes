@@ -40,9 +40,9 @@ impl Default for Config {
             klaytn: KlaytnConfig {
                 endpoint: option_env!("KLAYTN_ENDPOINT").expect("You must set KLAYTN_ENDPOINT"),
                 owner_key: option_env!("KLAYTN_OWNER_KEY").expect("You must set KLAYTN_OWNER_KEY"),
-                owner_address: option_env!("KLAYTN_OWNER_ADDRESS").expect("You must set KLAYTN_OWNER_ADDRESS"),
+                owner_address: option_env!("KLAYTN_OWNER_ADDR").expect("You must set KLAYTN_OWNER_ADDRESS"),
                 feepayer_key: option_env!("KLAYTN_FEEPAYER_KEY").expect("You must set KLAYTN_FEEPAYER_KEY"),
-                feepayer_address: option_env!("KLAYTN_FEEPAYER_ADDRESS").expect("You must set KLAYTN_FEEPAYER_ADDRESS"),
+                feepayer_address: option_env!("KLAYTN_FEEPAYER_ADDR").expect("You must set KLAYTN_FEEPAYER_ADDRESS"),
             },
             contracts: ContractConfig {
                 incheon_contents: option_env!("CONTRACT_INCHEON_CONTENTS").expect("You must set CONTRACT_INCHEON_CONTENTS"),
