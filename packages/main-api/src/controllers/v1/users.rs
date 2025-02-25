@@ -3,7 +3,11 @@ pub mod contents;
 use by_axum::{
     aide,
     auth::Authorization,
-    axum::{extract::State, routing::post, Extension, Json},
+    axum::{
+        extract::{Query, State},
+        routing::post,
+        Extension, Json,
+    },
 };
 use dto::*;
 use sqlx::postgres::PgRow;
@@ -51,6 +55,20 @@ impl UserController {
 
         Ok(Json(user))
     }
+
+    async fn get_user_by_address(
+        &self,
+        UserReadAction { evm_address, .. }: UserReadAction,
+    ) -> Result<Json<User>> {
+        let user = User::query_builder()
+            .evm_address_equals(evm_address.unwrap_or_default())
+            .query()
+            .map(|r: PgRow| r.into())
+            .fetch_one(&self.pool)
+            .await?;
+
+        Ok(Json(user))
+    }
 }
 
 impl UserController {
@@ -62,7 +80,7 @@ impl UserController {
 
     pub fn route(&self) -> Result<by_axum::axum::Router> {
         Ok(by_axum::axum::Router::new()
-            .route("/", post(Self::act_user))
+            .route("/", post(Self::act_user).get(Self::get_user))
             .with_state(self.clone())
             .nest(
                 "/contents",
@@ -78,6 +96,21 @@ impl UserController {
         tracing::debug!("act_user {:?}", body);
         match body {
             UserAction::SignupOrLogin(req) => _ctrl.signup_or_login(_auth, req).await,
+        }
+    }
+
+    pub async fn get_user(
+        State(_ctrl): State<UserController>,
+        Extension(_auth): Extension<Option<Authorization>>,
+        Query(q): Query<UserParam>,
+    ) -> Result<Json<User>> {
+        match q {
+            UserParam::Read(param)
+                if param.action == Some(UserReadActionType::GetUserByAddress) =>
+            {
+                _ctrl.get_user_by_address(param).await
+            }
+            _ => todo!(),
         }
     }
 }

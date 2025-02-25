@@ -7,12 +7,13 @@ use dto::{AssetPresignedUris, Content, ContentCreateRequest};
 use reqwest::header::{HeaderMap, HeaderValue, CONTENT_TYPE};
 use validator::Validate;
 
-use crate::{config, route::Route};
+use crate::{config, route::Route, services::user_service::UserService};
 
 #[derive(Clone, Copy, DioxusController)]
 pub struct Controller {
     pub lang: Language,
     pub contents: Signal<Vec<ContentCreateRequest>>,
+    pub user_service: UserService,
     pub nav: Navigator,
 }
 
@@ -21,6 +22,7 @@ impl Controller {
         let ctrl = Self {
             lang,
             nav: use_navigator(),
+            user_service: use_context(),
             contents: use_signal(|| vec![ContentCreateRequest::default()]),
         };
 
@@ -31,8 +33,10 @@ impl Controller {
         self.contents.push(ContentCreateRequest::default());
     }
 
-    pub fn set_content(&mut self, idx: usize, content: ContentCreateRequest) {
+    pub fn set_content(&mut self, idx: usize, mut content: ContentCreateRequest) {
+        let user_id = self.user_service.user_id().unwrap_or_default();
         self.contents.with_mut(move |contents| {
+            content.creator_id = user_id;
             contents[idx] = content;
         });
     }

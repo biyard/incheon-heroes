@@ -31,6 +31,13 @@ pub struct UserService {
 }
 
 impl UserService {
+    pub fn user_id(&self) -> Option<i64> {
+        match self.user() {
+            Some(user) => Some(user.id),
+            None => None,
+        }
+    }
+
     pub fn init() {
         let wallet = use_signal(|| UserWallet::None);
         let klaytn: Klaytn = use_context();

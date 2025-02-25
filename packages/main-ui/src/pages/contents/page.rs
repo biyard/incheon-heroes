@@ -52,7 +52,9 @@ pub fn ContentsPage(lang: Language) -> Element {
 
             ColGridCards { lang, contents: ctrl.contents()?.items }
 
-            CreateNftButton { lang, label: "{tr.btn_create}" }
+            if ctrl.user_service.is_logined() {
+                CreateNftButton { lang, label: "{tr.btn_create}" }
+            }
         } // end of this page
     }
 }
