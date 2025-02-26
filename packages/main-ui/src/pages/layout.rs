@@ -10,6 +10,7 @@ use by_components::loaders::cube_loader::CubeLoader;
 use by_components::meta::MetaSeoTemplate;
 use by_components::theme::ColorTheme;
 use dioxus::prelude::*;
+use dioxus_popup::PopupZone;
 use dioxus_translate::*;
 
 #[component]
@@ -36,6 +37,7 @@ pub fn RootLayout(lang: Language) -> Element {
                 class: "w-full min-h-[70px] flex flex-row items-center justify-center bg-white",
                 lang,
             }
+            PopupZone {}
             div {
                 class: "w-full max-w-[1440px] py-[70px] max-[1440px]:px-[20px]",
                 min_height: "calc(100vh - 190px)",
@@ -142,7 +144,7 @@ pub fn Header(
                                 onclick: handle_select_menu,
                                 "{tr.contest_voting}"
                             }
-
+                        
                         }
                         Menu {
                             to: Route::ShopPage { lang },
@@ -180,10 +182,10 @@ pub fn Header(
                                 onclick: handle_select_menu,
                                 "{tr.docs}"
                             }
-
+                        
                         }
                     }
-
+                
                 } // end of grow
 
                 div { class: "flex flex-row gap-[15px] items-center h-full z-[1]",
@@ -209,7 +211,7 @@ pub fn Header(
                         }
                     }
                 }
-
+            
             }
         }
     }
