@@ -2,6 +2,7 @@
 use dioxus::prelude::*;
 
 pub mod arrows;
+pub mod complete;
 pub mod heart;
 pub mod send;
 

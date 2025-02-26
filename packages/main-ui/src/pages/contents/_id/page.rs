@@ -1,4 +1,5 @@
 #![allow(non_snake_case)]
+use crate::components::icons::complete::CompleteIcon;
 use crate::components::icons::heart::HeartIcon;
 use crate::components::icons::send::SendIcon;
 use crate::pages::ColGridCards;
@@ -8,17 +9,10 @@ use super::i18n::*;
 #[allow(unused_imports)]
 use by_components::icons;
 use dioxus::prelude::*;
+use dioxus_popup::PopupService;
 use dioxus_translate::*;
 use dto::Content;
 use dto::UserContents;
-
-#[derive(PartialEq, Eq, Clone, Copy)]
-enum PopupState {
-    Closed,
-    Confirm,
-    Loading,
-    Completed,
-}
 
 #[component]
 pub fn ContentsByIdPage(id: i64, lang: Language) -> Element {
@@ -124,53 +118,94 @@ pub fn NFTDescription(content: Content, user: UserContents, lang: Language) -> E
 #[component]
 pub fn MintNowButton(lang: Language) -> Element {
     let tr: MintNowButtonTranslate = translate(&lang);
-    let mut popup_state = use_signal(|| PopupState::Closed);
+    let mut is_step0 = use_signal(|| 1);
+    let mut popup: PopupService = use_context();
 
+    if is_step0() == 1 {
+        popup //open popup
+        .open(rsx! {
+            div {
+                class: "flex flex-col justify-center items-center",
+                style: "background-color: #ffffff; ",
+                div { class: "pt-[20px] pb-[20px] w-[420px] text-start text-[15px] tracking-wide",
+                    span { "{tr.description}" }
+                    div { class: "flex justify-start items-center mt-[20px]",
+                        input { r#type: "checkbox", class: "mr-2" }
+                        label { class: "mr-2 text-[14px] font-bold", "{tr.agreement}" }
+                    }
+                }
+                button {
+                    onclick: move |_event| {
+                        tracing::debug!("Confirm button");
+                        is_step0.set(2);
+                    },
+                    // TODO: If button clicked, send to after Confirm page function need.
+                    div {
+                        class: "flex justify-center items-center rounded-[12px] w-[440px] h-[50px] font-normal text-[18px]",
+                        style: "background-color: #24B28C; color: #ffffff; ",
+                        "{tr.confirm_text}"
+                    }
+                }
+            }
+        })
+        .with_id("created_popup")
+        .with_title(tr.title);
+    } else if is_step0() == 2 {
+        tracing::debug!("button");
+        popup //loading popup
+            .open(rsx! {
+                div {
+                    class: "mb-[10px] flex flex-col justify-between items-center popup-custom",
+                    style: "background-color: #ffffff",
+                    img {
+                        src: "packages/main-ui/public/images/loading.png",
+                        class: "w-[124px] h-[124px]",
+                    }
+                    div { class: "mt-[35px] w-[400px] text-center text-[16px] tracking-wide text-black",
+                        span { "{tr.loading_text}" }
+                    }
+                }
+            })
+            .with_id("loading_popup")
+            .with_title(tr.title)
+            .without_close();
+    } else if is_step0() == 3 {
+        popup //complete popup
+        .open(rsx! {
+            div {
+                class: "flex flex-col justify-center items-center",
+                style: "background-color: #ffffff; ",
+                CompleteIcon {}
+                div { class: "pt-[20px] pb-[20px] w-[400px] text-center text-[15px] tracking-wide",
+                    span { "{tr.complete_text}" }
+                }
+                button {
+                    onclick: move |_event| {
+                        tracing::debug!("Confirm button");
+                    },
+                    // TODO: If button clicked, send to after Confirm page function need.
+                    div {
+                        class: "flex justify-center items-center rounded-[12px] w-[440px] h-[50px] font-normal text-[18px]",
+                        style: "background-color: #24B28C; color: #ffffff; ",
+                        "{tr.confirm_text}"
+                    }
+                }
+            }
+        })
+        .with_id("created_popup");
+    }
     rsx! {
         div {
+            class: "flex justify-center items-center w-[564px] h-[46px] rounded-[12px] align-middle mb-[16px]",
+            style: "background-color: #ffffff",
             button {
-                class: "w-full h-[46px] mb-[16px] bg-white rounded-[12px] text-[16px] flex justify-center items-center",
-                onclick: move |_| {
-                    popup_state.set(PopupState::Confirm);
-                },
-                "{tr.button_text}"
-            }
-
-            match popup_state() {
-                PopupState::Confirm => {
-                    rsx! {
-                        div { class: "popup confirm",
-                            button {
-                                onclick: move |_| {
-                                    popup_state.set(PopupState::Loading);
-                                    popup_state.set(PopupState::Completed);
-                                },
-                                "{tr.confirm_text}"
-                            }
-                        }
-                    }
+                div {
+                    class: "font-bold text-[18px]",
+                    onclick: move |_| {
+                        is_step0.set(1);
+                    },
+                    "{tr.button_text}"
                 }
-                PopupState::Loading => {
-                    rsx! {
-                        div { class: "popup loading",
-                            p { "{tr.loading_text}" }
-                        }
-                    }
-                }
-                PopupState::Completed => {
-                    rsx! {
-                        div { class: "popup completed",
-                            p { "{tr.complete_text}" }
-                            button {
-                                onclick: move |_| {
-                                    popup_state.set(PopupState::Closed);
-                                },
-                                "{tr.confirm_text}"
-                            }
-                        }
-                    }
-                }
-                _ => rsx! {},
             }
         }
     }
