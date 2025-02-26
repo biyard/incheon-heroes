@@ -1,8 +1,7 @@
 use async_trait::async_trait;
-use by_types::config;
 use ethers::types::{Signature, H160};
 
-use crate::{contracts::klaytn_transaction::KlaytnTransaction, FeePayerAddress, FeePayerSignature};
+use crate::{contracts::klaytn_transaction::KlaytnTransaction, FeePayerSignature};
 
 use super::KaiaWallet;
 
