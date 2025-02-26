@@ -51,6 +51,12 @@ async fn main() -> Result<()> {
     set_auth_config(conf.auth.clone());
 
     let app = app
+        .nest(
+            "/v1/fee-payer",
+            v1::FeePayerController::new(&conf.klaytn, provider.clone())
+                .await?
+                .route()?,
+        )
         .nest("/v1/users", v1::UserController::new(pool.clone()).route()?)
         .nest(
             "/v1/assets",
