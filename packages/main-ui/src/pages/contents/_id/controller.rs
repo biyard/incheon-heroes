@@ -10,6 +10,7 @@ pub struct Controller {
     #[allow(dead_code)]
     pub lang: Language,
     pub rsc: Resource<(Content, UserContents)>,
+    pub id: i64,
 }
 
 impl Controller {
@@ -30,8 +31,13 @@ impl Controller {
             (content, user)
         })?;
 
-        let ctrl = Self { lang, rsc };
+        let ctrl = Self { lang, rsc, id };
 
         Ok(ctrl)
+    }
+
+    pub fn opensea_url(&self) -> String {
+        let opensea_endpoint = config::get().opensea_endpoint;
+        format!("{}/{:064x}", opensea_endpoint, self.id)
     }
 }

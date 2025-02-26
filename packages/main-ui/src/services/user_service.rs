@@ -247,7 +247,7 @@ impl UserService {
         let provider = (klaytn.provider)();
         let mut shop = klaytn.shop.cloned();
 
-        let api_endpoint = conf.api_endpoint;
+        let api_endpoint = conf.new_api_endpoint;
         let owner_key = conf.owner_key;
         let feepayer_address = conf.feepayer_address;
 

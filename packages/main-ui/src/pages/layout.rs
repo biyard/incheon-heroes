@@ -4,6 +4,7 @@ use super::i18n::HeaderTranslate;
 use crate::assets::*;
 use crate::components::icons;
 use crate::components::icons::arrows::{ArrowDirection, SingleSimpleArrow};
+use crate::pages::i18n::RootLayoutTranslate;
 use crate::route::Route;
 use crate::services::user_service::UserService;
 use by_components::loaders::cube_loader::CubeLoader;
@@ -18,8 +19,14 @@ pub fn RootLayout(lang: Language) -> Element {
     let theme: ColorTheme = use_context();
     let path: Route = use_route();
     let logo = asset!("/public/logos/logo_symbol_color.png");
+    let tr: RootLayoutTranslate = translate(&lang);
 
     rsx! {
+        document::Title { "{tr.title}" }
+        document::Meta { property: "og:title", content: "{tr.title}" }
+        document::Meta { name: "description", content: "{tr.description}" }
+        document::Meta { property: "og:description", content: "{tr.description}" }
+
         MetaSeoTemplate {
             lang,
             logo_url: "{logo}",
@@ -144,7 +151,6 @@ pub fn Header(
                                 onclick: handle_select_menu,
                                 "{tr.contest_voting}"
                             }
-                        
                         }
                         Menu {
                             to: Route::ShopPage { lang },
@@ -182,10 +188,8 @@ pub fn Header(
                                 onclick: handle_select_menu,
                                 "{tr.docs}"
                             }
-                        
                         }
                     }
-                
                 } // end of grow
 
                 div { class: "flex flex-row gap-[15px] items-center h-full z-[1]",
@@ -211,7 +215,6 @@ pub fn Header(
                         }
                     }
                 }
-            
             }
         }
     }
