@@ -48,7 +48,6 @@ pub struct Config {
     pub nft_metadata_base_url: &'static str,
     pub klaytn_scope_endpoint: &'static str,
 
-    pub feepayer_address: &'static str,
     pub opensea_endpoint: &'static str,
     pub firebase: FirebaseConfig,
     pub klaytn: KlaytnConfig,
@@ -73,8 +72,6 @@ impl Default for Config {
             klaytn_scope_endpoint: option_env!("KLAYTN_SCOPE_ENDPOINT")
                 .unwrap_or("https://scope.klaytn.com/tx"),
             nft_metadata_base_url: option_env!("NFT_BASE_URI").expect("You must set NFT_BASE_URI"),
-            feepayer_address: option_env!("FEEPAYER_ADDRESS")
-                .expect("You must set FEEPAYER_ADDRESS"),
             opensea_endpoint: option_env!("OPENSEA_ENDPOINT")
                 .expect("You must set OPENSEA_ENDPOINT"),
             firebase: FirebaseConfig {

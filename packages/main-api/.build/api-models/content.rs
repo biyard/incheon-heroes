@@ -4,12 +4,18 @@ impl Content
     ContentRepository { ContentRepository :: new(pool) }
 } impl Content
 {
-    pub fn base_sql() -> String { format! ("SELECT * FROM contents",) } pub fn
-    group_by() -> String { "".to_string() } pub fn query_builder() ->
-    ContentRepositoryQueryBuilder
+    pub fn base_sql(user_id : i64) -> String
     {
-        let base_sql = format! ("SELECT * FROM contents",); let g = Content ::
-        group_by(); ContentRepositoryQueryBuilder :: from(& base_sql, & g)
+        format!
+        ("SELECT p.*, COALESCE(MAX(downloads.value), 0) AS downloads, COALESCE(MAX(likes.value), 0) AS likes, \nCASE\n    WHEN EXISTS (\n        SELECT 1 FROM content_likes WHERE content_id = p.id AND user_id = {}\n    ) THEN true\n    ELSE false\nEND AS liked\n FROM contents p \nLEFT JOIN (\n    SELECT content_id, COUNT(id) AS value\n    FROM content_downloads \n    GROUP BY content_id\n) downloads ON p.id = downloads.content_id\n \nLEFT JOIN (\n    SELECT content_id, COUNT(id) AS value\n    FROM content_likes \n    GROUP BY content_id\n) likes ON p.id = likes.content_id\n",
+        user_id)
+    } pub fn group_by() -> String { "GROUP BY p.id".to_string() } pub fn
+    query_builder(user_id : i64) -> ContentRepositoryQueryBuilder
+    {
+        let base_sql = format!
+        ("SELECT p.*, COALESCE(MAX(downloads.value), 0) AS downloads, COALESCE(MAX(likes.value), 0) AS likes, \nCASE\n    WHEN EXISTS (\n        SELECT 1 FROM content_likes WHERE content_id = p.id AND user_id = {}\n    ) THEN true\n    ELSE false\nEND AS liked\n FROM contents p \nLEFT JOIN (\n    SELECT content_id, COUNT(id) AS value\n    FROM content_downloads \n    GROUP BY content_id\n) downloads ON p.id = downloads.content_id\n \nLEFT JOIN (\n    SELECT content_id, COUNT(id) AS value\n    FROM content_likes \n    GROUP BY content_id\n) likes ON p.id = likes.content_id\n",
+        user_id); let g = Content :: group_by(); ContentRepositoryQueryBuilder
+        :: from(& base_sql, & g)
     }
 } impl ContentSummary
 {
@@ -78,7 +84,9 @@ ContentRepositoryUpdateRequest
         ["CREATE TABLE IF NOT EXISTS contents (id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY NOT NULL,created_at BIGINT NOT NULL,updated_at BIGINT NOT NULL,title TEXT NOT NULL,thumbnail_image TEXT NOT NULL,source TEXT NOT NULL,description TEXT NOT NULL,creator_id BIGINT NOT NULL, FOREIGN KEY (creator_id) REFERENCES users(id) ON DELETE CASCADE);",
         "DO $$\nBEGIN\n    IF NOT EXISTS (\n        SELECT 1\n        FROM pg_trigger\n        WHERE tgname = 'trigger_created_at_on_contents'\n        AND tgrelid = 'contents'::regclass\n    ) THEN\n        CREATE TRIGGER trigger_created_at_on_contents\n        BEFORE INSERT ON contents\n        FOR EACH ROW\n        EXECUTE FUNCTION set_created_at();\n    END IF;\nEND $$",
         "DO $$\nBEGIN\n    IF NOT EXISTS (\n        SELECT 1\n        FROM pg_trigger\n        WHERE tgname = 'trigger_updated_at_on_contents'\n        AND tgrelid = 'contents'::regclass\n    ) THEN\n        CREATE TRIGGER trigger_updated_at_on_contents\n        BEFORE INSERT OR UPDATE ON contents\n        FOR EACH ROW\n        EXECUTE FUNCTION set_updated_at();\n    END IF;\nEND $$",
-        "CREATE INDEX IF NOT EXISTS idx_contents_creator_id ON contents(creator_id);"]
+        "CREATE INDEX IF NOT EXISTS idx_contents_creator_id ON contents(creator_id);",
+        "\nCREATE TABLE IF NOT EXISTS content_likes (\n    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,\n    user_id BIGINT NOT NULL,\n    content_id BIGINT NOT NULL,\n    created_at BIGINT NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW()),\n\n    CONSTRAINT fk_contents_users FOREIGN KEY (content_id) REFERENCES contents(id) ON DELETE CASCADE,\n    CONSTRAINT fk_users_contents FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE\n);\n",
+        "CREATE UNIQUE INDEX IF NOT EXISTS idx_content_likes_content_id_user_id ON content_likes (content_id, user_id);"]
     } pub async fn create_this_table(& self) -> std :: result :: Result < (),
     sqlx :: Error >
     {
@@ -94,7 +102,9 @@ ContentRepositoryUpdateRequest
         for query in
         ["DO $$\nBEGIN\n    IF NOT EXISTS (\n        SELECT 1\n        FROM pg_trigger\n        WHERE tgname = 'trigger_created_at_on_contents'\n        AND tgrelid = 'contents'::regclass\n    ) THEN\n        CREATE TRIGGER trigger_created_at_on_contents\n        BEFORE INSERT ON contents\n        FOR EACH ROW\n        EXECUTE FUNCTION set_created_at();\n    END IF;\nEND $$",
         "DO $$\nBEGIN\n    IF NOT EXISTS (\n        SELECT 1\n        FROM pg_trigger\n        WHERE tgname = 'trigger_updated_at_on_contents'\n        AND tgrelid = 'contents'::regclass\n    ) THEN\n        CREATE TRIGGER trigger_updated_at_on_contents\n        BEFORE INSERT OR UPDATE ON contents\n        FOR EACH ROW\n        EXECUTE FUNCTION set_updated_at();\n    END IF;\nEND $$",
-        "CREATE INDEX IF NOT EXISTS idx_contents_creator_id ON contents(creator_id);"]
+        "CREATE INDEX IF NOT EXISTS idx_contents_creator_id ON contents(creator_id);",
+        "\nCREATE TABLE IF NOT EXISTS content_likes (\n    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,\n    user_id BIGINT NOT NULL,\n    content_id BIGINT NOT NULL,\n    created_at BIGINT NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW()),\n\n    CONSTRAINT fk_contents_users FOREIGN KEY (content_id) REFERENCES contents(id) ON DELETE CASCADE,\n    CONSTRAINT fk_users_contents FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE\n);\n",
+        "CREATE UNIQUE INDEX IF NOT EXISTS idx_content_likes_content_id_user_id ON content_likes (content_id, user_id);"]
         {
             tracing :: trace! ("Execute queries: {}", query); sqlx ::
             query(query).execute(& self.pool).await ? ;
@@ -107,7 +117,9 @@ ContentRepositoryUpdateRequest
         self.pool).await ? ; for query in
         ["DO $$\nBEGIN\n    IF NOT EXISTS (\n        SELECT 1\n        FROM pg_trigger\n        WHERE tgname = 'trigger_created_at_on_contents'\n        AND tgrelid = 'contents'::regclass\n    ) THEN\n        CREATE TRIGGER trigger_created_at_on_contents\n        BEFORE INSERT ON contents\n        FOR EACH ROW\n        EXECUTE FUNCTION set_created_at();\n    END IF;\nEND $$",
         "DO $$\nBEGIN\n    IF NOT EXISTS (\n        SELECT 1\n        FROM pg_trigger\n        WHERE tgname = 'trigger_updated_at_on_contents'\n        AND tgrelid = 'contents'::regclass\n    ) THEN\n        CREATE TRIGGER trigger_updated_at_on_contents\n        BEFORE INSERT OR UPDATE ON contents\n        FOR EACH ROW\n        EXECUTE FUNCTION set_updated_at();\n    END IF;\nEND $$",
-        "CREATE INDEX IF NOT EXISTS idx_contents_creator_id ON contents(creator_id);"]
+        "CREATE INDEX IF NOT EXISTS idx_contents_creator_id ON contents(creator_id);",
+        "\nCREATE TABLE IF NOT EXISTS content_likes (\n    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,\n    user_id BIGINT NOT NULL,\n    content_id BIGINT NOT NULL,\n    created_at BIGINT NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW()),\n\n    CONSTRAINT fk_contents_users FOREIGN KEY (content_id) REFERENCES contents(id) ON DELETE CASCADE,\n    CONSTRAINT fk_users_contents FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE\n);\n",
+        "CREATE UNIQUE INDEX IF NOT EXISTS idx_content_likes_content_id_user_id ON content_likes (content_id, user_id);"]
         {
             tracing :: trace! ("Execute queries: {}", query); sqlx ::
             query(query).execute(& self.pool).await ? ;
@@ -138,7 +150,10 @@ ContentRepositoryUpdateRequest
                 row.try_get("thumbnail_image").unwrap_or_default(), source :
                 row.try_get("source").unwrap_or_default(), description :
                 row.try_get("description").unwrap_or_default(), creator_id :
-                row.try_get("creator_id").unwrap_or_default()
+                row.try_get("creator_id").unwrap_or_default(), downloads :
+                row.try_get("downloads").unwrap_or_default(), likes :
+                row.try_get("likes").unwrap_or_default(), liked :
+                row.try_get("liked").unwrap_or_default()
             }
         }).fetch_one(& self.pool).await ? ; Ok(row)
     } pub async fn insert_with_tx < 'e, 'c : 'e, E >
@@ -163,7 +178,10 @@ ContentRepositoryUpdateRequest
                 row.try_get("thumbnail_image").unwrap_or_default(), source :
                 row.try_get("source").unwrap_or_default(), description :
                 row.try_get("description").unwrap_or_default(), creator_id :
-                row.try_get("creator_id").unwrap_or_default()
+                row.try_get("creator_id").unwrap_or_default(), downloads :
+                row.try_get("downloads").unwrap_or_default(), likes :
+                row.try_get("likes").unwrap_or_default(), liked :
+                row.try_get("liked").unwrap_or_default()
             }
         }).fetch_optional(tx).await ? ; Ok(row)
     } pub async fn
@@ -221,7 +239,10 @@ ContentRepositoryUpdateRequest
                 row.try_get("thumbnail_image").unwrap_or_default(), source :
                 row.try_get("source").unwrap_or_default(), description :
                 row.try_get("description").unwrap_or_default(), creator_id :
-                row.try_get("creator_id").unwrap_or_default()
+                row.try_get("creator_id").unwrap_or_default(), downloads :
+                row.try_get("downloads").unwrap_or_default(), likes :
+                row.try_get("likes").unwrap_or_default(), liked :
+                row.try_get("liked").unwrap_or_default()
             }
         }).fetch_one(& self.pool).await ? ; Ok(row)
     } pub async fn delete(& self, id : i64) -> crate::Result < () >
@@ -229,10 +250,11 @@ ContentRepositoryUpdateRequest
         sqlx ::
         query("DELETE FROM contents WHERE id = $1").bind(id).execute(&
         self.pool).await ? ; Ok(())
-    } pub async fn find_one(& self, param : & ContentReadAction) ->
+    } pub async fn
+    find_one(& self, user_id : i64, param : & ContentReadAction) ->
     crate::Result < Content >
     {
-        let mut query = format! ("{}", Content :: base_sql());
+        let mut query = format! ("{}", Content :: base_sql(user_id));
         query.push_str(" "); query.push_str(Content :: group_by().as_str());
         tracing :: trace!
         ("{} query {}: {:?}", "ContentRepository::find_one", query, param);
@@ -248,7 +270,10 @@ ContentRepositoryUpdateRequest
                 row.try_get("thumbnail_image").unwrap_or_default(), source :
                 row.try_get("source").unwrap_or_default(), description :
                 row.try_get("description").unwrap_or_default(), creator_id :
-                row.try_get("creator_id").unwrap_or_default()
+                row.try_get("creator_id").unwrap_or_default(), downloads :
+                row.try_get("downloads").unwrap_or_default(), likes :
+                row.try_get("likes").unwrap_or_default(), liked :
+                row.try_get("liked").unwrap_or_default()
             }
         }).fetch_one(& self.pool).await ? ; Ok(row)
     } pub async fn find(& self, param : & ContentQuery) -> crate::Result <
@@ -300,7 +325,10 @@ ContentRepositoryUpdateRequest
             row.try_get("thumbnail_image").unwrap_or_default(), source :
             row.try_get("source").unwrap_or_default(), description :
             row.try_get("description").unwrap_or_default(), creator_id :
-            row.try_get("creator_id").unwrap_or_default()
+            row.try_get("creator_id").unwrap_or_default(), downloads :
+            row.try_get("downloads").unwrap_or_default(), likes :
+            row.try_get("likes").unwrap_or_default(), liked :
+            row.try_get("liked").unwrap_or_default()
         }
     }
 } impl From < sqlx :: postgres :: PgRow > for ContentSummary
@@ -872,7 +900,8 @@ derive(schemars :: JsonSchema, aide :: OperationIo))] pub struct Content
     pub id : i64, pub created_at : i64, pub updated_at : i64, pub title :
     String, #[validate(url)] pub thumbnail_image : String, #[validate(url)]
     pub source : String, #[validate(length(min = 1, max = 300))] pub
-    description : String, pub creator_id : i64
+    description : String, pub creator_id : i64, pub downloads : i64, pub likes
+    : i64, pub liked : bool
 } #[derive(Debug, Clone, serde :: Serialize, serde :: Deserialize, PartialEq)]
 #[serde(rename_all = "snake_case")]
 #[cfg_attr(feature = "server",
@@ -935,12 +964,18 @@ ContentCreateRequest
 #[serde(rename_all = "snake_case")]
 #[cfg_attr(feature = "server",
 derive(schemars :: JsonSchema, aide :: OperationIo))] pub enum
-ContentByIdAction { Mint(ContentMintRequest), } impl validator :: Validate for
-ContentByIdAction
+ContentByIdAction { Mint(ContentMintRequest), Like(ContentLikeRequest), } impl
+validator :: Validate for ContentByIdAction
 {
     fn validate(& self) -> std :: result :: Result < (), validator ::
     ValidationErrors >
-    { match self { ContentByIdAction :: Mint(req) => req.validate(), } }
+    {
+        match self
+        {
+            ContentByIdAction :: Mint(req) => req.validate(),
+            ContentByIdAction :: Like(req) => req.validate(),
+        }
+    }
 } #[derive(validator :: Validate)]
 #[derive(Debug, Clone, serde :: Serialize, serde :: Deserialize, Default,
 PartialEq)]
@@ -948,6 +983,16 @@ PartialEq)]
 derive(schemars :: JsonSchema, aide :: OperationIo))] pub struct
 ContentMintRequest {} impl Into < ContentRepositoryUpdateRequest > for
 ContentMintRequest
+{
+    fn into(self) -> ContentRepositoryUpdateRequest
+    { ContentRepositoryUpdateRequest { .. Default :: default() } }
+} #[derive(validator :: Validate)]
+#[derive(Debug, Clone, serde :: Serialize, serde :: Deserialize, Default,
+PartialEq)]
+#[cfg_attr(feature = "server",
+derive(schemars :: JsonSchema, aide :: OperationIo))] pub struct
+ContentLikeRequest {} impl Into < ContentRepositoryUpdateRequest > for
+ContentLikeRequest
 {
     fn into(self) -> ContentRepositoryUpdateRequest
     { ContentRepositoryUpdateRequest { .. Default :: default() } }
@@ -964,11 +1009,22 @@ ContentMintRequest
         let path = format! ("/v1/contents",); let endpoint = format!
         ("{}{}/{}", self.endpoint, path, id); let req = ContentByIdAction ::
         Mint(ContentMintRequest {}); rest_api :: post(& endpoint, req).await
+    } pub async fn like(& self, id : i64,) -> crate::Result < Content >
+    {
+        let path = format! ("/v1/contents",); let endpoint = format!
+        ("{}{}/{}", self.endpoint, path, id); let req = ContentByIdAction ::
+        Like(ContentLikeRequest {}); rest_api :: post(& endpoint, req).await
     }
 } impl Into < ContentRepositoryUpdateRequest > for ContentByIdAction
 {
     fn into(self) -> ContentRepositoryUpdateRequest
-    { match self { ContentByIdAction :: Mint(req) => req.into(), } }
+    {
+        match self
+        {
+            ContentByIdAction :: Mint(req) => req.into(), ContentByIdAction ::
+            Like(req) => req.into(),
+        }
+    }
 }
 #[derive(Debug, Clone, serde :: Serialize, serde :: Deserialize, Default,
 PartialEq)]

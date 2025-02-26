@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 use ethers::types::{Signature, H160};
 
-use crate::{contracts::klaytn_transaction::KlaytnTransaction, FeePayerSignature};
+use crate::{contracts::klaytn_transaction::KlaytnTransaction, FeePayerAddress, FeePayerSignature};
 
 use super::KaiaWallet;
 
@@ -12,17 +12,14 @@ pub struct RemoteFeePayer {
 }
 
 impl RemoteFeePayer {
-    pub async fn new(endpoint: &'static str, address: &'static str) -> crate::Result<Self> {
-        // let ret = FeePayerAddress::get_client(endpoint)
-        //     .get_fee_payer()
-        //     .await?;
-
-        // input feepayer address
-        // let address = ret.address.parse().expect("invalid feepayer address");
+    pub async fn new(endpoint: &'static str) -> crate::Result<Self> {
+        let ret = FeePayerAddress::get_client(endpoint)
+            .get_fee_payer()
+            .await?;
 
         Ok(Self {
             endpoint,
-            address: address.parse().expect("invalid feepayer address"),
+            address: ret.address.parse().expect("invalid feepayer address"),
         })
     }
 }

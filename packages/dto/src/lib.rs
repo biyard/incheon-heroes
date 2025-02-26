@@ -1,5 +1,7 @@
 pub mod asset;
 pub mod content;
+pub mod content_downloads;
+pub mod content_likes;
 pub mod contracts;
 pub mod dao;
 pub mod error;

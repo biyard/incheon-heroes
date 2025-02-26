@@ -38,6 +38,10 @@ pub enum Error {
     JwtGenerationFailed,
     #[error("Failed to verify JWT")]
     Unauthorized,
+
+    // Contents
+    #[error("Content not found")]
+    NotFoundContent,
 }
 
 impl From<reqwest::Error> for Error {
