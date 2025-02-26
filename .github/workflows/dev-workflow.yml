@@ -67,14 +67,20 @@ jobs:
           FIREBASE_MESSAGING_SENDER_ID: "${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}"
           FIREBASE_APP_ID: "${{ secrets.FIREBASE_APP_ID }}"
           FIREBASE_MEASUREMENT_ID: "${{ secrets.FIREBASE_MEASUREMENT_ID }}"
+
           MAIN_API_ENDPOINT: https://dev-api.incheon.world
+          NEW_API_ENDPOINT: https://api.dev.incheonheroes.world
+          DISCORD_API_ENDPOINT: https://dev-discord-api.incheon.world
+          LOGS_API_ENDPOINT: https://dev-logs-api.incheon.world
+          NFT_BASE_URI: https://metadata.biyard.co/incheon-heroes/json
+
           ENV: dev
           SERVICE: main-ui
           DOMAIN: dev.incheonheroes.world
           KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}
           KAKAO_REDIRECT_URI: https://dev.incheonheroes.world/oauth/kakao
-          ICP_CANISTER_ID: 5wtzb-piaaa-aaaap-qhjfq-cai
-          ICP_ENDPOINT: https://identity.ic0.app
+          ICP_CANISTER_ID: mkam6-f4aaa-aaaaa-qablq-cai
+          ICP_ENDPOINT: https://rdmx6-jaaaa-aaaaa-aaadq-cai.icp.biyard.co
 
           KLAYTN_ENDPOINT: https://public-en-kairos.node.kaia.io
           CONTRACT_SHOP: "0xd1C122aBCa35B5187CccF98FEb1ddF46E3db5367"

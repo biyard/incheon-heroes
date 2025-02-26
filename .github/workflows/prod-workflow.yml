@@ -67,7 +67,13 @@ jobs:
           FIREBASE_MESSAGING_SENDER_ID: "${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}"
           FIREBASE_APP_ID: "${{ secrets.FIREBASE_APP_ID }}"
           FIREBASE_MEASUREMENT_ID: "${{ secrets.FIREBASE_MEASUREMENT_ID }}"
+
           MAIN_API_ENDPOINT: https://api.incheon.world
+          NEW_API_ENDPOINT: https://api.incheonheroes.world
+          DISCORD_API_ENDPOINT: https://discord-api.incheon.world
+          LOGS_API_ENDPOINT: https://logs-api.incheon.world
+          NFT_BASE_URI: https://metadata.biyard.co/incheon-heroes/json
+
           ENV: prod
           SERVICE: main-ui
           DOMAIN: incheonheroes.world
