@@ -59,4 +59,30 @@ impl Klaytn {
 
         use_context_provider(move || srv);
     }
+
+    pub async fn set_wallet_provider(&mut self, private_key: &str) {
+        let conf = config::get();
+        let api_endpoint = conf.new_api_endpoint;
+        let feepayer_address = conf.feepayer_address;
+
+        let user_wallet = match KaiaLocalWallet::new(private_key, (self.provider)().clone()).await {
+            Ok(wallet) => wallet,
+            Err(e) => {
+                tracing::error!("Failed to create wallet: {}", e);
+                return;
+            }
+        };
+
+        let feepayer = match RemoteFeePayer::new(api_endpoint, feepayer_address).await {
+            Ok(feepayer) => feepayer,
+            Err(e) => {
+                tracing::error!("Failed to create fee payer: {}", e);
+                return;
+            }
+        };
+
+        let mut shop = self.shop.write();
+        shop.set_wallet(user_wallet);
+        shop.set_fee_payer(feepayer);
+    }
 }
