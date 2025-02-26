@@ -1,5 +1,5 @@
 [workspace]
-members = [ "packages/*"]
+members = ["packages/*"]
 resolver = "2"
 exclude = ["deps", "contracts"]
 
@@ -16,7 +16,9 @@ dioxus-oauth = { path = "deps/rust-sdk/packages/dioxus-oauth" }
 dioxus-popup = { path = "deps/rust-sdk/packages/dioxus-popup" }
 dioxus-aws = { path = "deps/rust-sdk/packages/dioxus-aws" }
 google-wallet = { path = "deps/rust-sdk/packages/google-wallet" }
-dioxus-translate = { path = "deps/rust-sdk/packages/dioxus-translate", features = ["ko"] }
+dioxus-translate = { path = "deps/rust-sdk/packages/dioxus-translate", features = [
+    "ko",
+] }
 rest-api = { path = "deps/rust-sdk/packages/rest-api" }
 by-macros = { path = "deps/rust-sdk/packages/by-macros" }
 by-axum = { path = "deps/rust-sdk/packages/by-axum" }
@@ -29,6 +31,7 @@ reqwest = { version = "0.12.5", features = ["blocking", "json", "multipart"] }
 dioxus = { version = "0.6.3" }
 dioxus-web = { version = "0.6.3" }
 candid = "0.10.13"
+ethers = "=2.0.14"
 
 sqlx = { version = "0.8.3", features = [
     "sqlite",

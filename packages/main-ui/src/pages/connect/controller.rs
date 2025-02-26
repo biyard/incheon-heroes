@@ -89,7 +89,7 @@ impl Controller {
         });
     }
 
-    pub async fn handle_kaikas(&self) {}
+    pub async fn handle_kaia(&self) {}
 
     pub async fn handle_internet_identity(&self) {}
 }
