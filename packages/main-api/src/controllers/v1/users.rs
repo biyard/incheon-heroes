@@ -1,14 +1,17 @@
 pub mod contents;
 
+use std::collections::HashMap;
+
 use by_axum::{
     aide,
-    auth::Authorization,
+    auth::{self, Authorization},
     axum::{
         extract::{Path, Query, State},
         routing::{get, post},
         Extension, Json,
     },
 };
+use by_types::{Claims, JsonWithHeaders};
 use dto::*;
 use sqlx::postgres::PgRow;
 
@@ -36,7 +39,7 @@ impl UserController {
             profile_url,
             provider,
         }: UserSignupOrLoginRequest,
-    ) -> Result<Json<User>> {
+    ) -> Result<JsonWithHeaders<User>> {
         let user = match self
             .repo
             .insert(evm_address.clone(), email, subject, profile_url, provider)
@@ -53,21 +56,45 @@ impl UserController {
             }
         };
 
-        Ok(Json(user))
+        let mut claims = Claims {
+            sub: user.evm_address.clone(),
+            exp: 0,
+            role: by_types::Role::User,
+            custom: HashMap::new(),
+        };
+
+        let jwt = auth::generate_jwt(&mut claims).map_err(|e| {
+            tracing::error!("jwt generation error: {:?}", e);
+            Error::JwtGenerationFailed
+        })?;
+
+        Ok(JsonWithHeaders::new(user).with_bearer_token(&jwt))
     }
 
     async fn get_user_by_address(
         &self,
         UserReadAction { evm_address, .. }: UserReadAction,
-    ) -> Result<Json<User>> {
-        let user = User::query_builder()
+    ) -> Result<JsonWithHeaders<User>> {
+        let user: User = User::query_builder()
             .evm_address_equals(evm_address.unwrap_or_default())
             .query()
             .map(|r: PgRow| r.into())
             .fetch_one(&self.pool)
             .await?;
 
-        Ok(Json(user))
+        let mut claims = Claims {
+            sub: user.evm_address.clone(),
+            exp: 0,
+            role: by_types::Role::User,
+            custom: HashMap::new(),
+        };
+
+        let jwt = auth::generate_jwt(&mut claims).map_err(|e| {
+            tracing::error!("jwt generation error: {:?}", e);
+            Error::JwtGenerationFailed
+        })?;
+
+        Ok(JsonWithHeaders::new(user).with_bearer_token(&jwt))
     }
 }
 
@@ -93,7 +120,7 @@ impl UserController {
         State(_ctrl): State<UserController>,
         Extension(_auth): Extension<Option<Authorization>>,
         Json(body): Json<UserAction>,
-    ) -> Result<Json<User>> {
+    ) -> Result<JsonWithHeaders<User>> {
         tracing::debug!("act_user {:?}", body);
         match body {
             UserAction::SignupOrLogin(req) => _ctrl.signup_or_login(_auth, req).await,
@@ -120,7 +147,7 @@ impl UserController {
         State(_ctrl): State<UserController>,
         Extension(_auth): Extension<Option<Authorization>>,
         Query(q): Query<UserParam>,
-    ) -> Result<Json<User>> {
+    ) -> Result<JsonWithHeaders<User>> {
         match q {
             UserParam::Read(param)
                 if param.action == Some(UserReadActionType::GetUserByAddress) =>

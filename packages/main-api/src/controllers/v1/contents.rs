@@ -16,8 +16,10 @@ use dto::*;
 use ethers::prelude::*;
 use sqlx::postgres::PgRow;
 use validator::Validate;
+use wallets::local_fee_payer::LocalFeePayer;
+use wallets::wallet::KaiaLocalWallet;
 
-use crate::config::{BucketConfig, ContractConfig};
+use crate::config::{BucketConfig, ContractConfig, KlaytnConfig};
 
 #[derive(
     Debug, Clone, serde::Deserialize, serde::Serialize, schemars::JsonSchema, aide::OperationIo,
@@ -30,7 +32,7 @@ pub struct ContentPath {
 pub struct ContentController {
     repo: ContentRepository,
     #[allow(unused)]
-    contract: IncheonContentsContract,
+    contract: IncheonContentsContract<LocalFeePayer, KaiaLocalWallet>,
     pool: sqlx::Pool<sqlx::Postgres>,
     cli: aws_sdk_s3::Client,
     bucket_name: &'static str,
@@ -40,9 +42,16 @@ pub struct ContentController {
 impl ContentController {
     async fn create_bulk(
         &self,
-        _auth: Option<Authorization>,
+        auth: Option<Authorization>,
         body: Vec<ContentCreateRequest>,
     ) -> Result<Json<Content>> {
+        let evm_address = match auth {
+            Some(Authorization::Bearer { claims }) => claims.sub,
+            _ => {
+                return Err(Error::Unauthorized.into());
+            }
+        };
+
         let mut tx = self.pool.begin().await?;
         let mut docs = vec![];
 
@@ -74,6 +83,11 @@ impl ContentController {
 
         tx.commit().await?;
 
+        tracing::debug!("successful insertion docs: {:?}", docs);
+
+        let mut ids = vec![];
+        let mut values = vec![];
+
         for doc in docs.clone() {
             let path = format!("{}/json/{}.json", self.asset_dir, doc.id);
             match self
@@ -97,6 +111,8 @@ impl ContentController {
                 .await
             {
                 Ok(_) => {
+                    ids.push(doc.id as u64);
+                    values.push(1);
                     tracing::debug!("Uploaded to s3: {}", path);
                 }
                 Err(e) => {
@@ -104,6 +120,15 @@ impl ContentController {
                 }
             }
         }
+
+        tracing::debug!(
+            "address: {} ids: {:?}, values: {:?}",
+            evm_address,
+            ids,
+            values
+        );
+
+        self.contract.mint_batch(evm_address, ids, values).await?;
 
         Ok(Json(
             docs.last().ok_or(Error::NoContentAfterInsert)?.clone(),
@@ -147,7 +172,13 @@ impl ContentController {
         &ContractConfig {
             incheon_contents, ..
         }: &ContractConfig,
-    ) -> Self {
+        &KlaytnConfig {
+            owner_key,
+            feepayer_key,
+            feepayer_address,
+            ..
+        }: &KlaytnConfig,
+    ) -> Result<Self> {
         let repo = Content::get_repository(pool.clone());
         use aws_config::BehaviorVersion;
         use aws_config::{defaults, Region};
@@ -166,16 +197,22 @@ impl ContentController {
         let config = config.load().await;
         let cli = aws_sdk_s3::Client::new(&config);
 
-        let contract = IncheonContentsContract::new(incheon_contents, provider);
+        let onwer = KaiaLocalWallet::new(&owner_key, provider.clone()).await?;
+        let feepayer =
+            LocalFeePayer::new(&feepayer_address, feepayer_key, provider.clone()).await?;
 
-        Self {
+        let mut contract = IncheonContentsContract::new(incheon_contents, provider);
+        contract.set_wallet(onwer);
+        contract.set_fee_payer(feepayer);
+
+        Ok(Self {
             repo,
             contract,
             pool,
             cli,
             bucket_name: name,
             asset_dir,
-        }
+        })
     }
 
     pub fn route(&self) -> Result<by_axum::axum::Router> {

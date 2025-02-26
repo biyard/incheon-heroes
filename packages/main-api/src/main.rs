@@ -2,6 +2,7 @@ pub mod controllers;
 
 use std::sync::Arc;
 
+use by_axum::auth::set_auth_config;
 use controllers::*;
 
 use by_axum::{auth::authorization_middleware, axum::middleware};
@@ -47,6 +48,7 @@ async fn main() -> Result<()> {
     migration(&pool).await?;
     let provider = Provider::<Http>::try_from(conf.klaytn.endpoint).unwrap();
     let provider = Arc::new(provider);
+    set_auth_config(conf.auth.clone());
 
     let app = app
         .nest("/v1/users", v1::UserController::new(pool.clone()).route()?)
@@ -64,8 +66,9 @@ async fn main() -> Result<()> {
                 &conf.bucket,
                 provider,
                 &conf.contracts,
+                &conf.klaytn,
             )
-            .await
+            .await?
             .route()?,
         )
         .layer(middleware::from_fn(authorization_middleware));

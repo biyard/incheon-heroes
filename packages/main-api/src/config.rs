@@ -4,6 +4,7 @@ use by_types::config::*;
 pub struct Config {
     pub env: &'static str,
     pub aws: AwsConfig,
+    pub auth: AuthConfig,
     pub database: DatabaseConfig,
     pub bucket: BucketConfig,
     pub klaytn: KlaytnConfig,
@@ -49,6 +50,7 @@ impl Default for Config {
             },
             aws: AwsConfig::default(),
             database: DatabaseConfig::default(),
+            auth: AuthConfig::default(),
             bucket: BucketConfig {
                 name: option_env!("BUCKET_NAME").expect("You must set BUCKET_NAME"),
                 asset_dir: option_env!("ASSET_DIR").expect("You must set ASSET_DIR"),
