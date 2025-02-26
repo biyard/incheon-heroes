@@ -1,23 +1,30 @@
 use async_trait::async_trait;
+use by_types::config;
 use ethers::types::{Signature, H160};
 
 use crate::{contracts::klaytn_transaction::KlaytnTransaction, FeePayerAddress, FeePayerSignature};
 
 use super::KaiaWallet;
 
+#[derive(Clone, Copy)]
 pub struct RemoteFeePayer {
     pub endpoint: &'static str,
     pub address: H160,
 }
 
 impl RemoteFeePayer {
-    pub async fn new(endpoint: &'static str) -> crate::Result<Self> {
-        let ret = FeePayerAddress::get_client(endpoint)
-            .get_fee_payer()
-            .await?;
-        let address = ret.address.parse().expect("invalid feepayer address");
+    pub async fn new(endpoint: &'static str, address: &'static str) -> crate::Result<Self> {
+        // let ret = FeePayerAddress::get_client(endpoint)
+        //     .get_fee_payer()
+        //     .await?;
 
-        Ok(Self { endpoint, address })
+        // input feepayer address
+        // let address = ret.address.parse().expect("invalid feepayer address");
+
+        Ok(Self {
+            endpoint,
+            address: address.parse().expect("invalid feepayer address"),
+        })
     }
 }
 

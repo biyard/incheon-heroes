@@ -35,6 +35,7 @@ fn app() -> Element {
         },
         ..Default::default()
     });
+
     Klaytn::init();
     BackendApi::init();
     IcpCanister::init();

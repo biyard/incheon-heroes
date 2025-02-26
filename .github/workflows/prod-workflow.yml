@@ -66,6 +66,8 @@ jobs:
           FIREBASE_MESSAGING_SENDER_ID: "${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}"
           FIREBASE_APP_ID: "${{ secrets.FIREBASE_APP_ID }}"
           FIREBASE_MEASUREMENT_ID: "${{ secrets.FIREBASE_MEASUREMENT_ID }}"
+          OWNER_KEY: ${{ secrets.OWNER_KEY }}
+          FEEPAYER_ADDRESS: ${{ secrets.FEEPAYER_ADDRESS }}
           MAIN_API_ENDPOINT: https://api.incheon.world
           ENV: prod
           SERVICE: main-ui

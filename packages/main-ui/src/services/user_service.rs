@@ -3,7 +3,10 @@ use std::sync::Arc;
 
 use by_macros::DioxusController;
 use dioxus::prelude::*;
-use dto::User;
+use dto::{
+    wallets::{remote_fee_payer::RemoteFeePayer, wallet::KaiaLocalWallet},
+    User,
+};
 use gloo_storage::{LocalStorage, Storage};
 use ic_agent::{identity::BasicIdentity, Identity};
 
@@ -48,7 +51,7 @@ impl UserService {
                 Some(address) => address,
                 None => return vec![],
             };
-            let sbt = klaytn.sbt();
+            let sbt = (klaytn.sbt)();
 
             match sbt.list_token_ids_by_address(address).await {
                 Ok(ids) => {
@@ -88,7 +91,7 @@ impl UserService {
                 None => return vec![],
             };
 
-            match klaytn.holder().list_token_ids_by_address(address).await {
+            match (klaytn.holder)().list_token_ids_by_address(address).await {
                 Ok(ids) => {
                     let mut nfts = vec![];
                     for id in ids {
@@ -190,6 +193,7 @@ impl UserService {
                 let endpoint = config::get().new_api_endpoint;
                 match User::get_client(endpoint).get_user_by_address(addr).await {
                     Ok(user) => {
+                        ctrl.set_contract_config();
                         ctrl.user.set(Some(user));
                     }
                     Err(e) => {
@@ -218,6 +222,7 @@ impl UserService {
         }
 
         self.wallet.set(wallet);
+        self.set_contract_config();
     }
 
     pub fn evm_address(&self) -> Option<String> {
@@ -234,5 +239,32 @@ impl UserService {
             UserWallet::SocialWallet { principal, .. } => Some(principal),
             UserWallet::None => None,
         }
+    }
+
+    fn set_contract_config(&self) {
+        let conf = config::get();
+        let mut klaytn: Klaytn = use_context();
+        let provider = (klaytn.provider)();
+        let mut shop = klaytn.shop.cloned();
+
+        let api_endpoint = conf.api_endpoint;
+        let owner_key = conf.owner_key;
+        let feepayer_address = conf.feepayer_address;
+
+        spawn(async move {
+            //FIXME: convert owner, feepayer key and address to api code
+            let owner = KaiaLocalWallet::new(owner_key, provider.clone())
+                .await
+                .unwrap();
+
+            let feepayer = RemoteFeePayer::new(api_endpoint, feepayer_address)
+                .await
+                .unwrap();
+
+            shop.set_wallet(owner);
+            shop.set_fee_payer(feepayer);
+
+            klaytn.shop.set(shop);
+        });
     }
 }

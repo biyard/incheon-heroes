@@ -46,6 +46,10 @@ pub struct Config {
     pub logs_api_endpoint: &'static str,
     pub nft_metadata_base_url: &'static str,
     pub klaytn_scope_endpoint: &'static str,
+    pub api_endpoint: &'static str,
+
+    pub owner_key: &'static str,
+    pub feepayer_address: &'static str,
     pub firebase: FirebaseConfig,
     pub klaytn: KlaytnConfig,
     pub contracts: ContractConfig,
@@ -56,6 +60,7 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Self {
         Config {
+            api_endpoint: option_env!("API_ENDPOINT").expect("You must set API_ENDPOINT"),
             env: option_env!("ENV").expect("You must set ENV"),
             domain: option_env!("DOMAIN").expect("You must set DOMAIN"),
             new_api_endpoint: option_env!("NEW_API_ENDPOINT")
@@ -69,6 +74,9 @@ impl Default for Config {
             klaytn_scope_endpoint: option_env!("KLAYTN_SCOPE_ENDPOINT")
                 .unwrap_or("https://scope.klaytn.com/tx"),
             nft_metadata_base_url: option_env!("NFT_BASE_URI").expect("You must set NFT_BASE_URI"),
+            owner_key: option_env!("OWNER_KEY").expect("You must set OWNER_KEY"),
+            feepayer_address: option_env!("FEEPAYER_ADDRESS")
+                .expect("You must set FEEPAYER_ADDRESS"),
             firebase: FirebaseConfig {
                 api_key: option_env!("FIREBASE_API_KEY")
                     .expect("You must set FIREBASE_API_KEY")

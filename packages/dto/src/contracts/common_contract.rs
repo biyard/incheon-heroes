@@ -1,6 +1,6 @@
 use std::sync::Arc;
-use std::thread::sleep;
 use std::time::Duration;
+use wasm_timer::Delay;
 
 use abi::Abi;
 use ethers::prelude::*;
@@ -104,18 +104,21 @@ impl<T: KaiaWallet, W: KaiaWallet> CommonContract<T, W> {
 
         tracing::debug!("tx hash: {}", tx_hash);
 
+        let mut status = "".to_string();
+
         for _ in 0..3 {
-            sleep(Duration::from_secs(1));
-            let res: std::result::Result<TransactionReceipt, Error> = rest_api::post(
-                self.provider.url().as_str(),
-                serde_json::json!({
-                    "jsonrpc": "2.0",
-                    "id": 1,
-                    "method": "kaia_getTransactionReceipt",
-                    "params": [tx_hash],
-                }),
-            )
-            .await;
+            let _ = Delay::new(Duration::from_secs(1)).await;
+            let res: std::result::Result<JsonRpcResponse<TransactionReceipt>, Error> =
+                rest_api::post(
+                    self.provider.url().as_str(),
+                    serde_json::json!({
+                        "jsonrpc": "2.0",
+                        "id": 1,
+                        "method": "kaia_getTransactionReceipt",
+                        "params": [tx_hash],
+                    }),
+                )
+                .await;
             let res = match res {
                 Ok(res) => res,
                 Err(e) => {
@@ -125,9 +128,20 @@ impl<T: KaiaWallet, W: KaiaWallet> CommonContract<T, W> {
             };
 
             tracing::debug!("receipt {:?}", res);
+
+            status = match res.result {
+                Some(v) => v.status,
+                None => "".to_string(),
+            };
+
+            break;
         }
 
-        Ok(tx_hash)
+        if status == "0x0" {
+            Ok(tx_hash)
+        } else {
+            Err(Error::Klaytn("internal error".to_string()))
+        }
     }
 }
 
@@ -143,6 +157,7 @@ pub struct JsonRpcResponse<T> {
 #[serde(rename_all = "camelCase")]
 pub struct TransactionReceipt {
     pub block_number: String,
+    pub status: String,
 }
 
 #[cfg(test)]

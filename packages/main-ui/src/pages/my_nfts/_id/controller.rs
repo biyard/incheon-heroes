@@ -44,7 +44,7 @@ impl Controller {
         })?;
 
         let mission = use_server_future(move || async move {
-            match klaytn.mission().list_daily_missions(id).await {
+            match (klaytn.mission)().list_daily_missions(id).await {
                 Ok(res) => res,
                 Err(e) => {
                     tracing::error!("get mission failed: {:?}", e);
@@ -54,15 +54,14 @@ impl Controller {
         })?;
 
         let level_info = use_server_future(move || async move {
-            match klaytn.experience().get_nft_exp(id).await {
+            match (klaytn.experience)().get_nft_exp(id).await {
                 Ok(res) => {
                     tracing::debug!("{:?}", res);
                     let level = res.0.as_u64();
                     let elevel = res.1.as_u64();
                     let exp = res.2.as_u64();
 
-                    match klaytn
-                        .experience()
+                    match (klaytn.experience)()
                         .get_max_exp(elevel as i64, level as i64, id)
                         .await
                     {

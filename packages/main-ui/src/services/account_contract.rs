@@ -1,7 +1,5 @@
 use std::sync::Arc;
 
-use abi::Abi;
-use dto::*;
 use ethers::prelude::*;
 
 #[derive(Debug, Clone)]
