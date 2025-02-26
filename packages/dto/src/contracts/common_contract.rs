@@ -129,15 +129,16 @@ impl<T: KaiaWallet, W: KaiaWallet> CommonContract<T, W> {
 
             tracing::debug!("receipt {:?}", res);
 
-            status = match res.result {
-                Some(v) => v.status,
+            match res.result {
+                Some(v) => {
+                    status = v.status;
+                    break;
+                }
                 None => "".to_string(),
             };
-
-            break;
         }
 
-        if status == "0x0" {
+        if status == "0x1" {
             Ok(tx_hash)
         } else {
             Err(Error::Klaytn("internal error".to_string()))
