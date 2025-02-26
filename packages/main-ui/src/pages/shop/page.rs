@@ -90,8 +90,12 @@ pub fn ShopPage(lang: Language) -> Element {
                         level: item.level,
                         lang,
                         remaining_quantity: item.remaining.as_u64(),
-                        onbuy: move |_| ctrl.handle_buy(i),
-                        onlike: move |_| ctrl.handle_like(i),
+                        onbuy: move |_| async move {
+                            ctrl.handle_buy(i).await;
+                        },
+                        onlike: move |_| async move {
+                            ctrl.handle_like(i).await;
+                        },
                     }
                 }
             }
@@ -127,7 +131,7 @@ pub fn HorizontalSlide(
                     }
                 }
             }
-
+        
         }
     }
 }
@@ -219,7 +223,7 @@ pub fn ShopItemCard(
                     }
                     "{likes}"
                 }
-
+            
 
             }
         }

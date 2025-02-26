@@ -5,7 +5,10 @@ use by_axum::{
     axum::{extract::State, routing::post, Extension, Json},
 };
 use dto::*;
-use ethers::providers::{Http, Provider};
+use ethers::{
+    providers::{Http, Provider},
+    utils::hex::ToHexExt,
+};
 use wallets::{local_fee_payer::LocalFeePayer, KaiaWallet};
 
 use crate::config::KlaytnConfig;
@@ -65,7 +68,7 @@ impl FeePayerController {
         Extension(_auth): Extension<Option<Authorization>>,
     ) -> Result<Json<FeePayerAddress>> {
         Ok(Json(FeePayerAddress {
-            address: ctrl.feepayer.address().to_string(),
+            address: ctrl.feepayer.address().encode_hex(),
         }))
     }
 }
