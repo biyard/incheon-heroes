@@ -89,7 +89,7 @@ impl ContentController {
         let mut values = vec![];
 
         for doc in docs.clone() {
-            let path = format!("{}/json/{}.json", self.asset_dir, doc.id);
+            let path = format!("{}/json/{:064x}.json", self.asset_dir, doc.id);
             match self
                 .cli
                 .put_object()
