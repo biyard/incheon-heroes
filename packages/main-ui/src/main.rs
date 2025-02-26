@@ -5,6 +5,7 @@ pub mod models;
 pub mod pages;
 pub mod route;
 pub mod services;
+pub mod utils;
 
 use crate::route::Route;
 use by_components::theme::{CardColorTheme, ColorTheme, TextColorTheme};
@@ -34,6 +35,7 @@ fn app() -> Element {
         },
         ..Default::default()
     });
+
     Klaytn::init();
     BackendApi::init();
     IcpCanister::init();

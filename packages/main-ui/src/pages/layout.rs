@@ -37,7 +37,7 @@ pub fn RootLayout(lang: Language) -> Element {
                 class: "w-full min-h-[70px] flex flex-row items-center justify-center bg-white",
                 lang,
             }
-            PopupZone {}
+            PopupZone { background_color: "#ffffff", border_class: "" }
             div {
                 class: "w-full max-w-[1440px] py-[70px] max-[1440px]:px-[20px]",
                 min_height: "calc(100vh - 190px)",

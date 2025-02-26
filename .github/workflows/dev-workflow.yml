@@ -67,6 +67,8 @@ jobs:
           FIREBASE_MESSAGING_SENDER_ID: "${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}"
           FIREBASE_APP_ID: "${{ secrets.FIREBASE_APP_ID }}"
           FIREBASE_MEASUREMENT_ID: "${{ secrets.FIREBASE_MEASUREMENT_ID }}"
+          OWNER_KEY: ${{ secrets.DEV_KLAYTN_FEEPAYER_KEY }}
+          FEEPAYER_ADDRESS: ${{ secrets.DEV_KLAYTN_FEEPAYER_ADDR }}
 
           MAIN_API_ENDPOINT: https://dev-api.incheon.world
           NEW_API_ENDPOINT: https://api.dev.incheonheroes.world
