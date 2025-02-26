@@ -13,7 +13,7 @@ AWS_REGION ?= $(shell aws configure get region)
 
 BASE_DOMAIN ?= incheonheroes.world
 BUCKET_EXPIRE ?= 3600
-ASSET_DIR ?= assets
+ASSET_DIR ?= metadata
 
 KLAYTN_FEEPAYER_KEY ?= $(DEV_KEY)
 KLAYTN_FEEPAYER_ADDR ?= $(DEV_ADDR)

@@ -57,6 +57,7 @@ jobs:
       - name: Deploy APIs
         env:
           REGION: ap-northeast-2
+          RUST_LOG: debug
           ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           FIREBASE_API_KEY: "${{ secrets.FIREBASE_API_KEY }}"
@@ -66,12 +67,23 @@ jobs:
           FIREBASE_MESSAGING_SENDER_ID: "${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}"
           FIREBASE_APP_ID: "${{ secrets.FIREBASE_APP_ID }}"
           FIREBASE_MEASUREMENT_ID: "${{ secrets.FIREBASE_MEASUREMENT_ID }}"
-          MAIN_API_ENDPOINT: https://api.dev.incheon.world
-          ENV: env
+          MAIN_API_ENDPOINT: https://dev-api.incheon.world
+          ENV: dev
           SERVICE: main-ui
           DOMAIN: dev.incheonheroes.world
           KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}
           KAKAO_REDIRECT_URI: https://dev.incheonheroes.world/oauth/kakao
+          ICP_CANISTER_ID: 5wtzb-piaaa-aaaap-qhjfq-cai
+          ICP_ENDPOINT: https://identity.ic0.app
+
+          KLAYTN_ENDPOINT: https://public-en-kairos.node.kaia.io
+          CONTRACT_SHOP: "0xd1C122aBCa35B5187CccF98FEb1ddF46E3db5367"
+          CONTRACT_HOLDER: "0xCeE4aAaD519D03D92C31402ea4dA5A0e7CA6b9D4"
+          CONTRACT_SBT: "0xA7655552f1E170A2B2C4193E0a567908fb3a38B9"
+          CONTRACT_EXPERIENCE: "0x24e9B346D95Af3220A1022861a1A3ce936B5D6C2"
+          CONTRACT_NFT: "0x7F3A142E8bbb68098159ff5Ff6557c6C99325B8b"
+          CONTRACT_MISSION: "0x70ADA463d16F52ade7C3D03E1864c7B89061B01f"
+
           API_PREFIX: /api
           ENABLE_S3: true
           ENABLE_FARGATE: false
@@ -118,18 +130,22 @@ jobs:
           ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           BASE_DOMAIN: dev.incheonheroes.world
-          MAIN_API_ENDPOINT: https://api.dev.incheon.world
-          ENV: prod
+          ENV: dev
+          RUST_LOG: debug
           SERVICE: main-api
           DOMAIN: api.dev.incheonheroes.world
+          JWT_SECRET_KEY: ${{ secrets.DEV_JWT_SECRET }}
+
           DATABASE_TYPE: postgres
           DATABASE_URL: ${{ secrets.DEV_DATABASE_URL }}
+
           KLAYTN_FEEPAYER_KEY: ${{ secrets.DEV_KLAYTN_FEEPAYER_KEY }}
           KLAYTN_FEEPAYER_ADDR: ${{ secrets.DEV_KLAYTN_FEEPAYER_ADDR }}
           KLAYTN_OWNER_KEY: ${{ secrets.DEV_KLAYTN_FEEPAYER_KEY }}
           KLAYTN_OWNER_ADDR: ${{ secrets.DEV_KLAYTN_FEEPAYER_KEY_ADDR }}
           KLAYTN_ENDPOINT: https://public-en-kairos.node.kaia.io
           CONTRACT_INCHEON_CONTENTS: "0x54a01cd46b7f585584Fe4a3F7dafC25EE1fac0c9"
+
           ENABLE_S3: false
           ENABLE_LAMBDA: true
         run: |
