@@ -23,7 +23,12 @@ pub fn ContentsByIdPage(id: i64, lang: Language) -> Element {
     rsx! {
         by_components::meta::MetaPage { title: "{tr.title}" }
 
-        NFTDescription { content: content.clone(), user: user.clone(), lang }
+        NFTDescription {
+            content: content.clone(),
+            user: user.clone(),
+            lang,
+            opensea_url: ctrl.opensea_url(),
+        }
 
         p {
             {
@@ -40,7 +45,12 @@ pub fn ContentsByIdPage(id: i64, lang: Language) -> Element {
 }
 
 #[component]
-pub fn NFTDescription(content: Content, user: UserContents, lang: Language) -> Element {
+pub fn NFTDescription(
+    content: Content,
+    user: UserContents,
+    lang: Language,
+    opensea_url: String,
+) -> Element {
     let title = content.title;
     let thumbnail_image = content.thumbnail_image;
     let description = content.description;
@@ -99,6 +109,7 @@ pub fn NFTDescription(content: Content, user: UserContents, lang: Language) -> E
                         "Share"
                                         // TODO: need data matching
                     }
+                    a { href: "{opensea_url}", "OpenSea Icon" }
                 }
 
                 //Mint now button

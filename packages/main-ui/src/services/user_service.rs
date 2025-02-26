@@ -3,10 +3,7 @@ use std::sync::Arc;
 
 use by_macros::DioxusController;
 use dioxus::prelude::*;
-use dto::{
-    wallets::{remote_fee_payer::RemoteFeePayer, wallet::KaiaLocalWallet},
-    User,
-};
+use dto::User;
 use gloo_storage::{LocalStorage, Storage};
 use ic_agent::{identity::BasicIdentity, Identity};
 
@@ -31,6 +28,7 @@ pub struct UserService {
     icp_nfts: Resource<Vec<(u64, NftMetadata)>>,
     icp_canister: IcpCanister,
     user: Signal<Option<User>>,
+    klaytn: Klaytn,
 }
 
 impl UserService {
@@ -141,12 +139,15 @@ impl UserService {
             evm_nfts,
             sbts,
             icp_nfts,
+            klaytn: use_context(),
         };
 
         #[cfg(feature = "web")]
         use_effect(move || {
-            let mut srv = srv;
-            srv.load_wallet_from_storage();
+            spawn(async move {
+                let mut srv = srv;
+                srv.load_wallet_from_storage().await;
+            });
         });
 
         use_context_provider(move || srv);
@@ -177,7 +178,7 @@ impl UserService {
         }
     }
 
-    pub fn load_wallet_from_storage(&mut self) {
+    pub async fn load_wallet_from_storage(&mut self) {
         if let Ok(wallet) = LocalStorage::get::<UserWallet>(USER_WALLET_KEY) {
             tracing::debug!("Loaded wallet from storage: {wallet}");
             if let Some(seed_hex) = wallet.seed() {
@@ -186,21 +187,17 @@ impl UserService {
             }
             self.wallet.set(wallet);
 
-            let mut ctrl = *self;
-
-            spawn(async move {
-                let addr = ctrl.evm_address().unwrap();
-                let endpoint = config::get().new_api_endpoint;
-                match User::get_client(endpoint).get_user_by_address(addr).await {
-                    Ok(user) => {
-                        ctrl.set_contract_config();
-                        ctrl.user.set(Some(user));
-                    }
-                    Err(e) => {
-                        tracing::error!("Failed to get user by address: {e}");
-                    }
+            let addr = self.evm_address().unwrap();
+            let endpoint = config::get().new_api_endpoint;
+            match User::get_client(endpoint).get_user_by_address(addr).await {
+                Ok(user) => {
+                    self.user.set(Some(user));
+                    self.set_contract_config().await;
                 }
-            });
+                Err(e) => {
+                    tracing::error!("Failed to get user by address: {e}");
+                }
+            }
         }
     }
 
@@ -208,7 +205,7 @@ impl UserService {
         self.user.set(Some(user));
     }
 
-    pub fn set_wallet(&mut self, wallet: UserWallet) {
+    pub async fn set_wallet(&mut self, wallet: UserWallet) {
         if let Err(e) = LocalStorage::set(USER_WALLET_KEY, &wallet) {
             tracing::warn!("Failed to save wallet to storage: {e}");
         };
@@ -222,7 +219,7 @@ impl UserService {
         }
 
         self.wallet.set(wallet);
-        self.set_contract_config();
+        self.set_contract_config().await;
     }
 
     pub fn evm_address(&self) -> Option<String> {
@@ -241,30 +238,14 @@ impl UserService {
         }
     }
 
-    fn set_contract_config(&self) {
-        let conf = config::get();
-        let mut klaytn: Klaytn = use_context();
-        let provider = (klaytn.provider)();
-        let mut shop = klaytn.shop.cloned();
-
-        let api_endpoint = conf.api_endpoint;
-        let owner_key = conf.owner_key;
-        let feepayer_address = conf.feepayer_address;
-
-        spawn(async move {
-            //FIXME: convert owner, feepayer key and address to api code
-            let owner = KaiaLocalWallet::new(owner_key, provider.clone())
-                .await
-                .unwrap();
-
-            let feepayer = RemoteFeePayer::new(api_endpoint, feepayer_address)
-                .await
-                .unwrap();
-
-            shop.set_wallet(owner);
-            shop.set_fee_payer(feepayer);
-
-            klaytn.shop.set(shop);
-        });
+    async fn set_contract_config(&mut self) {
+        match self.wallet() {
+            UserWallet::SocialWallet {
+                ref private_key, ..
+            } => {
+                self.klaytn.set_wallet_provider(private_key).await;
+            }
+            _ => {}
+        }
     }
 }
