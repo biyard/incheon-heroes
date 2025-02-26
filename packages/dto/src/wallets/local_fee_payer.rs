@@ -48,7 +48,8 @@ impl LocalFeePayer {
     }
 }
 
-#[async_trait]
+#[cfg_attr(not(feature = "server"), async_trait(?Send))]
+#[cfg_attr(feature = "server", async_trait)]
 impl KaiaWallet for LocalFeePayer {
     fn address(&self) -> H160 {
         self.wallet.address()

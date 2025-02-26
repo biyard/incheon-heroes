@@ -21,7 +21,8 @@ impl RemoteFeePayer {
     }
 }
 
-#[async_trait]
+#[cfg_attr(not(feature = "server"), async_trait(?Send))]
+#[cfg_attr(feature = "server", async_trait)]
 impl KaiaWallet for RemoteFeePayer {
     fn address(&self) -> H160 {
         self.address

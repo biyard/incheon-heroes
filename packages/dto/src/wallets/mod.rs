@@ -7,7 +7,8 @@ use ethers::types::{Signature, H160};
 
 use crate::contracts::klaytn_transaction::KlaytnTransaction;
 
-#[async_trait]
+#[cfg_attr(not(feature = "server"), async_trait(?Send))]
+#[cfg_attr(feature = "server", async_trait)]
 pub trait KaiaWallet {
     fn address(&self) -> H160;
     async fn sign_transaction(&self, tx: &KlaytnTransaction) -> Result<Signature, crate::Error>;

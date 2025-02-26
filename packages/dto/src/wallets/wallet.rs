@@ -40,7 +40,8 @@ impl KaiaLocalWallet {
     }
 }
 
-#[async_trait]
+#[cfg_attr(not(feature = "server"), async_trait(?Send))]
+#[cfg_attr(feature = "server", async_trait)]
 impl KaiaWallet for KaiaLocalWallet {
     fn address(&self) -> ethers::types::H160 {
         self.wallet.address()
