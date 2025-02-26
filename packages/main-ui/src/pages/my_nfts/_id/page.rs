@@ -1,8 +1,12 @@
 #![allow(non_snake_case)]
-use crate::components::icons::{Badge, Experience, Lock, Send, Swap, Trait};
+use crate::components::icons::{
+    Badge, Experience, LinkIcon, Lock, Mint, Send, Swap, Trait, Transfer,
+};
 use crate::models::history::{MissionHistory, TokenHistory};
 use crate::models::nft_metadata::NftMetadata;
 use crate::services::mission_contract::Mission;
+use crate::utils::address::parse_address;
+use crate::utils::time::formatted_timestamp;
 
 use super::controller::*;
 use super::i18n::*;
@@ -29,7 +33,12 @@ pub fn MyNftsByIdPage(id: String, lang: Language) -> Element {
     tracing::debug!("daily mission: {:?}", missions);
 
     let mission_historys = ctrl.get_mission_historys();
+    tracing::debug!("mission historys: {:?}", mission_historys);
+
     let token_historys = ctrl.get_token_historys();
+    tracing::debug!("token historys: {:?}", token_historys);
+
+    let klaytn_scope_endpoint = ctrl.get_scope_endpoint();
 
     rsx! {
         div { class: "flex flex-col w-full justify-center items-center",
@@ -47,7 +56,7 @@ pub fn MyNftsByIdPage(id: String, lang: Language) -> Element {
                 DailySection { lang, missions }
 
                 MissionHistorySection { lang, mission_historys }
-                ActivitySection { lang, token_historys }
+                ActivitySection { lang, token_historys, klaytn_scope_endpoint }
             }
         }
     }
@@ -55,6 +64,7 @@ pub fn MyNftsByIdPage(id: String, lang: Language) -> Element {
 
 #[component]
 pub fn MissionHistorySection(lang: Language, mission_historys: Vec<MissionHistory>) -> Element {
+    let ctrl = HistoryController::new()?;
     let tr: MissionHistorySectionTranslate = translate(&lang);
     rsx! {
         div { class: "flex flex-col w-full justify-start items-start bg-white border border-[#e0e0e0] rounded-[10px]",
@@ -75,12 +85,64 @@ pub fn MissionHistorySection(lang: Language, mission_historys: Vec<MissionHistor
                     "{tr.gained_experience}"
                 }
             }
+
+            for (index , history) in mission_historys.iter().enumerate() {
+                div {
+                    class: format!(
+                        "flex flex-row w-full h-[55px] {} justify-start items-start font-light text-[18px] text-[#636363]",
+                        if index != mission_historys.len() - 1 {
+                            "border-b border-b-[#e0e0e0]"
+                        } else {
+                            ""
+                        },
+                    ),
+                    div { class: "flex flex-1 w-full h-full justify-center items-center",
+                        {
+                            ctrl.translate_mission_title(
+                                lang,
+                                history.mission_name.clone(),
+                                history.mission_name_en.clone(),
+                            )
+                        }
+                    }
+                    div { class: "flex flex-1 w-full h-full justify-center items-center",
+                        {formatted_timestamp(history.mission_start_date.parse::<i64>().unwrap())}
+                    }
+                    div { class: "flex flex-1 w-full h-full justify-center items-center",
+                        {
+                            if history.progress == "Inprogress" {
+                                tr.verification_in_progress
+                            } else if history.progress == "accepted" {
+                                tr.accepted
+                            } else {
+                                tr.rejected
+                            }
+                        }
+                    }
+                    div { class: "flex flex-1 w-full h-full justify-center items-center",
+                        {
+                            if history.experience <= 0 {
+                                "0 EXP".to_string()
+                            } else {
+                                format!("{} EXP", history.experience)
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
 
 #[component]
-pub fn ActivitySection(lang: Language, token_historys: Vec<TokenHistory>) -> Element {
+pub fn ActivitySection(
+    lang: Language,
+    token_historys: Vec<TokenHistory>,
+    klaytn_scope_endpoint: String,
+) -> Element {
+    let ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+    let navigator = use_navigator();
+
     rsx! {
         div { class: "flex flex-col w-full justify-start items-start bg-white border border-[#e0e0e0] rounded-[10px]",
             div { class: "flex flex-row w-full h-[55px] justify-center items-center font-semibold text-[#636363] text-[20px]",
@@ -98,6 +160,66 @@ pub fn ActivitySection(lang: Language, token_historys: Vec<TokenHistory>) -> Ele
                 }
                 div { class: "flex flex-1 w-full h-full justify-center items-center",
                     "Transaction"
+                }
+            }
+
+            for (index , history) in token_historys.iter().enumerate() {
+                div {
+                    class: format!(
+                        "flex flex-row w-full h-[55px] {} justify-start items-start font-light text-[18px] text-[#636363]",
+                        if index != token_historys.len() - 1 {
+                            "border-b border-b-[#e0e0e0]"
+                        } else {
+                            ""
+                        },
+                    ),
+                    div { class: "flex flex-row flex-1 w-full h-full justify-center items-center gap-[10px]",
+                        {
+                            if history.from == ZERO_ADDRESS {
+                                rsx! {
+                                    Mint {}
+                                    div { "Mint" }
+                                }
+                            } else {
+                                rsx! {
+                                    Transfer {}
+                                    div { "Transfer" }
+                                }
+                            }
+                        }
+                    }
+                    div { class: "flex flex-1 w-full h-full justify-center items-center",
+                        {
+                            if history.from == ZERO_ADDRESS {
+                                "NullAddress".to_string()
+                            } else {
+                                parse_address(history.from.clone())
+                            }
+                        }
+                    }
+                    div { class: "flex flex-1 w-full h-full justify-center items-center",
+                        {
+                            if history.to == ZERO_ADDRESS {
+                                "NullAddress".to_string()
+                            } else {
+                                parse_address(history.to.clone())
+                            }
+                        }
+                    }
+                    div { class: "flex flex-1 w-full h-full justify-center items-center",
+                        div {
+                            class: "flex flex-row w-fit h-fit cursor-pointer",
+                            onclick: {
+                                let history = history.clone();
+                                let klaytn_scope_endpoint = klaytn_scope_endpoint.clone();
+                                move |_| {
+                                    navigator
+                                        .push(format!("{}/{}", klaytn_scope_endpoint, history.transaction_hash));
+                                }
+                            },
+                            LinkIcon {}
+                        }
+                    }
                 }
             }
         }
@@ -133,7 +255,7 @@ pub fn DailyNotEnableBox(lang: Language, level: i64) -> Element {
     rsx! {
         div { class: "flex flex-col w-[230px] min-h-[80px] justify-center items-center bg-[#dadfdb] rounded-[10px] gap-[2px] p-[5px]",
             Lock {}
-            div { class: "font-semibold text-[#5b5b5b] text-[16px]", "LV.{level}{tr.unlocked}" }
+            div { class: "font-semibold text-[#5b5b5b] text-[14px]", "LV.{level}{tr.unlocked}" }
         }
     }
 }
@@ -142,7 +264,7 @@ pub fn DailyNotEnableBox(lang: Language, level: i64) -> Element {
 pub fn DailyEnableBox(title: String, exp: i64) -> Element {
     rsx! {
         div { class: "flex flex-col w-[230px] min-h-[80px] justify-center items-center bg-[#e4f4e4] rounded-[10px] gap-[2px] p-[5px]",
-            div { class: "font-normal text-[#5b5b5b] text-[17px] whitespace-pre-line text-center",
+            div { class: "font-normal text-[#5b5b5b] text-[14px] whitespace-pre-line text-center",
                 "{title}"
             }
             div { class: "font-semibold text-[#16775d] text-[16px]", "+ {exp} EXP" }

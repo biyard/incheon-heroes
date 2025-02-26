@@ -45,6 +45,7 @@ pub struct Config {
     pub discord_api_endpoint: &'static str,
     pub logs_api_endpoint: &'static str,
     pub nft_metadata_base_url: &'static str,
+    pub klaytn_scope_endpoint: &'static str,
     pub firebase: FirebaseConfig,
     pub klaytn: KlaytnConfig,
     pub contracts: ContractConfig,
@@ -65,6 +66,8 @@ impl Default for Config {
                 .unwrap_or("https://api.incheon.world"),
             logs_api_endpoint: option_env!("LOGS_API_ENDPOINT")
                 .unwrap_or("https://logs-api.incheon.world"),
+            klaytn_scope_endpoint: option_env!("KLAYTN_SCOPE_ENDPOINT")
+                .unwrap_or("https://scope.klaytn.com/tx"),
             nft_metadata_base_url: option_env!("NFT_BASE_URI").expect("You must set NFT_BASE_URI"),
             firebase: FirebaseConfig {
                 api_key: option_env!("FIREBASE_API_KEY")

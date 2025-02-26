@@ -12,6 +12,19 @@ translate! {
 translate! {
     MissionHistorySectionTranslate;
 
+    verification_in_progress: {
+        ko: "검증 진행 중",
+        en: "Verification In Progress"
+    }
+    accepted: {
+        ko: "검증 완료",
+        en: "Verification Completed"
+    }
+    rejected: {
+        ko: "검증 실패",
+        en: "Verification Failed"
+    }
+
     mission_name: {
         ko: "미션명",
         en: "Mission Name"

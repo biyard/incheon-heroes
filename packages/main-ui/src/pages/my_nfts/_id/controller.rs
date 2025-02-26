@@ -2,6 +2,7 @@ use dioxus::prelude::*;
 use dioxus_translate::Language;
 
 use crate::{
+    config,
     models::{
         history::{MissionHistory, MissionHistorys, TokenHistory, TokenHistorys},
         nft_metadata::NftMetadata,
@@ -17,10 +18,13 @@ pub struct Controller {
 
     mission_histories: Resource<Vec<MissionHistory>>,
     token_histories: Resource<Vec<TokenHistory>>,
+
+    klaytn_scope_endpoint: Signal<String>,
 }
 
 impl Controller {
     pub fn new(id: i64) -> std::result::Result<Self, RenderError> {
+        let klaytn_scope_endpoint = config::get().klaytn_scope_endpoint;
         let klaytn: Klaytn = use_context();
         let user_service: UserService = use_context();
 
@@ -105,9 +109,15 @@ impl Controller {
 
             mission_histories,
             token_histories,
+
+            klaytn_scope_endpoint: use_signal(|| klaytn_scope_endpoint.to_string()),
         };
 
         Ok(ctrl)
+    }
+
+    pub fn get_scope_endpoint(&self) -> String {
+        (self.klaytn_scope_endpoint)()
     }
 
     pub fn get_mission_historys(&self) -> Vec<MissionHistory> {
@@ -145,6 +155,28 @@ impl Controller {
         match self.metadata.value()() {
             Some(v) => v,
             None => NftMetadata::default(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct HistoryController {}
+
+impl HistoryController {
+    pub fn new() -> std::result::Result<Self, RenderError> {
+        let ctrl = Self {};
+        Ok(ctrl)
+    }
+
+    pub fn translate_mission_title(
+        &self,
+        lang: Language,
+        mission_ko: String,
+        mission_en: String,
+    ) -> String {
+        match lang {
+            Language::Ko => mission_ko,
+            Language::En => mission_en,
         }
     }
 }
