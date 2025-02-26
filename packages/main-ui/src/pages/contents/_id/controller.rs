@@ -51,7 +51,7 @@ impl Controller {
     pub fn opensea_url(&self) -> String {
         let opensea_endpoint = config::get().opensea_endpoint;
         let contract = config::get().contracts.incheon_contents.to_lowercase();
-        format!("{}/{}/{:064x}", opensea_endpoint, contract, self.id())
+        format!("{}/{}/{}", opensea_endpoint, contract, self.id())
     }
 
     pub async fn handle_like(&mut self) {
@@ -76,7 +76,7 @@ impl Controller {
     pub fn open_minting_popup(&mut self) {
         let lang = self.lang;
         self.popup.open(rsx! {
-            MintingPopup { lang }
+            MintingPopup { lang, id: self.id }
         });
     }
 }

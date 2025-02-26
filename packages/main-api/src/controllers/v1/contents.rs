@@ -174,7 +174,9 @@ impl ContentController {
         tx.commit().await?;
 
         let content = content.ok_or(Error::NotFoundContent)?;
-        self.contract.mint(evm_address, content.id as u64).await?;
+        if let Err(e) = self.contract.mint(evm_address, content.id as u64).await {
+            tracing::error!("some error on klaytn call {e}");
+        }
 
         Ok(Json(content))
     }

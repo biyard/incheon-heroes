@@ -1,11 +1,12 @@
 #![allow(non_snake_case)]
 use dioxus::prelude::*;
 
-pub fn CompleteIcon() -> Element {
+#[component]
+pub fn CompleteIcon(#[props(default = 80)] size: i32) -> Element {
     rsx! {
         svg {
-            width: "80",
-            height: "81",
+            width: "{size}",
+            height: "{size}",
             view_box: "0 0 80 81",
             fill: "none",
             xmlns: "http://www.w3.org/2000/svg",

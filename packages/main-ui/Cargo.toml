@@ -51,6 +51,6 @@ by-types.workspace = true
 
 [features]
 default = []
-web = ["dioxus-aws/web", "dioxus-translate/web", "dioxus-oauth/web", "ic-agent/wasm-bindgen"]
+web = ["dioxus-aws/web", "dioxus-translate/web", "dioxus-oauth/web", "ic-agent/wasm-bindgen", "by-components/web"]
 server = ["dioxus-aws/server", "dto/server"]
 lambda = ["server", "dioxus-aws/lambda"]
