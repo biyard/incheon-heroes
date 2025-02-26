@@ -1,16 +1,25 @@
 use std::sync::Arc;
+use std::thread::sleep;
+use std::time::Duration;
 
 use abi::Abi;
 use ethers::prelude::*;
+use ethers::utils::{parse_units, ParseUnits};
 
+use crate::wallets::KaiaWallet;
 use crate::{Error, Result};
 
+use super::klaytn_transaction::{KlaytnTransaction, TransactionType};
+
 #[derive(Debug, Clone)]
-pub struct IncheonContentsContract {
+pub struct IncheonContentsContract<FeePayerWallet: KaiaWallet, UserWallet: KaiaWallet> {
     pub contract: ContractInstance<Arc<Provider<Http>>, Provider<Http>>,
+    pub provider: Arc<Provider<Http>>,
+    pub wallet: Option<UserWallet>,
+    pub fee_payer: Option<FeePayerWallet>,
 }
 
-impl IncheonContentsContract {
+impl<T: KaiaWallet, W: KaiaWallet> IncheonContentsContract<T, W> {
     pub fn new(contract_address: &str, provider: Arc<Provider<Http>>) -> Self {
         let contract = Contract::new(
             contract_address.parse::<Address>().unwrap(),
@@ -18,10 +27,20 @@ impl IncheonContentsContract {
             provider.clone(),
         );
 
-        Self { contract }
+        Self {
+            contract,
+            provider,
+            wallet: None,
+            fee_payer: None,
+        }
     }
 
-    pub async fn mint_batch(&self, addr: String, ids: Vec<u64>, values: Vec<u64>) -> Result<()> {
+    pub async fn mint_batch(
+        &self,
+        addr: String,
+        ids: Vec<u64>,
+        values: Vec<u64>,
+    ) -> Result<String> {
         let addr = addr
             .parse::<Address>()
             .map_err(|e| Error::Klaytn(e.to_string()))?;
@@ -29,14 +48,171 @@ impl IncheonContentsContract {
         let ids: Vec<U256> = ids.into_iter().map(|e| U256::from(e)).collect();
         let values: Vec<U256> = values.into_iter().map(|e| U256::from(e)).collect();
 
-        let _: () = self
+        let input = self
             .contract
-            .method("mintBatch", (addr, ids, values))
-            .map_err(|e| Error::Klaytn(e.to_string()))?
-            .call()
-            .await
-            .map_err(|e| Error::Klaytn(e.to_string()))?;
+            .method::<(H160, Vec<U256>, Vec<U256>), ()>("mintBatch", (addr, ids, values))?
+            .calldata()
+            .ok_or(Error::Klaytn("calldata error".to_string()))?;
 
-        Ok(())
+        let tx_hash = self.sign_and_send_transaction_with_feepayer(input).await?;
+
+        Ok(tx_hash)
+    }
+
+    pub fn set_wallet(&mut self, wallet: W) {
+        self.wallet = Some(wallet);
+    }
+
+    pub fn set_fee_payer(&mut self, fee_payer: T) {
+        self.fee_payer = Some(fee_payer);
+    }
+
+    pub async fn sign_and_send_transaction_with_feepayer(&self, input: Bytes) -> Result<String> {
+        let chain_id = self.provider.get_chainid().await?;
+        tracing::debug!("chain id: {}", chain_id);
+        let gas = 9000000;
+        let gas_price = match parse_units("750", "gwei")? {
+            ParseUnits::U256(x) => x,
+            ParseUnits::I256(_) => return Err(Error::Klaytn("parse_units error".to_string())),
+        };
+        let value = U256::from(0);
+        let from = self.wallet.as_ref().unwrap().address();
+        let to = self.contract.address();
+        let tx_type = TransactionType::FeeDelegatedSmartContractExecution;
+        let nonce = self.provider.get_transaction_count(from, None).await?;
+
+        let tx = KlaytnTransaction::new(
+            tx_type,
+            Some(from),
+            Some(to),
+            Some(U256::from(gas)),
+            Some(gas_price),
+            Some(value),
+            Some(input.to_vec()),
+            Some(nonce),
+        );
+
+        let fp = self.fee_payer.as_ref().unwrap();
+        let fp_sig = fp.sign_transaction(&tx).await?;
+
+        let sig = self.wallet.as_ref().unwrap().sign_transaction(&tx).await?;
+
+        let rlp = tx.to_tx_hash_rlp(sig, fp.address(), fp_sig);
+
+        let rlp = format!("0x{}", hex::encode(rlp).to_string());
+        tracing::debug!("rlp: {}", rlp);
+
+        let res: std::result::Result<JsonRpcResponse<String>, Error> = rest_api::post(
+            self.provider.url().as_str(),
+            serde_json::json!({
+                "jsonrpc": "2.0",
+                "method": "kaia_sendRawTransaction",
+                "id": 1,
+                "params": [rlp],
+            }),
+        )
+        .await;
+
+        let tx_hash = match res {
+            Ok(res) => {
+                if res.result.is_none() {
+                    return Err(Error::Klaytn("sendRawTransaction error".to_string()));
+                }
+                res.result.unwrap()
+            }
+            Err(e) => {
+                tracing::error!("sendRawTransaction error: {}", e);
+                return Err(Error::Klaytn("sendRawTransaction error".to_string()));
+            }
+        };
+
+        tracing::debug!("tx hash: {}", tx_hash);
+
+        for _ in 0..3 {
+            sleep(Duration::from_secs(1));
+            let res: std::result::Result<TransactionReceipt, Error> = rest_api::post(
+                self.provider.url().as_str(),
+                serde_json::json!({
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "method": "kaia_getTransactionReceipt",
+                    "params": [tx_hash],
+                }),
+            )
+            .await;
+            let res = match res {
+                Ok(res) => res,
+                Err(e) => {
+                    tracing::warn!("getTransactionReceipt error: {}", e);
+                    continue;
+                }
+            };
+
+            tracing::debug!("receipt {:?}", res);
+        }
+
+        Ok(tx_hash)
+    }
+}
+
+#[derive(Debug, Clone, serde::Deserialize)]
+pub struct JsonRpcResponse<T> {
+    pub jsonrpc: String,
+    pub id: u64,
+    pub result: Option<T>,
+    pub error: Option<JsonRpcError>,
+}
+
+#[derive(Debug, Clone, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TransactionReceipt {
+    pub block_number: String,
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::wallets::wallet::KaiaLocalWallet;
+
+    use super::*;
+
+    #[cfg(feature = "full-test")]
+    #[tokio::test]
+    async fn test_mint_batch() {
+        let _ = tracing_subscriber::fmt()
+            .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
+            .with_file(true)
+            .with_line_number(true)
+            .with_thread_ids(true)
+            .with_target(false)
+            .try_init();
+
+        let provider = Provider::<Http>::try_from("https://public-en-kairos.node.kaia.io").unwrap();
+        let provider = std::sync::Arc::new(provider);
+
+        let mut c =
+            IncheonContentsContract::new(env!("CONTRACT_INCHEON_CONTENTS"), provider.clone());
+
+        let w = KaiaLocalWallet::new(env!("KLAYTN_OWNER_KEY"), provider.clone())
+            .await
+            .unwrap();
+
+        let f = crate::wallets::local_fee_payer::LocalFeePayer::new(
+            env!("KLAYTN_FEEPAYER_ADDR"),
+            env!("KLAYTN_FEEPAYER_KEY"),
+            provider.clone(),
+        )
+        .await
+        .unwrap();
+
+        c.set_wallet(w);
+        c.set_fee_payer(f);
+
+        c.mint_batch(
+            "0xb9a72033A3339B82DEf38d70c5e373a03a45fA0b".to_string(),
+            [1].to_vec(),
+            [1].to_vec(),
+        )
+        .await
+        .unwrap();
     }
 }
