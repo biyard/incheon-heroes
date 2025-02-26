@@ -9,7 +9,7 @@ build: node_modules
 
 deploy:
 	@echo "Deploying IncheonContents contract..."
-	$(DEPLOY_ENVS) node cli.js deploy IncheonContents $(CLI_CONTRACT_OWNER_ADDR) "Incheon Heroes Contents" "IHC" "https://$(DOMAIN)/metadata/json/"
+	$(DEPLOY_ENVS) node cli.js deploy IncheonContents $(CLI_CONTRACT_OWNER_ADDR) "Incheon Heroes Contents" "IHC" 'https://$(DOMAIN)/metadata/json/{id}.json'
 
 help:
 	node cli.js -h
