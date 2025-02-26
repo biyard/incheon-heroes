@@ -14,7 +14,6 @@ CDN_ID ?= $(shell aws cloudfront list-distributions --query "DistributionList.It
 WORKSPACE_ROOT ?= $(PWD)
 AWS_ACCOUNT_ID ?= $(shell aws sts get-caller-identity --query "Account" --output text)
 VPC_ID ?= $(shell aws ec2 describe-vpcs --query "Vpcs[0].VpcId" --output json | tr -d \")
-TABLE_NAME ?= $(PROJECT)-$(ENV)
 API_PREFIX ?=
 
 ENABLE_S3 ?= false

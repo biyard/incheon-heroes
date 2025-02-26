@@ -50,6 +50,29 @@ impl<T: KaiaWallet, W: KaiaWallet> IncheonContentsContract<T, W> {
         Ok(tx_hash)
     }
 
+    pub async fn mint(&self, addr: String, id: u64) -> Result<String> {
+        let addr = addr
+            .parse::<Address>()
+            .map_err(|e| Error::Klaytn(e.to_string()))?;
+
+        let ids: U256 = U256::from(id);
+        let values = U256::from(1);
+
+        let input = self
+            .contract
+            .contract
+            .method::<_, ()>("mint", (addr, ids, values))?
+            .calldata()
+            .ok_or(Error::Klaytn("calldata error".to_string()))?;
+
+        let tx_hash = self
+            .contract
+            .sign_and_send_transaction_with_feepayer(input)
+            .await?;
+
+        Ok(tx_hash)
+    }
+
     pub fn set_wallet(&mut self, wallet: W) {
         self.contract.set_wallet(wallet);
     }

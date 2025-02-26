@@ -72,11 +72,11 @@ pub fn ColGridCards(lang: Language, contents: Vec<ContentSummary>) -> Element {
             class: "w-full grid grid-cols-4 max-[1200px]:grid-cols-3 max-[700px]:grid-cols-2 max-[400px]:grid-cols-1 gap-[24px]",
             onresize: move |e| {
                 let width = e.get_border_box_size().unwrap_or_default().width;
-                let c: usize = if width > 1200.0 {
+                let c: usize = if width >= 1200.0 {
                     4
-                } else if width > 700.0 {
+                } else if width >= 700.0 {
                     3
-                } else if width > 400.0 {
+                } else if width >= 400.0 {
                     2
                 } else {
                     1

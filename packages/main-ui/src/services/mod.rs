@@ -1,3 +1,4 @@
+pub mod account_contract;
 pub mod backend_api;
 pub mod experience_contract;
 pub mod holder_contract;

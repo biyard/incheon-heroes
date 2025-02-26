@@ -15,7 +15,7 @@ impl Controller {
         let klaytn: Klaytn = use_context();
 
         let items = use_server_future(move || async move {
-            match klaytn.shop().list_items(0, 1000).await {
+            match (klaytn.shop)().list_items(0, 1000).await {
                 Ok(res) => {
                     tracing::debug!("{:?}", res);
                     res
@@ -32,15 +32,37 @@ impl Controller {
         Ok(ctrl)
     }
 
-    pub fn handle_buy(&self, i: usize) {
+    pub async fn handle_buy(&self, i: usize) {
+        let klaytn: Klaytn = use_context();
+        let shop = klaytn.shop.cloned();
+
         let item_id = self.items().unwrap()[i].id;
         tracing::debug!("buying item: {:?}", item_id);
-        // TODO: implement buying shop item
+
+        match shop.buy_item(item_id).await {
+            Ok(v) => {
+                tracing::debug!("transaction tx: {v}");
+            }
+            Err(e) => {
+                tracing::debug!("send transaction failed: {e}");
+            }
+        }
     }
 
-    pub fn handle_like(&self, i: usize) {
+    pub async fn handle_like(&self, i: usize) {
+        let klaytn: Klaytn = use_context();
+        let shop = klaytn.shop.cloned();
+
         let item_id = self.items().unwrap()[i].id;
         tracing::debug!("liking item: {:?}", item_id);
-        // TODO: implement liking shop item
+
+        match shop.like_item(item_id).await {
+            Ok(v) => {
+                tracing::debug!("transaction tx: {v}");
+            }
+            Err(e) => {
+                tracing::debug!("send transaction failed: {e}");
+            }
+        }
     }
 }

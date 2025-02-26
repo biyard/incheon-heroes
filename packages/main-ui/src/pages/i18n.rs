@@ -233,3 +233,17 @@ translate! {
         en: "Account Address",
     }
 }
+
+translate! {
+    RootLayoutTranslate;
+
+    title: {
+        ko: "인천 히어로즈",
+        en: "Incheon Heroes",
+    },
+
+    description: {
+        ko: "도시 최초의 글로벌 NFT 프로젝트: 블록체인 도시 인천의 지구지키기에 동참해 주세요!",
+        en: "Championing a Global First: Incheon City's Landmark NFT Project on a Mission to Safeguard the Earth from Climate Change",
+    },
+}

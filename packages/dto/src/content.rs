@@ -6,7 +6,7 @@ use dioxus_translate::Translate;
 use validator::Validate;
 
 #[derive(Validate)]
-#[api_model(base = "/v1/contents", table = contents, action = create_bulk(items = Vec<ContentCreateRequest>), action_by_id = mint)]
+#[api_model(base = "/v1/contents", table = contents, action = create_bulk(items = Vec<ContentCreateRequest>), action_by_id = [mint, like])]
 pub struct Content {
     #[api_model(summary, primary_key)]
     pub id: i64,
@@ -30,6 +30,15 @@ pub struct Content {
 
     #[api_model(many_to_one = users, action = create)]
     pub creator_id: i64,
+
+    #[api_model(one_to_many = content_downloads, foreign_key = content_id, aggregator = count )]
+    pub downloads: i64,
+
+    #[api_model(one_to_many = content_likes, foreign_key = content_id, aggregator = count )]
+    pub likes: i64,
+
+    #[api_model(many_to_many = content_likes, foreign_table_name = users, foreign_primary_key = user_id, foreign_reference_key = content_id, aggregator = exist, unique)]
+    pub liked: bool,
 }
 
 #[derive(

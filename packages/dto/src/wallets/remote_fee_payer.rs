@@ -5,6 +5,7 @@ use crate::{contracts::klaytn_transaction::KlaytnTransaction, FeePayerAddress, F
 
 use super::KaiaWallet;
 
+#[derive(Clone, Copy)]
 pub struct RemoteFeePayer {
     pub endpoint: &'static str,
     pub address: H160,
@@ -15,9 +16,11 @@ impl RemoteFeePayer {
         let ret = FeePayerAddress::get_client(endpoint)
             .get_fee_payer()
             .await?;
-        let address = ret.address.parse().expect("invalid feepayer address");
 
-        Ok(Self { endpoint, address })
+        Ok(Self {
+            endpoint,
+            address: ret.address.parse().expect("invalid feepayer address"),
+        })
     }
 }
 

@@ -1,23 +1,59 @@
 use std::sync::Arc;
 
-use abi::Abi;
-use dto::*;
+use dto::{contracts::common_contract::CommonContract, wallets::KaiaWallet, *};
 use ethers::prelude::*;
 
 #[derive(Debug, Clone)]
-pub struct ShopContract {
-    pub contract: ContractInstance<Arc<Provider<Http>>, Provider<Http>>,
+pub struct ShopContract<FeePayerWallet: KaiaWallet, UserWallet: KaiaWallet> {
+    pub contract: CommonContract<FeePayerWallet, UserWallet>,
 }
 
-impl ShopContract {
+impl<T: KaiaWallet, W: KaiaWallet> ShopContract<T, W> {
     pub fn new(contract_address: &str, provider: Arc<Provider<Http>>) -> Self {
-        let contract = Contract::new(
-            contract_address.parse::<Address>().unwrap(),
-            serde_json::from_str::<Abi>(include_str!("../abi/shop.json")).unwrap(),
-            provider.clone(),
-        );
+        let contract =
+            CommonContract::new(contract_address, include_str!("../abi/shop.json"), provider);
 
         Self { contract }
+    }
+
+    pub fn set_wallet(&mut self, wallet: W) {
+        self.contract.set_wallet(wallet);
+    }
+
+    pub fn set_fee_payer(&mut self, fee_payer: T) {
+        self.contract.set_fee_payer(fee_payer);
+    }
+
+    pub async fn buy_item(&self, id: U256) -> Result<String> {
+        let input = self
+            .contract
+            .contract
+            .method::<U256, ()>("buyItem", id)?
+            .calldata()
+            .ok_or(Error::Klaytn("calldata error".to_string()))?;
+
+        let tx_hash = self
+            .contract
+            .sign_and_send_transaction_with_feepayer(input)
+            .await?;
+
+        Ok(tx_hash)
+    }
+
+    pub async fn like_item(&self, id: U256) -> Result<String> {
+        let input = self
+            .contract
+            .contract
+            .method::<U256, ()>("likeItem", id)?
+            .calldata()
+            .ok_or(Error::Klaytn("calldata error".to_string()))?;
+
+        let tx_hash = self
+            .contract
+            .sign_and_send_transaction_with_feepayer(input)
+            .await?;
+
+        Ok(tx_hash)
     }
 
     pub async fn get_item(&self, id: U256) -> Result<ShopItem> {
@@ -36,6 +72,7 @@ impl ShopContract {
             u8,
             String,
         ) = self
+            .contract
             .contract
             .method("getShopItem", (id,))
             .map_err(|e| Error::Klaytn(e.to_string()))?
@@ -65,6 +102,7 @@ impl ShopContract {
             String,
         )> = self
             .contract
+            .contract
             .method("listItems", (U256::from(page), U256::from(size)))
             .map_err(|e| Error::Klaytn(e.to_string()))?
             .call()
@@ -88,7 +126,7 @@ struct NameParse {
     end_date: Option<String>,
 }
 
-#[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
+#[derive(Debug, Clone, serde::Deserialize, serde::Serialize, Default)]
 pub struct ShopItem {
     pub id: U256,
     pub price: U256,

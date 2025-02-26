@@ -60,7 +60,7 @@ impl UserController {
             sub: user.evm_address.clone(),
             exp: 0,
             role: by_types::Role::User,
-            custom: HashMap::new(),
+            custom: HashMap::from([("id".to_string(), user.id.to_string())]),
         };
 
         let jwt = auth::generate_jwt(&mut claims).map_err(|e| {
@@ -86,7 +86,7 @@ impl UserController {
             sub: user.evm_address.clone(),
             exp: 0,
             role: by_types::Role::User,
-            custom: HashMap::new(),
+            custom: HashMap::from([("id".to_string(), user.id.to_string())]),
         };
 
         let jwt = auth::generate_jwt(&mut claims).map_err(|e| {

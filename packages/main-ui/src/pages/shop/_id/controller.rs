@@ -18,8 +18,7 @@ impl Controller {
         let item = use_server_future(move || {
             let id = id_cloned.clone();
             async move {
-                klaytn
-                    .shop()
+                (klaytn.shop)()
                     .get_item(id.clone().parse().unwrap())
                     .await
                     .unwrap()

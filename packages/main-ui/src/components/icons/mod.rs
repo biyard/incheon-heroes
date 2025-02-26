@@ -2,6 +2,7 @@
 use dioxus::prelude::*;
 
 pub mod arrows;
+pub mod complete;
 pub mod heart;
 pub mod send;
 
@@ -102,7 +103,7 @@ pub fn Mint(
 }
 
 #[component]
-pub fn Link(
+pub fn LinkIcon(
     #[props(default = "28".to_string())] width: String,
     #[props(default = "28".to_string())] height: String,
 ) -> Element {

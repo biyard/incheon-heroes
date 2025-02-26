@@ -11,6 +11,8 @@ use by_axum::{
     },
 };
 use by_types::{AwsConfig, QueryResponse};
+use content_downloads::{ContentDownload, ContentDownloadRepository};
+use content_likes::ContentLike;
 use contracts::incheon_contents::IncheonContentsContract;
 use dto::*;
 use ethers::prelude::*;
@@ -30,6 +32,7 @@ pub struct ContentPath {
 
 #[derive(Clone, Debug)]
 pub struct ContentController {
+    content_download_repo: ContentDownloadRepository,
     repo: ContentRepository,
     #[allow(unused)]
     contract: IncheonContentsContract<LocalFeePayer, KaiaLocalWallet>,
@@ -89,7 +92,7 @@ impl ContentController {
         let mut values = vec![];
 
         for doc in docs.clone() {
-            let path = format!("{}/json/{}.json", self.asset_dir, doc.id);
+            let path = format!("{}/json/{:064x}.json", self.asset_dir, doc.id);
             match self
                 .cli
                 .put_object()
@@ -135,8 +138,82 @@ impl ContentController {
         ))
     }
 
-    async fn mint(&self, _auth: Option<Authorization>, _id: i64) -> Result<Json<Content>> {
-        todo!()
+    async fn mint(&self, auth: Option<Authorization>, content_id: i64) -> Result<Json<Content>> {
+        let (user_id, evm_address) = match auth {
+            Some(Authorization::Bearer { claims }) => {
+                let user_id: i64 = claims
+                    .custom
+                    .get("id")
+                    .ok_or(Error::Unauthorized)?
+                    .parse()
+                    .map_err(|e| {
+                        tracing::error!("failed to parse id {e}");
+                        Error::Unauthorized
+                    })?;
+
+                (user_id, claims.sub)
+            }
+            _ => {
+                return Err(Error::Unauthorized);
+            }
+        };
+
+        let mut tx = self.pool.begin().await?;
+
+        self.content_download_repo
+            .insert_with_tx(&mut *tx, user_id, content_id)
+            .await?;
+
+        let content = Content::query_builder(user_id)
+            .id_equals(content_id)
+            .query()
+            .map(Content::from)
+            .fetch_optional(&mut *tx)
+            .await?;
+
+        tx.commit().await?;
+
+        let content = content.ok_or(Error::NotFoundContent)?;
+        if let Err(e) = self.contract.mint(evm_address, content.id as u64).await {
+            tracing::error!("some error on klaytn call {e}");
+        }
+
+        Ok(Json(content))
+    }
+
+    async fn like(&self, auth: Option<Authorization>, content_id: i64) -> Result<Json<Content>> {
+        let user_id = match auth {
+            Some(Authorization::Bearer { claims }) => claims
+                .custom
+                .get("id")
+                .ok_or(Error::Unauthorized)?
+                .parse()
+                .map_err(|e| {
+                    tracing::error!("failed to parse id {e}");
+                    Error::Unauthorized
+                })?,
+            _ => {
+                return Err(Error::Unauthorized);
+            }
+        };
+
+        let mut tx = self.pool.begin().await?;
+
+        ContentLike::get_repository(self.pool.clone())
+            .insert_with_tx(&mut *tx, user_id, content_id)
+            .await?;
+
+        let content = Content::query_builder(user_id)
+            .id_equals(content_id)
+            .query()
+            .map(Content::from)
+            .fetch_optional(&mut *tx)
+            .await?;
+
+        tx.commit().await?;
+        let content = content.ok_or(Error::NotFoundContent)?;
+
+        Ok(Json(content))
     }
 
     async fn query(
@@ -180,6 +257,7 @@ impl ContentController {
         }: &KlaytnConfig,
     ) -> Result<Self> {
         let repo = Content::get_repository(pool.clone());
+        let content_download_repo = ContentDownload::get_repository(pool.clone());
         use aws_config::BehaviorVersion;
         use aws_config::{defaults, Region};
         use aws_sdk_s3::config::Credentials;
@@ -206,6 +284,7 @@ impl ContentController {
         contract.set_fee_payer(feepayer);
 
         Ok(Self {
+            content_download_repo,
             repo,
             contract,
             pool,
@@ -248,18 +327,29 @@ impl ContentController {
 
         match body {
             ContentByIdAction::Mint(_) => ctrl.mint(auth, id).await,
+            ContentByIdAction::Like(_) => ctrl.like(auth, id).await,
         }
     }
 
     pub async fn get_content(
         State(ctrl): State<ContentController>,
-        Extension(_auth): Extension<Option<Authorization>>,
+        Extension(auth): Extension<Option<Authorization>>,
         Path(ContentPath { id }): Path<ContentPath>,
     ) -> Result<Json<Content>> {
         tracing::debug!("get_content {:?}", id);
 
+        let user_id: i64 = match auth {
+            Some(Authorization::Bearer { claims }) => claims
+                .custom
+                .get("id")
+                .unwrap_or(&"0".to_string())
+                .parse()
+                .unwrap_or_default(),
+            _ => 0,
+        };
+
         Ok(Json(
-            Content::query_builder()
+            Content::query_builder(user_id)
                 .id_equals(id)
                 .query()
                 .map(Content::from)
