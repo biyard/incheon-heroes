@@ -37,7 +37,7 @@ else
 endif
 
 setup.tool:
-	cargo install dioxus-cli --version 0.6.0
+	cargo install dioxus-cli --version 0.6.3
 	cargo install toml-cli
 	npm i -g tailwindcss
 
@@ -63,9 +63,9 @@ public/dep.js:
 	cd js && npx webpack --mode $(MODE)
 	cp js/dist/dep.js public/dep.js
 
-.PHONY: public/dep.js
+.PHONY: public/tailwind.css
 public/tailwind.css:
-	tailwindcss -i ./public/input.css -o ./public/tailwind.css --minify
+	npx tailwindcss -i ./public/input.css -o ./public/tailwind.css --minify
 
 clean:
 	rm -rf public/tailwind.css public/dep.js
