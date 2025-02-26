@@ -51,6 +51,13 @@ pub fn MyNftsByIdPage(id: String, lang: Language) -> Element {
                     exp,
                     max_exp,
                     metadata,
+
+                    open_swap_modal: move |_| {
+                        ctrl.open_swap_modal(lang);
+                    },
+                    open_send_modal: move |_| {
+                        ctrl.open_send_modal(lang);
+                    },
                 }
 
                 DailySection { lang, missions }
@@ -281,6 +288,9 @@ pub fn MetadataSection(
     exp: u64,
     max_exp: u64,
     metadata: NftMetadata,
+
+    open_swap_modal: EventHandler<MouseEvent>,
+    open_send_modal: EventHandler<MouseEvent>,
 ) -> Element {
     let tr: MetadataSectionTranslate = translate(&lang);
     let mut character = use_signal(|| None);
@@ -339,8 +349,20 @@ pub fn MetadataSection(
                         }
 
                         div { class: "flex flex-row w-fit gap-[10px]",
-                            Swap { width: "40", height: "40" }
-                            Send { width: "40", height: "40" }
+                            div {
+                                class: "w-[40px] h-[40px] cursor-pointer",
+                                onclick: move |e: Event<MouseData>| {
+                                    open_swap_modal.call(e);
+                                },
+                                Swap { width: "40", height: "40" }
+                            }
+                            div {
+                                class: "w-[40px] h-[40px] cursor-pointer",
+                                onclick: move |e: Event<MouseData>| {
+                                    open_send_modal.call(e);
+                                },
+                                Send { width: "40", height: "40" }
+                            }
                         }
                     }
 

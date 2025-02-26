@@ -10,6 +10,48 @@ translate! {
 }
 
 translate! {
+    ExchangePopupTranslate;
+
+    title: {
+        ko: "토큰을 ICP로 교환하시겠습니까?",
+        en: "Would you like to exchange your tokens for ICP?"
+    }
+    description: {
+        ko: "교환 토큰은 ICP 상으로 이동되며\n트랜잭션은 복구되지 않습니다.",
+        en: "The exchange token will be moved to the ICP and the transaction will not be recovered."
+    }
+    exchange: {
+        ko: "교환하기",
+        en: "Exchange"
+    }
+    cancel: {
+        ko: "취소하기",
+        en: "Cancel"
+    }
+}
+
+translate! {
+    SendPopupTranslate;
+
+    title: {
+        ko: "전송 이후에는 다시 되돌릴 수 없습니다.",
+        en: "Once sent, it cannot be reversed."
+    },
+    input_address_hint: {
+        ko: "전송 받을 계정 주소를 입력하세요.",
+        en: "Enter the account address to receive the transfer."
+    }
+    transfer: {
+        ko: "전송하기",
+        en: "Transfer"
+    }
+    cancel: {
+        ko: "취소하기",
+        en: "Cancel"
+    }
+}
+
+translate! {
     MissionHistorySectionTranslate;
 
     verification_in_progress: {

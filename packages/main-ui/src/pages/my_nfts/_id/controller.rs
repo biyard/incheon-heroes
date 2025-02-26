@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use dioxus_popup::PopupService;
 use dioxus_translate::Language;
 
 use crate::{
@@ -7,6 +8,7 @@ use crate::{
         history::{MissionHistory, MissionHistorys, TokenHistory, TokenHistorys},
         nft_metadata::NftMetadata,
     },
+    pages::my_nfts::_id::{exchange_popup::ExchangePopup, send_popup::SendPopup},
     services::{klaytn::Klaytn, mission_contract::Mission, user_service::UserService},
 };
 
@@ -20,10 +22,13 @@ pub struct Controller {
     token_histories: Resource<Vec<TokenHistory>>,
 
     klaytn_scope_endpoint: Signal<String>,
+    popup_service: Signal<PopupService>,
 }
 
 impl Controller {
     pub fn new(id: i64) -> std::result::Result<Self, RenderError> {
+        let popup_service: PopupService = use_context();
+
         let klaytn_scope_endpoint = config::get().klaytn_scope_endpoint;
         let klaytn: Klaytn = use_context();
         let user_service: UserService = use_context();
@@ -111,6 +116,7 @@ impl Controller {
             token_histories,
 
             klaytn_scope_endpoint: use_signal(|| klaytn_scope_endpoint.to_string()),
+            popup_service: use_signal(|| popup_service),
         };
 
         Ok(ctrl)
@@ -156,6 +162,44 @@ impl Controller {
             Some(v) => v,
             None => NftMetadata::default(),
         }
+    }
+
+    pub fn open_send_modal(&self, lang: Language) {
+        let mut popup_service = (self.popup_service)();
+
+        popup_service
+            .open(rsx! {
+                SendPopup {
+                    lang,
+                    onsend: move |_| {
+                        tracing::debug!("call send function");
+                    },
+                    oncancel: move |_| {
+                        popup_service.close();
+                    },
+                }
+            })
+            .with_id("send")
+            .without_close();
+    }
+
+    pub fn open_swap_modal(&self, lang: Language) {
+        let mut popup_service = (self.popup_service)();
+
+        popup_service
+            .open(rsx! {
+                ExchangePopup {
+                    lang,
+                    onexchange: move |_| {
+                        tracing::debug!("call exchange function");
+                    },
+                    oncancel: move |_| {
+                        popup_service.close();
+                    },
+                }
+            })
+            .with_id("swap")
+            .without_close();
     }
 }
 

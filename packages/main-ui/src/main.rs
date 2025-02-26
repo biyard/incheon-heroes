@@ -10,6 +10,7 @@ pub mod utils;
 use crate::route::Route;
 use by_components::theme::{CardColorTheme, ColorTheme, TextColorTheme};
 use dioxus::prelude::*;
+use dioxus_popup::PopupService;
 use services::{
     backend_api::BackendApi, icp_canister::IcpCanister, klaytn::Klaytn, user_service::UserService,
 };
@@ -38,6 +39,7 @@ fn app() -> Element {
     BackendApi::init();
     IcpCanister::init();
     UserService::init();
+    PopupService::init();
 
     rsx! {
         document::Meta {
