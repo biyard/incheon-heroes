@@ -53,6 +53,11 @@ impl UserService {
         }
     }
 
+    pub async fn logout(&mut self) {
+        self.user.set(None);
+        LocalStorage::delete("user_wallet");
+    }
+
     pub fn init() {
         let firebase = FirebaseService::new(
             config::get().firebase.api_key.clone(),

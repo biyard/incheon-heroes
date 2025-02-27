@@ -247,3 +247,26 @@ translate! {
         en: "Championing a Global First: Incheon City's Landmark NFT Project on a Mission to Safeguard the Earth from Climate Change",
     },
 }
+translate! {
+    LogoutPopupTranslate;
+
+    title: {
+        ko: "로그아웃",
+        en: "Logout"
+    }
+
+    description: {
+        ko: "로그아웃 하시겠습니까?",
+        en: "Do you want to logout?"
+    }
+
+    logout_button: {
+        ko: "로그아웃",
+        en: "Logout"
+    }
+
+    cancel_button: {
+        ko: "취소",
+        en: "Cancel"
+    }
+}
