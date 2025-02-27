@@ -1,6 +1,4 @@
 use dto::wallets::remote_fee_payer::RemoteFeePayer;
-use dto::wallets::wallet::KaiaLocalWallet;
-use dto::wallets::KaiaWallet;
 use ethers::providers::Http;
 use ethers::providers::Provider;
 use std::sync::Arc;

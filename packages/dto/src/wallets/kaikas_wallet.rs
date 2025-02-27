@@ -2,9 +2,8 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use ethers::{
-    abi::AbiEncode,
-    providers::{Http, Middleware, Provider},
-    types::{Signature, U256},
+    providers::{Http, Provider},
+    types::Signature,
 };
 
 use crate::contracts::klaytn_transaction::KlaytnTransaction;
@@ -25,11 +24,11 @@ use wasm_bindgen_futures::JsFuture;
 
 #[cfg(not(feature = "web"))]
 impl KaikasWallet {
-    pub async fn new(provider: Arc<Provider<Http>>) -> Result<Self> {
+    pub async fn new(_provider: Arc<Provider<Http>>) -> Result<Self> {
         Ok(Self::default())
     }
 
-    pub async fn switch_chain(chain_id: u64) -> Result<()> {
+    pub async fn switch_chain(_chain_id: u64) -> Result<()> {
         Ok(())
     }
 }
@@ -114,7 +113,7 @@ impl KaiaWallet for KaikasWallet {
     }
 
     #[cfg(not(feature = "web"))]
-    async fn sign_transaction(&self, tx: &KlaytnTransaction) -> Result<Signature> {
+    async fn sign_transaction(&self, _tx: &KlaytnTransaction) -> Result<Signature> {
         unimplemented!()
     }
 

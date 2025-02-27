@@ -147,7 +147,7 @@ impl Controller {
             }
         };
 
-        self.user.set_wallet(UserWallet::KaiaWallet(w));
+        self.user.set_wallet(UserWallet::KaiaWallet(w)).await;
     }
 
     pub async fn handle_internet_identity(&self) {}

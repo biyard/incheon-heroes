@@ -41,6 +41,7 @@ pub struct UserService {
     icp_nfts: Resource<Vec<(u64, NftMetadata)>>,
     icp_canister: IcpCanister,
     user: Signal<Option<User>>,
+    #[allow(dead_code)]
     klaytn: Klaytn,
 }
 
@@ -66,6 +67,7 @@ impl UserService {
         use_context_provider(move || firebase);
 
         let wallet = use_signal(|| UserWallet::None);
+        #[allow(unused_mut)]
         let mut klaytn: Klaytn = use_context();
 
         let sbts = use_resource(move || async move {
@@ -167,13 +169,12 @@ impl UserService {
             klaytn: use_context(),
         };
 
-        klaytn.set_signer(srv);
-
         #[cfg(feature = "web")]
         use_effect(move || {
             spawn(async move {
                 let mut srv = srv;
                 srv.load_wallet_from_storage().await;
+                klaytn.set_signer(srv).await;
             });
         });
 
