@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "outDir": "./build/",
+    "outDir": "./build/js",
     "noImplicitAny": false,
     "module": "es2022",
     "target": "es2022",

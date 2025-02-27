@@ -9,6 +9,7 @@ use crate::route::Route;
 use crate::services::user_service::UserService;
 use by_components::loaders::cube_loader::CubeLoader;
 use by_components::meta::MetaSeoTemplate;
+use by_components::responsive::ResponsiveService;
 use by_components::theme::ColorTheme;
 use dioxus::prelude::*;
 use dioxus_popup::PopupZone;
@@ -20,6 +21,7 @@ pub fn RootLayout(lang: Language) -> Element {
     let path: Route = use_route();
     let logo = asset!("/public/logos/logo_symbol_color.png");
     let tr: RootLayoutTranslate = translate(&lang);
+    let responsive: ResponsiveService = use_context();
 
     rsx! {
         document::Title { "{tr.title}" }
@@ -40,9 +42,16 @@ pub fn RootLayout(lang: Language) -> Element {
             class: "flex flex-col w-full items-center justify-start min-h-[100vh] text-white",
             background: "{theme.background}",
             color: "{theme.text.primary}",
-            Header {
-                class: "w-full min-h-[70px] flex flex-row items-center justify-center bg-white",
-                lang,
+            if responsive.width() > 1200.0 {
+                Header {
+                    class: "w-full min-h-[70px] flex flex-row items-center justify-center bg-white",
+                    lang,
+                }
+            } else {
+                MobileHeader {
+                    class: "absolute top-0 left-0 w-full h-full flex flex-col items-center justify-start",
+                    lang,
+                }
             }
             PopupZone { background_color: "#ffffff", border_class: "" }
             div {
@@ -80,6 +89,137 @@ pub fn RootLayout(lang: Language) -> Element {
 }
 
 #[component]
+pub fn MobileHeader(
+    #[props(extends = GlobalAttributes)] attributes: Vec<Attribute>,
+    lang: Language,
+) -> Element {
+    use crate::components::icons as c;
+    use by_components::icons;
+    let nav = use_navigator();
+    let user_wallet: UserService = use_context();
+    let route: Route = use_route();
+    let mut expanded = use_signal(|| false);
+    let handle_select_menu = move |_| {
+        expanded.set(false);
+    };
+    let tr: HeaderTranslate = translate(&lang);
+
+    rsx! {
+        div {..attributes,
+            div { class: "w-full flex flex-row items-center justify-between h-[70px] bg-white px-[20px]",
+                button {
+                    onclick: move |_| {
+                        expanded.set(!expanded());
+                    },
+                    icons::alignments::AlignJustify { class: "w-[30px] h-[30px] text-black" }
+                }
+                Link {
+                    class: "flex items-center justify-center h-[70px] z-[1] max-[400px]:hidden",
+                    to: Route::HomePage { lang },
+                    img {
+                        src: "{LOGO}",
+                        class: "w-[145px] max-[500px]:w-[100px]",
+                    }
+                }
+                div { class: "flex flex-row gap-[15px] items-center h-full z-[1]",
+                    button {
+                        onclick: move |_| {
+                            nav.push(Route::ConnectPage { lang });
+                        },
+                        c::Connect { fill: if user_wallet.is_logined() { "#CEF7E3" } else { "black" } }
+                    }
+                    Link {
+                        class: "flex flex-row gap-[10px] items-center",
+                        to: route.switch_lang(),
+                        c::Language {}
+                    }
+
+                    if user_wallet.is_logined() {
+                        Link { to: Route::MyProfilePage { lang },
+                            img {
+                                class: "w-[28px] h-[28px] rounded-full",
+                                src: asset!("/public/images/profile.png"),
+                            }
+                        }
+                    }
+                }
+            }
+            if expanded() {
+                div { class: "w-full grow bg-white flex flex-col items-center justify-center text-black",
+                    div {
+                        id: "menus",
+                        class: "w-full flex flex-col justify-start h-[70px]",
+                        ExpandableMenu { expanded: true, name: "{tr.history}",
+                            SubMenu {
+                                to: Route::NoticesPage { lang },
+                                onclick: handle_select_menu,
+                                "{tr.notice}"
+                            }
+                            SubMenu {
+                                to: Route::StoriesPage { lang },
+                                onclick: handle_select_menu,
+                                "{tr.story}"
+                            }
+                            SubMenu {
+                                to: Route::ContributorsPage { lang },
+                                onclick: handle_select_menu,
+                                "{tr.top_contributor}"
+                            }
+                        }
+
+                        ExpandableMenu { expanded: true, name: "{tr.event}",
+                            // SubMenu {
+                            //     to: Route::CalendarPage { lang },
+                            //     onclick: handle_select_menu,
+                            //     "{tr.calendar}"
+                            // }
+                            SubMenu {
+                                to: Route::SongsPage { lang },
+                                onclick: handle_select_menu,
+                                "{tr.contest_voting}"
+                            }
+                        }
+                        Menu {
+                            to: Route::ShopPage { lang },
+                            onclick: handle_select_menu,
+                            "{tr.shop}"
+                        }
+                        Menu {
+                            to: Route::ContentsPage { lang },
+                            onclick: handle_select_menu,
+                            "{tr.contents}"
+                        }
+                        if user_wallet.is_logined() {
+                            Menu {
+                                to: Route::MyNftsPage { lang },
+                                onclick: handle_select_menu,
+                                "{tr.my_nfts}"
+                            }
+                        }
+                        ExpandableMenu { expanded: true, name: "{tr.info}",
+                            SubMenu {
+                                to: Route::FaqPage { lang },
+                                onclick: handle_select_menu,
+                                "{tr.faq}"
+                            }
+
+                            a {
+                                href: "https://incheon-universe.gitbook.io/incheon-universe",
+                                target: "_blank",
+                                class: "text-[14px] font-regular",
+                                onclick: handle_select_menu,
+                                "{tr.docs}"
+                            }
+                        }
+                    }
+
+                }
+            }
+        }
+    }
+}
+
+#[component]
 pub fn Header(
     #[props(default ="header".to_string())] id: String,
     #[props(default ="".to_string())] class: String,
@@ -99,16 +239,16 @@ pub fn Header(
     rsx! {
         div { id, class,
             if expanded() {
-                div { class: "absolute top-0 left-0 w-full h-[200px] bg-white z-[0]" }
+                div { class: "absolute top-0 left-0 w-full h-[200px] bg-white z-[9]" }
             }
-            div { class: "w-full flex flex-row items-center justify-center max-w-[1440px] max-[1440px]:px-[20px]",
+            div { class: "w-full flex flex-row items-center justify-center max-w-[1440px] max-[1440px]:px-[20px] z-[10]",
                 Link {
                     class: "flex items-center justify-center h-[70px] z-[1]",
                     to: Route::HomePage { lang },
                     img { src: "{LOGO}", class: "w-[145px] h-[50px]" }
                 }
 
-                div { class: "grow flex flex-col items-center justify-center px-[100px]",
+                div { class: "grow flex flex-col items-center justify-center px-[100px] max-[1440px]:px-[50px]",
                     div {
                         id: "menus",
                         class: "w-full flex flex-row justify-start h-[70px]",
@@ -225,18 +365,22 @@ pub fn ExpandableMenu(
     expanded: bool,
     children: Element,
     name: String,
-    onclick: EventHandler<MouseEvent>,
+    onclick: Option<EventHandler<MouseEvent>>,
 ) -> Element {
     rsx! {
         div { class: "relative w-full flex flex-col gap-[20px] items-start justify-center",
             div {
                 class: "h-[70px] w-full flex flex-row items-center justify-start text-[16px] font-bold gap-[10px] cursor-pointer",
-                onclick,
+                onclick: move |e| {
+                    if let Some(onclick) = onclick {
+                        onclick(e);
+                    }
+                },
                 "{name}"
                 SingleSimpleArrow { direction: if expanded { ArrowDirection::Up } else { ArrowDirection::Down } }
             }
             if expanded {
-                div { class: "absolute top-[70px] left-0 w-full flex flex-col gap-[15px]",
+                div { class: "absolute top-[70px] left-0 w-full flex flex-col gap-[15px] z-[100]",
                     {children}
                 }
             }
