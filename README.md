@@ -49,7 +49,7 @@ cd incheon-heroes
 git submodule update --init 
 ```
 
-### **Running API Server (main-api)**
+### Running API Server (main-api)
 
 The API server handles RESTful operations, database migrations, and integrations with blockchain services (e.g., Klaytn).
 
@@ -58,7 +58,7 @@ cd packages/main-api
 make run
 ```
 
-### **Running Web UI (main-ui)**
+### Running Web UI (main-ui)
 
 The frontend communicates with the API server and renders dynamic content for users.
 
