@@ -12,7 +12,7 @@ use dto::{
 };
 use ethers::{
     providers::{Http, Provider},
-    types::Signature,
+    types::{Signature, U256},
 };
 use gloo_storage::{LocalStorage, Storage};
 use ic_agent::{identity::BasicIdentity, Identity};
@@ -36,6 +36,7 @@ unsafe impl Send for UserService {}
 pub struct UserService {
     wallet: Signal<UserWallet>,
     icp_wallet: Signal<Option<Arc<BasicIdentity>>>,
+    pub account_exp: Resource<U256>,
     pub evm_nfts: Resource<Vec<(u64, NftMetadata)>>,
     pub sbts: Resource<Vec<(u64, NftMetadata)>>,
     pub icp_nfts: Resource<Vec<(u64, NftMetadata)>>,
@@ -160,6 +161,22 @@ impl UserService {
             }
         });
 
+        let account_exp = use_resource(move || async move {
+            let w = wallet();
+            let address = match w.evm_address() {
+                Some(address) => address,
+                None => return U256::from(0),
+            };
+
+            match (klaytn.account)().get_account_exp(address).await {
+                Ok(exp) => exp,
+                Err(e) => {
+                    tracing::error!("Failed to get token ids: {e:?}");
+                    U256::from(0)
+                }
+            }
+        });
+
         let mut srv = Self {
             user: use_signal(|| None),
             wallet,
@@ -168,6 +185,7 @@ impl UserService {
             evm_nfts,
             sbts,
             icp_nfts,
+            account_exp,
             klaytn: use_context(),
 
             total_nfts: use_signal(|| vec![]),
@@ -196,6 +214,11 @@ impl UserService {
         });
 
         use_context_provider(move || srv);
+    }
+
+    pub fn get_account_exp(&self) -> u64 {
+        let account_exp = (self.account_exp)().unwrap_or_default();
+        account_exp.as_u64()
     }
 
     pub fn get_total_nfts(&self) -> Vec<u64> {
