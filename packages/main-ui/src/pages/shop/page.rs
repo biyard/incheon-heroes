@@ -131,7 +131,6 @@ pub fn HorizontalSlide(
                     }
                 }
             }
-        
         }
     }
 }
@@ -210,7 +209,6 @@ pub fn ShopItemCard(
                                     src: asset!("/public/images/heart-white.png"),
                                 }
                                 "{tr.like}"
-                            
                             }
                         }
                     }
@@ -223,10 +221,8 @@ pub fn ShopItemCard(
                         src: asset!("/public/images/heart.png"),
                     }
                     "{likes}"
-                
 
                 }
-            
 
             }
         }
