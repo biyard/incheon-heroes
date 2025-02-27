@@ -16,8 +16,7 @@ use by_components::{
     theme::ColorTheme,
 };
 use dioxus::prelude::*;
-use dioxus_popup::PopupService;
-use dioxus_popup::PopupZone;
+use dioxus_popup::{PopupService, PopupZone};
 use dioxus_translate::*;
 
 #[component]
@@ -357,7 +356,6 @@ pub fn Header(
                             icons::Connect { fill: "black" }
                         }
                     }
-                    PopupZone {}
                     Link {
                         class: "flex flex-row gap-[10px] items-center",
                         to: route.switch_lang(),
