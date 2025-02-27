@@ -61,29 +61,31 @@ pub fn ContentsPage(lang: Language) -> Element {
 
 #[component]
 pub fn ColGridCards(lang: Language, contents: Vec<ContentSummary>) -> Element {
-    let mut cols: Signal<usize> = use_signal(|| 4);
-    let mut cols_contents = vec![vec![]; cols()];
-    for (i, content) in contents.iter().enumerate() {
-        cols_contents[i % cols()].push(content.clone());
-    }
+    use by_components::responsive::ResponsiveService;
+
+    let responsive: ResponsiveService = use_context();
+    let cols_contents = use_memo(move || {
+        let width = responsive.width();
+        let cols: usize = if width >= 1140.0 {
+            4
+        } else if width >= 640.0 {
+            3
+        } else if width >= 340.0 {
+            2
+        } else {
+            1
+        };
+
+        let mut cols_contents = vec![vec![]; cols];
+        for (i, content) in contents.iter().enumerate() {
+            cols_contents[i % cols].push(content.clone());
+        }
+        cols_contents
+    });
 
     rsx! {
-        div {
-            class: "w-full grid grid-cols-4 max-[1200px]:grid-cols-3 max-[700px]:grid-cols-2 max-[400px]:grid-cols-1 gap-[24px]",
-            onresize: move |e| {
-                let width = e.get_border_box_size().unwrap_or_default().width;
-                let c: usize = if width >= 1200.0 {
-                    4
-                } else if width >= 700.0 {
-                    3
-                } else if width >= 400.0 {
-                    2
-                } else {
-                    1
-                };
-                cols.set(c);
-            },
-            for contents in cols_contents.iter() {
+        div { class: "w-full grid grid-cols-4 max-[1200px]:grid-cols-3 max-[700px]:grid-cols-2 max-[400px]:grid-cols-1 gap-[24px]",
+            for contents in cols_contents().iter() {
                 div { class: "w-full col-span-1 flex flex-col justify-start gap-[24px]",
                     for content in contents.iter() {
                         ContentCard {
