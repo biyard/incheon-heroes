@@ -1,6 +1,4 @@
 PROJECT ?= incheonheroes
-DATABASE_TYPE ?= postgres
-DATABASE_URL ?= postgres://postgres:postgres@localhost:5432/incheonheroes
 SERVICE ?= main-api
 ENV ?= dev
 

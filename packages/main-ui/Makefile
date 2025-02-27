@@ -59,12 +59,12 @@ build: clean node_modules public
 public: public/tailwind.css
 
 .PHONY: public/dep.js
-public/dep.js:
+public/dep.js: node_modules
 	cd js && npx webpack --mode $(MODE)
 	cp js/dist/dep.js public/dep.js
 
 .PHONY: public/tailwind.css
-public/tailwind.css:
+public/tailwind.css: node_modules
 	npx tailwindcss -i ./public/input.css -o ./public/tailwind.css --minify
 
 clean:

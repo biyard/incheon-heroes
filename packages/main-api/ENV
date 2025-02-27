@@ -1,6 +1,0 @@
-IUNIVERSE_API=your_api_value
-METADATA_ENDPOINT=your_metadata_endpoint 
-ICP_CODE=your_icp_code
-KLAYTN_BRIDGE_ENDPOINT=your_bridge_endpoint 
-DOMAIN=your_domain
-URI=your_uri SALT=your_salt
