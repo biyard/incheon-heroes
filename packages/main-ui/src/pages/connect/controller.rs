@@ -34,7 +34,6 @@ impl Controller {
             .await;
 
         tracing::debug!("cred: {:?}", cred);
-
         let conf = &config::get().kakao;
 
         let hint = match self
