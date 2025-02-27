@@ -23,6 +23,14 @@ contract IncheonContents is ERC1155, Ownable {
         return _symbol;
     }
 
+    function setName(string memory name_) external onlyOwner {
+        _name = name_;
+    }
+
+    function setSymbol(string memory symbol_) external onlyOwner {
+        _symbol = symbol_;
+    }
+
     function setURI(string memory newuri) external onlyOwner {
         _setURI(newuri);
     }

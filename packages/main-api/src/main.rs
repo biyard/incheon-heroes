@@ -3,6 +3,8 @@ pub mod controllers;
 use std::sync::Arc;
 
 use by_axum::auth::set_auth_config;
+use content_downloads::ContentDownload;
+use content_likes::ContentLike;
 use controllers::*;
 
 use by_axum::{auth::authorization_middleware, axum::middleware};
@@ -19,12 +21,18 @@ async fn migration(pool: &sqlx::Pool<sqlx::Postgres>) -> Result<()> {
     tracing::info!("Running migration");
     let c = Content::get_repository(pool.clone());
     let u = User::get_repository(pool.clone());
+    let cd = ContentDownload::get_repository(pool.clone());
+    let cl = ContentLike::get_repository(pool.clone());
 
     u.create_this_table().await?;
     c.create_this_table().await?;
+    cd.create_this_table().await?;
+    cl.create_this_table().await?;
 
     u.create_table().await?;
     c.create_table().await?;
+    cd.create_table().await?;
+    cl.create_table().await?;
 
     tracing::info!("Migration done");
     Ok(())
@@ -51,6 +59,12 @@ async fn main() -> Result<()> {
     set_auth_config(conf.auth.clone());
 
     let app = app
+        .nest(
+            "/v1/fee-payer",
+            v1::FeePayerController::new(&conf.klaytn, provider.clone())
+                .await?
+                .route()?,
+        )
         .nest("/v1/users", v1::UserController::new(pool.clone()).route()?)
         .nest(
             "/v1/assets",

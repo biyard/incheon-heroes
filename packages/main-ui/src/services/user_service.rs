@@ -28,6 +28,7 @@ pub struct UserService {
     icp_nfts: Resource<Vec<(u64, NftMetadata)>>,
     icp_canister: IcpCanister,
     user: Signal<Option<User>>,
+    klaytn: Klaytn,
 }
 
 impl UserService {
@@ -48,7 +49,7 @@ impl UserService {
                 Some(address) => address,
                 None => return vec![],
             };
-            let sbt = klaytn.sbt();
+            let sbt = (klaytn.sbt)();
 
             match sbt.list_token_ids_by_address(address).await {
                 Ok(ids) => {
@@ -88,7 +89,7 @@ impl UserService {
                 None => return vec![],
             };
 
-            match klaytn.holder().list_token_ids_by_address(address).await {
+            match (klaytn.holder)().list_token_ids_by_address(address).await {
                 Ok(ids) => {
                     let mut nfts = vec![];
                     for id in ids {
@@ -138,12 +139,15 @@ impl UserService {
             evm_nfts,
             sbts,
             icp_nfts,
+            klaytn: use_context(),
         };
 
         #[cfg(feature = "web")]
         use_effect(move || {
-            let mut srv = srv;
-            srv.load_wallet_from_storage();
+            spawn(async move {
+                let mut srv = srv;
+                srv.load_wallet_from_storage().await;
+            });
         });
 
         use_context_provider(move || srv);
@@ -174,7 +178,7 @@ impl UserService {
         }
     }
 
-    pub fn load_wallet_from_storage(&mut self) {
+    pub async fn load_wallet_from_storage(&mut self) {
         if let Ok(wallet) = LocalStorage::get::<UserWallet>(USER_WALLET_KEY) {
             tracing::debug!("Loaded wallet from storage: {wallet}");
             if let Some(seed_hex) = wallet.seed() {
@@ -183,20 +187,17 @@ impl UserService {
             }
             self.wallet.set(wallet);
 
-            let mut ctrl = *self;
-
-            spawn(async move {
-                let addr = ctrl.evm_address().unwrap();
-                let endpoint = config::get().new_api_endpoint;
-                match User::get_client(endpoint).get_user_by_address(addr).await {
-                    Ok(user) => {
-                        ctrl.user.set(Some(user));
-                    }
-                    Err(e) => {
-                        tracing::error!("Failed to get user by address: {e}");
-                    }
+            let addr = self.evm_address().unwrap();
+            let endpoint = config::get().new_api_endpoint;
+            match User::get_client(endpoint).get_user_by_address(addr).await {
+                Ok(user) => {
+                    self.user.set(Some(user));
+                    self.set_contract_config().await;
                 }
-            });
+                Err(e) => {
+                    tracing::error!("Failed to get user by address: {e}");
+                }
+            }
         }
     }
 
@@ -204,7 +205,7 @@ impl UserService {
         self.user.set(Some(user));
     }
 
-    pub fn set_wallet(&mut self, wallet: UserWallet) {
+    pub async fn set_wallet(&mut self, wallet: UserWallet) {
         if let Err(e) = LocalStorage::set(USER_WALLET_KEY, &wallet) {
             tracing::warn!("Failed to save wallet to storage: {e}");
         };
@@ -218,6 +219,7 @@ impl UserService {
         }
 
         self.wallet.set(wallet);
+        self.set_contract_config().await;
     }
 
     pub fn evm_address(&self) -> Option<String> {
@@ -233,6 +235,17 @@ impl UserService {
         match self.wallet() {
             UserWallet::SocialWallet { principal, .. } => Some(principal),
             UserWallet::None => None,
+        }
+    }
+
+    async fn set_contract_config(&mut self) {
+        match self.wallet() {
+            UserWallet::SocialWallet {
+                ref private_key, ..
+            } => {
+                self.klaytn.set_wallet_provider(private_key).await;
+            }
+            _ => {}
         }
     }
 }

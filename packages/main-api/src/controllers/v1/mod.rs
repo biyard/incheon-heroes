@@ -5,4 +5,5 @@ pub mod users;
 
 pub use assets::*;
 pub use contents::*;
+pub use feepayer::*;
 pub use users::*;

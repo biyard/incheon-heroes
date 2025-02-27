@@ -20,12 +20,8 @@ translate! {
 }
 
 translate! {
-    MintNowButtonTranslate;
+    MintingPopupTranslate;
 
-    button_text : {
-        ko: "Mint Now",
-        en: "Mint Now",
-    }
 
     confirm_text : {
         ko: "확인",
@@ -55,5 +51,18 @@ translate! {
     complete_text : {
         ko: "NFT가 성공적으로 민팅되었습니다!",
         en: "NFT has been minted successfully!",
+    }
+}
+translate! {
+    NftDescriptionTranslate;
+
+    downloads: {
+        ko: "NFT 발행",
+        en: "Minted",
+    },
+
+    button_text : {
+        ko: "Mint Now",
+        en: "Mint Now",
     }
 }

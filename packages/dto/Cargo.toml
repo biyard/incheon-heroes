@@ -8,6 +8,7 @@ repository.workspace = true
 license.workspace = true
 
 [dependencies]
+wasm-timer = "0.2.0"
 reqwest.workspace = true
 thiserror = "2.0.11"
 serde.workspace = true

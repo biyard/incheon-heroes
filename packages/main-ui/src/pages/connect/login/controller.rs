@@ -109,12 +109,14 @@ impl Controller {
             self.signup_handler(&wallet).await;
         }
 
-        self.user_wallet.set_wallet(UserWallet::SocialWallet {
-            private_key: wallet.private_key,
-            seed: wallet.seed,
-            checksum_address: wallet.checksum_address.clone(),
-            principal: icp_wallet.sender().unwrap().to_text(),
-        });
+        self.user_wallet
+            .set_wallet(UserWallet::SocialWallet {
+                private_key: wallet.private_key,
+                seed: wallet.seed,
+                checksum_address: wallet.checksum_address.clone(),
+                principal: icp_wallet.sender().unwrap().to_text(),
+            })
+            .await;
 
         let endpoint = config::get().new_api_endpoint;
         match User::get_client(endpoint)
