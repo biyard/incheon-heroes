@@ -3,7 +3,13 @@ use dioxus::prelude::*;
 use dioxus_oauth::prelude::FirebaseService;
 use dioxus_translate::Language;
 
-use crate::{config, pages::LoginProvider, route::Route, services::backend_api::BackendApi};
+use crate::{
+    config,
+    models::user_wallet::UserWallet,
+    pages::LoginProvider,
+    route::Route,
+    services::{backend_api::BackendApi, user_service::UserService},
+};
 
 #[derive(Clone, Copy, DioxusController)]
 pub struct Controller {
@@ -11,6 +17,7 @@ pub struct Controller {
     pub nav: Navigator,
     pub lang: Language,
     pub firebase: FirebaseService,
+    pub user: UserService,
 }
 
 impl Controller {
@@ -20,6 +27,7 @@ impl Controller {
             nav: use_navigator(),
             lang,
             firebase: use_context(),
+            user: use_context(),
         };
 
         Ok(ctrl)
@@ -124,7 +132,23 @@ impl Controller {
         });
     }
 
-    pub async fn handle_kaikas(&self) {}
+    pub async fn handle_kaikas(&mut self) {
+        let conf = config::get();
+        let provider =
+            ethers::providers::Provider::<ethers::providers::Http>::try_from(conf.klaytn.endpoint)
+                .unwrap();
+        let provider = std::sync::Arc::new(provider);
+
+        let w = match dto::wallets::kaikas_wallet::KaikasWallet::new(provider).await {
+            Ok(wallet) => wallet,
+            Err(e) => {
+                tracing::error!("Failed to get kaikas wallet: {:?}", e);
+                return;
+            }
+        };
+
+        self.user.set_wallet(UserWallet::KaiaWallet(w)).await;
+    }
 
     pub async fn handle_internet_identity(&self) {}
 }

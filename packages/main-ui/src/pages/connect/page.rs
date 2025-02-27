@@ -9,7 +9,7 @@ use dioxus_translate::*;
 
 #[component]
 pub fn ConnectPage(lang: Language) -> Element {
-    let ctrl = Controller::new(lang)?;
+    let mut ctrl = Controller::new(lang)?;
     let tr: ConnectTranslate = translate(&lang);
 
     rsx! {

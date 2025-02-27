@@ -153,13 +153,11 @@ pub fn SingleContent(lang: Language, onchange: EventHandler<ContentCreateRequest
 
             div { class: "w-full flex flex-col gap-[10px] items-start justify-start",
                 label { class: "text-[#5B5B5B] font-bold text-[14px] font-bold flex flex-row items-center",
-                    span { "{tr.label_thumbnail}" }
+                    span { "{tr.label_source}" }
                     span { class: "text-[#FF0000]", "*" }
                 }
 
                 div { class: "w-full p-[16px] flex flex-col items-start justify-start rounded-[12px] border-[1px] border-[#dfdfdf] text-[#979797] font-normal text-[15px] bg-transparent gap-[16px]",
-
-                    p { class: "font-bold text-[14px] text-[#8d8d8d]", "{tr.label_source}" }
 
                     if let Some(ref s) = source() {
                         div { class: "flex flex-row gap-[10px] items-center justify-between w-full px-[20px] border-[1px] py-[10px] rounded-[12px] border-[#dfdfdf] text-[#979797] font-normal text-[15px] bg-transparent",
