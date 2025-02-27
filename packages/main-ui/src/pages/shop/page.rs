@@ -90,8 +90,12 @@ pub fn ShopPage(lang: Language) -> Element {
                         level: item.level,
                         lang,
                         remaining_quantity: item.remaining.as_u64(),
-                        onbuy: move |_| ctrl.handle_buy(i),
-                        onlike: move |_| ctrl.handle_like(i),
+                        onbuy: move |_| async move {
+                            ctrl.handle_buy(i).await;
+                        },
+                        onlike: move |_| async move {
+                            ctrl.handle_like(i).await;
+                        },
                     }
                 }
             }
@@ -127,7 +131,7 @@ pub fn HorizontalSlide(
                     }
                 }
             }
-
+        
         }
     }
 }
@@ -206,20 +210,23 @@ pub fn ShopItemCard(
                                     src: asset!("/public/images/heart-white.png"),
                                 }
                                 "{tr.like}"
+                            
                             }
                         }
                     }
                 }
 
                 // Like
-                div { class: "absolute top-0 right-0 p-[10px] flex flex-row items-center gap-[10px] text-[12px] text-white font-semibold justify-center",
+                div { class: "absolute top-2 right-2 px-2 py-1 flex flex-row items-center gap-2 text-[12px] text-white font-semibold justify-center rounded-full bg-gray-500",
                     img {
                         class: "w-[15px]",
                         src: asset!("/public/images/heart.png"),
                     }
                     "{likes}"
-                }
+                
 
+                }
+            
 
             }
         }

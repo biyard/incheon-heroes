@@ -100,14 +100,14 @@ impl TryFrom<&str> for TransactionType {
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize, PartialEq, Default)]
 pub struct KlaytnTransaction {
-    tx_type: TransactionType,
-    nonce: Option<U256>,
-    gas_price: Option<U256>,
-    gas: Option<U256>,
-    from: Option<Address>,
-    to: Option<Address>,
-    value: Option<U256>,
-    input: Option<Vec<u8>>,
+    pub tx_type: TransactionType,
+    pub nonce: Option<U256>,
+    pub gas_price: Option<U256>,
+    pub gas: Option<U256>,
+    pub from: Option<Address>,
+    pub to: Option<Address>,
+    pub value: Option<U256>,
+    pub input: Option<Vec<u8>>,
 }
 
 #[cfg(feature = "server")]

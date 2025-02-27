@@ -7,6 +7,7 @@ pub mod events;
 pub mod faq;
 mod i18n;
 pub mod layout;
+pub mod logout_popup;
 pub mod my_nfts;
 pub mod my_profile;
 pub mod notices;

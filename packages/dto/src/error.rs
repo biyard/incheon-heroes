@@ -38,6 +38,16 @@ pub enum Error {
     JwtGenerationFailed,
     #[error("Failed to verify JWT")]
     Unauthorized,
+
+    // Contents
+    #[error("Content not found")]
+    NotFoundContent,
+    #[error("Kaikas wallet not found")]
+    NoKaikasWallet,
+    #[error("could not sign message")]
+    SignError,
+    #[error("Wallet not initialized")]
+    WalletNotInitialized,
 }
 
 impl From<reqwest::Error> for Error {

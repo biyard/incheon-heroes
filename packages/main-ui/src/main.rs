@@ -5,10 +5,13 @@ pub mod models;
 pub mod pages;
 pub mod route;
 pub mod services;
+pub mod utils;
 
 use crate::route::Route;
+use by_components::responsive::Responsive;
 use by_components::theme::{CardColorTheme, ColorTheme, TextColorTheme};
 use dioxus::prelude::*;
+use dioxus_popup::PopupService;
 use services::{
     backend_api::BackendApi, icp_canister::IcpCanister, klaytn::Klaytn, user_service::UserService,
 };
@@ -33,10 +36,12 @@ fn app() -> Element {
         },
         ..Default::default()
     });
+
     Klaytn::init();
     BackendApi::init();
     IcpCanister::init();
     UserService::init();
+    PopupService::init();
 
     rsx! {
         document::Meta {
@@ -69,6 +74,7 @@ fn app() -> Element {
         document::Link { rel: "stylesheet", href: asset!("/public/main.css") }
         document::Link { rel: "stylesheet", href: asset!("/public/tailwind.css") }
 
+        document::Script { src: asset!("/public/dep.js") }
         document::Script { src: "https://cdn.tailwindcss.com/3.4.16" }
         document::Link {
             href: "https://cdn.jsdelivr.net/npm/daisyui@4.12.23/dist/full.min.css",
@@ -76,7 +82,7 @@ fn app() -> Element {
             rel: "stylesheet",
         }
         document::Script { src: "https://cdn.tailwindcss.com" }
-        Router::<Route> {}
+        Responsive { Router::<Route> {} }
     }
 }
 

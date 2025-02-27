@@ -34,6 +34,7 @@ pub struct ContractConfig {
     pub experience: &'static str,
     pub nft: &'static str,
     pub mission: &'static str,
+    pub incheon_contents: &'static str,
 }
 
 #[derive(Debug, serde::Deserialize, serde::Serialize)]
@@ -45,6 +46,9 @@ pub struct Config {
     pub discord_api_endpoint: &'static str,
     pub logs_api_endpoint: &'static str,
     pub nft_metadata_base_url: &'static str,
+    pub klaytn_scope_endpoint: &'static str,
+
+    pub opensea_endpoint: &'static str,
     pub firebase: FirebaseConfig,
     pub klaytn: KlaytnConfig,
     pub contracts: ContractConfig,
@@ -65,7 +69,11 @@ impl Default for Config {
                 .unwrap_or("https://api.incheon.world"),
             logs_api_endpoint: option_env!("LOGS_API_ENDPOINT")
                 .unwrap_or("https://logs-api.incheon.world"),
+            klaytn_scope_endpoint: option_env!("KLAYTN_SCOPE_ENDPOINT")
+                .unwrap_or("https://scope.klaytn.com/tx"),
             nft_metadata_base_url: option_env!("NFT_BASE_URI").expect("You must set NFT_BASE_URI"),
+            opensea_endpoint: option_env!("OPENSEA_ENDPOINT")
+                .expect("You must set OPENSEA_ENDPOINT"),
             firebase: FirebaseConfig {
                 api_key: option_env!("FIREBASE_API_KEY")
                     .expect("You must set FIREBASE_API_KEY")
@@ -100,6 +108,8 @@ impl Default for Config {
                     .expect("You must set CONTRACT_EXPERIENCE"),
                 nft: option_env!("CONTRACT_NFT").expect("You must set CONTRACT_NFT"),
                 mission: option_env!("CONTRACT_MISSION").expect("You must set CONTRACT_MISSION"),
+                incheon_contents: option_env!("CONTRACT_INCHEON_CONTENTS")
+                    .expect("You must set CONTRACT_INCHEON_CONTENTS"),
             },
             kakao: KakaoConfig {
                 client_id: option_env!("KAKAO_CLIENT_ID").expect("You must set KAKAO_CLIENT_ID"),

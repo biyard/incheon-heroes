@@ -2,6 +2,7 @@
 use dioxus::prelude::*;
 
 pub mod arrows;
+pub mod complete;
 pub mod heart;
 pub mod send;
 
@@ -102,7 +103,7 @@ pub fn Mint(
 }
 
 #[component]
-pub fn Link(
+pub fn LinkIcon(
     #[props(default = "28".to_string())] width: String,
     #[props(default = "28".to_string())] height: String,
 ) -> Element {
@@ -341,6 +342,27 @@ pub fn Send(width: String, height: String) -> Element {
                 "stroke-linecap": "round",
                 "stroke-linejoin": "round",
                 "stroke-width": "3",
+            }
+        }
+    }
+}
+
+#[component]
+pub fn Logout(
+    #[props(default = "18".to_string())] width: String,
+    #[props(default = "16".to_string())] height: String,
+    fill: String,
+) -> Element {
+    rsx! {
+        svg {
+            width,
+            height,
+            fill: "none",
+            xmlns: "http://www.w3.org/2000/svg",
+            view_box: "0 0 18 16",
+            path {
+                d: "M11.25 15.875L11.25 13.625L2.25 13.625L2.25 2.375L11.25 2.375L11.25 0.124999L1.37691e-06 0.124998L0 15.875L11.25 15.875ZM13.5 11.375L18 8L13.5 4.625L13.5 6.875L4.5 6.875L4.5 9.125L13.5 9.125L13.5 11.375Z",
+                fill: "{fill}",
             }
         }
     }
