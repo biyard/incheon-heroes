@@ -26,7 +26,6 @@ pub fn RootLayout(lang: Language) -> Element {
         document::Meta { property: "og:title", content: "{tr.title}" }
         document::Meta { name: "description", content: "{tr.description}" }
         document::Meta { property: "og:description", content: "{tr.description}" }
-        document::Meta { property: "og:type", content: "website" }
 
         MetaSeoTemplate {
             lang,

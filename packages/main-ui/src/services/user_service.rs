@@ -3,6 +3,7 @@ use std::sync::Arc;
 
 use by_macros::DioxusController;
 use dioxus::prelude::*;
+use dioxus_oauth::prelude::FirebaseService;
 use dto::User;
 use gloo_storage::{LocalStorage, Storage};
 use ic_agent::{identity::BasicIdentity, Identity};
@@ -40,6 +41,18 @@ impl UserService {
     }
 
     pub fn init() {
+        let firebase = FirebaseService::new(
+            config::get().firebase.api_key.clone(),
+            config::get().firebase.auth_domain.clone(),
+            config::get().firebase.project_id.clone(),
+            config::get().firebase.storage_bucket.clone(),
+            config::get().firebase.messaging_sender_id.clone(),
+            config::get().firebase.app_id.clone(),
+            config::get().firebase.measurement_id.clone(),
+        );
+
+        use_context_provider(move || firebase);
+
         let wallet = use_signal(|| UserWallet::None);
         let klaytn: Klaytn = use_context();
 

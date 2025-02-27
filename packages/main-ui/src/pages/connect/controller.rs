@@ -1,5 +1,6 @@
 use by_macros::*;
 use dioxus::prelude::*;
+use dioxus_oauth::prelude::FirebaseService;
 use dioxus_translate::Language;
 
 use crate::{config, pages::LoginProvider, route::Route, services::backend_api::BackendApi};
@@ -9,6 +10,7 @@ pub struct Controller {
     pub backend_api: BackendApi,
     pub nav: Navigator,
     pub lang: Language,
+    pub firebase: FirebaseService,
 }
 
 impl Controller {
@@ -17,12 +19,46 @@ impl Controller {
             backend_api: use_context(),
             nav: use_navigator(),
             lang,
+            firebase: use_context(),
         };
 
         Ok(ctrl)
     }
 
-    pub async fn handle_google(&self) {}
+    pub async fn handle_google(&self) {
+        let cred = self
+            .firebase
+            .sign_in_with_popup(vec![
+                "https://www.googleapis.com/auth/drive.appdata".to_string()
+            ])
+            .await;
+
+        tracing::debug!("cred: {:?}", cred);
+
+        let conf = &config::get().kakao;
+
+        let hint = match self
+            .backend_api
+            .get_account_hint("google", &cred.id_token, conf.redirect_uri)
+            .await
+        {
+            Ok(hint) => hint,
+            Err(e) => {
+                tracing::error!("Failed to get account hint: {:?}", e);
+                return;
+            }
+        };
+
+        self.nav.replace(Route::LoginPage {
+            lang: self.lang,
+            provider: LoginProvider::Google,
+            id: hint.id,
+            hint: hint.private_key_hint,
+            address: hint.address.unwrap_or_default(),
+            email: cred.email,
+            picture: cred.photo_url,
+        });
+    }
 
     pub async fn handle_kakao(&self) {
         let conf = &config::get().kakao;
