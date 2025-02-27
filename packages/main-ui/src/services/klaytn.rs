@@ -8,6 +8,7 @@ use dioxus::prelude::*;
 
 use crate::config;
 
+use super::account_contract::AccountContract;
 use super::experience_contract::ExperienceContract;
 use super::holder_contract::HolderContract;
 use super::mission_contract::MissionContract;
@@ -19,6 +20,7 @@ use super::shop_contract::ShopContract;
 pub struct Klaytn {
     pub shop: Signal<ShopContract<RemoteFeePayer, KaiaLocalWallet>>,
     pub nft: Signal<NftContract<RemoteFeePayer, KaiaLocalWallet>>,
+    pub account: Signal<AccountContract<RemoteFeePayer, KaiaLocalWallet>>,
     pub holder: Signal<HolderContract>,
     pub sbt: Signal<SbtContract>,
     pub experience: Signal<ExperienceContract>,
@@ -49,6 +51,8 @@ impl Klaytn {
 
         let shop = ShopContract::new(conf.contracts.shop, provider.clone());
         let nft = NftContract::new(conf.contracts.nft, provider.clone());
+        let account =
+            AccountContract::new(conf.contracts.account, conf.contracts.nft, provider.clone());
 
         let srv = Self {
             shop: use_signal(move || shop),
@@ -57,6 +61,7 @@ impl Klaytn {
             sbt: use_signal(move || sbt),
             experience: use_signal(move || experience),
             mission: use_signal(move || mission),
+            account: use_signal(move || account),
 
             provider: use_signal(move || provider),
         };
@@ -89,7 +94,11 @@ impl Klaytn {
         shop.set_fee_payer(feepayer);
 
         let mut nft = self.nft.write();
-        nft.set_wallet(user_wallet);
+        nft.set_wallet(user_wallet.clone());
         nft.set_fee_payer(feepayer);
+
+        let mut account = self.account.write();
+        account.set_wallet(user_wallet);
+        account.set_fee_payer(feepayer);
     }
 }

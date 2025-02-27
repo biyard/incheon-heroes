@@ -26,6 +26,8 @@ pub struct UserService {
     pub evm_nfts: Resource<Vec<(u64, NftMetadata)>>,
     pub sbts: Resource<Vec<(u64, NftMetadata)>>,
     pub icp_nfts: Resource<Vec<(u64, NftMetadata)>>,
+    pub total_nfts: Signal<Vec<u64>>,
+
     icp_canister: IcpCanister,
     user: Signal<Option<User>>,
     klaytn: Klaytn,
@@ -131,7 +133,7 @@ impl UserService {
             }
         });
 
-        let srv = Self {
+        let mut srv = Self {
             user: use_signal(|| None),
             wallet,
             icp_wallet,
@@ -140,7 +142,22 @@ impl UserService {
             sbts,
             icp_nfts,
             klaytn: use_context(),
+
+            total_nfts: use_signal(|| vec![]),
         };
+
+        use_effect(move || {
+            let evm_nfts = srv.get_evm_nfts();
+            let icp_nfts = srv.get_icp_nfts();
+
+            srv.total_nfts.set(
+                evm_nfts
+                    .iter()
+                    .map(|(id, _)| *id)
+                    .chain(icp_nfts.iter().map(|(id, _)| *id))
+                    .collect(),
+            );
+        });
 
         #[cfg(feature = "web")]
         use_effect(move || {
@@ -151,6 +168,10 @@ impl UserService {
         });
 
         use_context_provider(move || srv);
+    }
+
+    pub fn get_total_nfts(&self) -> Vec<u64> {
+        (self.total_nfts)()
     }
 
     pub fn get_evm_nfts(&self) -> Vec<(u64, NftMetadata)> {
