@@ -36,7 +36,6 @@ BUILD_ENV ?= ENV=$(ENV) VERSION=$(VERSION) COMMIT=$(COMMIT) RUST_LOG=$(RUST_LOG)
 
 ifeq ("$(ENV)","local")
 	MODE = development
-	FLAGS =
 else
 	MODE = production
 endif
@@ -55,18 +54,17 @@ run: clean node_modules public
 node_modules:
 	npm i
 
-build: clean node_modules public
+build: clean public
 	$(BUILD_ENV) dx build --release --fullstack --server-features lambda
 	cp -r $(WORKSPACE_ROOT)/target/dx/$(SERVICE)/release/web $(ARTIFACT_DIR)
 	mv $(ARTIFACT_DIR)/server $(ARTIFACT_DIR)/bootstrap
 
 .PHONY: public
-public: public/tailwind.css
+public: node_modules public/tailwind.css public/dep.js
 
 .PHONY: public/dep.js
 public/dep.js:
-	cd js && npx webpack --mode $(MODE)
-	cp js/dist/dep.js public/dep.js
+	npx webpack --mode $(MODE)
 
 .PHONY: public/dep.js
 public/tailwind.css:
