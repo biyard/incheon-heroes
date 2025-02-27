@@ -1,17 +1,20 @@
 #![allow(non_snake_case)]
-use super::i18n::FooterTranslate;
-use super::i18n::HeaderTranslate;
-use crate::assets::*;
-use crate::components::icons;
-use crate::components::icons::arrows::{ArrowDirection, SingleSimpleArrow};
-use crate::pages::i18n::LogoutPopupTranslate;
-use crate::pages::i18n::RootLayoutTranslate;
-use crate::route::Route;
-use crate::services::user_service::UserService;
-use by_components::loaders::cube_loader::CubeLoader;
-use by_components::meta::MetaSeoTemplate;
-use by_components::responsive::ResponsiveService;
-use by_components::theme::ColorTheme;
+use super::{
+    i18n::{FooterTranslate, HeaderTranslate},
+    logout_popup::LogoutPopup,
+};
+use crate::{
+    assets::*,
+    components::icons,
+    components::icons::arrows::{ArrowDirection, SingleSimpleArrow},
+    pages::i18n::RootLayoutTranslate,
+    route::Route,
+    services::user_service::UserService,
+};
+use by_components::{
+    loaders::cube_loader::CubeLoader, meta::MetaSeoTemplate, responsive::ResponsiveService,
+    theme::ColorTheme,
+};
 use dioxus::prelude::*;
 use dioxus_popup::PopupService;
 use dioxus_popup::PopupZone;
@@ -230,45 +233,14 @@ pub fn Header(
 ) -> Element {
     let route: Route = use_route();
     let nav = use_navigator();
-    let mut user_wallet: UserService = use_context();
+    let user_wallet: UserService = use_context();
     let tr: HeaderTranslate = translate(&lang);
     let mut expanded = use_signal(|| false);
-    let mut logout_popup = use_signal(|| false);
     let mut popup: PopupService = use_context();
-    let tr_logout: LogoutPopupTranslate = translate(&lang);
 
     let handle_select_menu = move |_| {
         expanded.set(false);
     };
-
-    if logout_popup() {
-        popup
-            .open(rsx! {
-                div { class: "popup-custom bg-white w-[450px] h-[170px] mt-[30px]rounded-lg flex flex-col items-center gap-[30px]",
-                    p { class: "font-bold text-lg", "{tr_logout.title}" }
-                    p { class: "text-md mb-4", "{tr_logout.description}" }
-                    div { class: "flex justify-center gap-4 mb-[50px]",
-                        button {
-                            class: "w-[200px] h-[40px] bg-black text-white rounded-[24px]",
-                            onclick: move |_| {
-                                user_wallet.logout();
-                                logout_popup.set(false);
-                            },
-                            // TODO: need function work
-                            "{tr_logout.logout_button}"
-                        }
-                        button {
-                            class: "w-[200px] h-[40px] bg-black text-white rounded-[24px]",
-                            onclick: move |_event| {
-                                popup.close();
-                            },
-                            "{tr_logout.cancel_button}"
-                        }
-                    }
-                }
-            })
-            .with_id("logout_popup");
-    }
 
     rsx! {
         div { id, class,
@@ -369,15 +341,22 @@ pub fn Header(
                 div { class: "flex flex-row gap-[15px] items-center h-full z-[1]",
                     button {
                         onclick: move |_| {
-                            tracing::debug!("click");
                             if user_wallet.is_logined() {
-                                tracing::debug!("click1");
-                                logout_popup.set(true);
+                                tracing::debug!("logout popup clicked");
+                                popup.open(rsx! {
+                                    LogoutPopup { lang: lang.clone() }
+                                }).with_id("logout_popup");
                             } else {
-                                nav.push(Route::ConnectPage { lang });
+                                nav.push(Route::ConnectPage {
+                                    lang: lang.clone(),
+                                });
                             }
                         },
-                        icons::Connect { fill: if user_wallet.is_logined() { "#CEF7E3" } else { "black" } }
+                        if user_wallet.is_logined() {
+                            icons::Logout { fill: "black" }
+                        } else {
+                            icons::Connect { fill: "black" }
+                        }
                     }
                     PopupZone {}
                     Link {
@@ -433,7 +412,7 @@ pub fn ExpandableMenu(
                     }
                 } else {
                     if mobile_expanded() {
-                        div { class: "w-full flex flex-col gap-[10px] z-[100] py-[5px] pl-[18px] z-[100]",
+                        div { class: "w-full flex flex-col gap-[10px] py-[5px] pl-[18px] z-[100]",
                             {children}
                         }
                     }
@@ -461,7 +440,7 @@ pub fn Menu(
     onclick: EventHandler<MouseEvent>,
 ) -> Element {
     rsx! {
-        div { class: "relative flex flex-col",
+        div { class: "relative w-full flex flex-col items-start justify-center",
             Link {
                 to,
                 class: "h-[70px] w-full flex flex-row items-center justify-start text-[16px] font-bold gap-[10px]",

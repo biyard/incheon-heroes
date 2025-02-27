@@ -43,7 +43,7 @@ pub fn ContentsPage(lang: Language) -> Element {
                                     ctrl.sorter.set(*option);
                                 },
                                 "{option.translate(&lang)}"
-
+                            
                             }
                         }
                     }
@@ -158,7 +158,7 @@ pub fn CreateNftButton(
     let w = if hover() { "" } else { "w-[0px]" };
 
     rsx! {
-        div { class: "absolute fixed bottom-[40px] right-[40px]", ..attributes,
+        div { class: "absolute bottom-[40px] right-[40px]", ..attributes,
             Link { to: Route::NewContentsPage { lang },
                 div {
                     class: "transition-all duration-500 ease-in-out flex flex-row items-center justify-center h-[58px] w-[58px] px-[23px] bg-white hover:bg-[#E4F4E4] hover:border-[1px] hover:border-[#16775D] hover:px-[35px] hover:gap-[16px] rounded-full cursor-pointer overflow-hidden hover:w-[200px]",
