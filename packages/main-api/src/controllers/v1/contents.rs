@@ -219,12 +219,18 @@ impl ContentController {
     async fn query(
         &self,
         _auth: Option<Authorization>,
-        _param: ContentQuery,
+        param: ContentQueryBy,
     ) -> Result<QueryResponse<ContentSummary>> {
         let mut total_count = 0;
-        let items: Vec<ContentSummary> = ContentSummary::query_builder()
-            .order_by_created_at_desc()
-            .with_count()
+        let q = match param.sorter {
+            ContentSorter::Newest => ContentSummary::query_builder()
+                .with_count()
+                .order_by_created_at_desc(),
+            ContentSorter::Popular => ContentSummary::query_builder()
+                .with_count()
+                .order_by_likes_desc(),
+        };
+        let items: Vec<ContentSummary> = q
             .query()
             .map(|row: PgRow| {
                 use sqlx::Row;
@@ -366,7 +372,8 @@ impl ContentController {
         tracing::debug!("list_content {:?}", q);
 
         match q {
-            ContentParam::Query(param) => Ok(Json(ContentGetResponse::Query(
+            ContentParam::Query(_) => Err(Error::MisUsed("use query by custom query.".to_string())),
+            ContentParam::Custom(param) => Ok(Json(ContentGetResponse::Query(
                 ctrl.query(auth, param).await?,
             ))),
         }

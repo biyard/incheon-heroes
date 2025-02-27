@@ -6,7 +6,7 @@ use dioxus_translate::Translate;
 use validator::Validate;
 
 #[derive(Validate)]
-#[api_model(base = "/v1/contents", table = contents, action = create_bulk(items = Vec<ContentCreateRequest>), action_by_id = [mint, like])]
+#[api_model(base = "/v1/contents", custom_query_type = ContentQueryBy, table = contents, action = create_bulk(items = Vec<ContentCreateRequest>), action_by_id = [mint, like])]
 pub struct Content {
     #[api_model(summary, primary_key)]
     pub id: i64,
@@ -33,17 +33,25 @@ pub struct Content {
     #[api_model(one_to_many = content_downloads, foreign_key = content_id, aggregator = count )]
     pub downloads: i64,
 
-    #[api_model(one_to_many = content_likes, foreign_key = content_id, aggregator = count )]
+    #[api_model(summary, one_to_many = content_likes, foreign_key = content_id, aggregator = count )]
     pub likes: i64,
 
     #[api_model(many_to_many = content_likes, foreign_table_name = users, foreign_primary_key = user_id, foreign_reference_key = content_id, aggregator = exist, unique)]
     pub liked: bool,
 }
 
+#[derive(Debug, Clone, Copy, Eq, PartialEq, serde::Serialize, serde::Deserialize, Default)]
+#[serde(rename_all = "snake_case")]
+#[cfg_attr(feature = "server", derive(schemars::JsonSchema, aide::OperationIo))]
+pub struct ContentQueryBy {
+    pub sorter: ContentSorter,
+}
+
 #[derive(
     Debug, Clone, Copy, Eq, PartialEq, serde::Serialize, serde::Deserialize, Translate, Default,
 )]
 #[serde(rename_all = "snake_case")]
+#[cfg_attr(feature = "server", derive(schemars::JsonSchema, aide::OperationIo))]
 pub enum ContentSorter {
     #[default]
     #[translate(ko => "인기순")]

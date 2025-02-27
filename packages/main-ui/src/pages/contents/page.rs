@@ -33,11 +33,11 @@ pub fn ContentsPage(lang: Language) -> Element {
                         icons::arrows::ChevronDown { color: "#16775D", width: "12", height: "12" }
                     }
                     ul {
-                        class: "menu dropdown-content bg-white rounded-[12px] z-[1] w-[117px] shadow",
+                        class: "menu dropdown-content bg-white rounded-[12px] z-[1] w-[117px] shadow overflow-hidden",
                         padding: "0px",
                         for option in ContentSorter::VARIANTS {
                             li {
-                                class: "hover:bg-[#E4F4E4] px-[20px] py-[15px] cursor-pointer",
+                                class: "hover:bg-[#E4F4E4] px-[20px] py-[15px] cursor-pointer overflow-hidden",
                                 role: "button",
                                 onclick: move |_| {
                                     ctrl.sorter.set(*option);
@@ -59,7 +59,7 @@ pub fn ContentsPage(lang: Language) -> Element {
 }
 
 #[component]
-pub fn ColGridCards(lang: Language, contents: Vec<ContentSummary>) -> Element {
+pub fn ColGridCards(lang: Language, contents: ReadOnlySignal<Vec<ContentSummary>>) -> Element {
     use by_components::responsive::ResponsiveService;
 
     let responsive: ResponsiveService = use_context();
@@ -76,7 +76,7 @@ pub fn ColGridCards(lang: Language, contents: Vec<ContentSummary>) -> Element {
         };
 
         let mut cols_contents = vec![vec![]; cols];
-        for (i, content) in contents.iter().enumerate() {
+        for (i, content) in contents().iter().enumerate() {
             cols_contents[i % cols].push(content.clone());
         }
         cols_contents

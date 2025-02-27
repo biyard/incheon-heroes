@@ -48,6 +48,9 @@ pub enum Error {
     SignError,
     #[error("Wallet not initialized")]
     WalletNotInitialized,
+
+    #[error("MisUsed: {0}")]
+    MisUsed(String),
 }
 
 impl From<reqwest::Error> for Error {
