@@ -1,5 +1,3 @@
-use std::str::FromStr;
-
 use by_macros::*;
 use dioxus::{prelude::*, CapturedError};
 use dioxus_translate::Language;

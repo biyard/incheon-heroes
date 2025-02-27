@@ -43,7 +43,6 @@ impl MissionHistorys {
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TokenHistorys {
-    pub status: String,
     pub items: Vec<TokenHistory>,
 }
 
@@ -60,9 +59,14 @@ pub struct TokenHistory {
 }
 
 impl TokenHistorys {
-    pub async fn fetch(account: String) -> dto::Result<Self> {
+    pub async fn fetch(contract: String, token_id: i64) -> dto::Result<Self> {
         let endpoint = config::get().logs_api_endpoint;
-        let endpoint = format!("{}/v2/logs/user-address/{}", endpoint, account);
+        let endpoint = format!(
+            "{}/v2/logs/{}/{}",
+            endpoint,
+            contract.to_lowercase(),
+            token_id
+        );
         rest_api::get(&endpoint).await
     }
 }

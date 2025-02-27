@@ -5,6 +5,7 @@ pub mod holder_contract;
 pub mod icp_canister;
 pub mod klaytn;
 pub mod mission_contract;
+pub mod nft_contract;
 pub mod sbt_contract;
 pub mod shop_contract;
 pub mod user_service;
