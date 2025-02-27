@@ -49,7 +49,7 @@ pub fn RootLayout(lang: Language) -> Element {
                 }
             } else {
                 MobileHeader {
-                    class: "absolute top-0 left-0 w-full h-full flex flex-col items-center justify-start",
+                    class: "w-full h-full flex flex-col items-center justify-start",
                     lang,
                 }
             }
