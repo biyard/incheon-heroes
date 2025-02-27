@@ -36,6 +36,8 @@ impl KaikasWallet {
 #[cfg(feature = "web")]
 impl KaikasWallet {
     pub async fn new(provider: Arc<Provider<Http>>) -> Result<Self> {
+        use ethers::providers::Middleware;
+
         let chain_id = provider
             .get_chainid()
             .await
@@ -119,6 +121,8 @@ impl KaiaWallet for KaikasWallet {
 
     #[cfg(feature = "web")]
     async fn sign_transaction(&self, tx: &KlaytnTransaction) -> Result<Signature> {
+        use ethers::abi::AbiEncode;
+        use ethers::types::U256;
         let req = KaikasRequest {
             method: "klay_signTransaction".to_string(),
             params: vec![Transaction {
