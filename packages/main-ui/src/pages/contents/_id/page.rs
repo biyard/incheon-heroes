@@ -20,7 +20,7 @@ pub fn ContentsByIdPage(id: ReadOnlySignal<i64>, lang: Language) -> Element {
     let (content, user) = ctrl.rsc()?;
 
     rsx! {
-        by_components::meta::MetaPage { title: "{tr.title}" }
+        by_components::meta::MetaPage { title: "{content.title}", description: "{content.description}" }
         div { class: "w-full max-w-[1200px] flex flex-col gap-[80px]",
 
             NftDescription {
