@@ -99,16 +99,16 @@ pub fn Header(
     rsx! {
         div { id, class,
             if expanded() {
-                div { class: "absolute top-0 left-0 w-full h-[200px] bg-white z-[0]" }
+                div { class: "absolute top-0 left-0 w-full h-[200px] bg-white z-[9]" }
             }
-            div { class: "w-full flex flex-row items-center justify-center max-w-[1440px] max-[1440px]:px-[20px]",
+            div { class: "w-full flex flex-row items-center justify-center max-w-[1440px] max-[1440px]:px-[20px] z-[10]",
                 Link {
                     class: "flex items-center justify-center h-[70px] z-[1]",
                     to: Route::HomePage { lang },
                     img { src: "{LOGO}", class: "w-[145px] h-[50px]" }
                 }
 
-                div { class: "grow flex flex-col items-center justify-center px-[100px]",
+                div { class: "grow flex flex-col items-center justify-center px-[100px] max-[1440px]:px-[50px]",
                     div {
                         id: "menus",
                         class: "w-full flex flex-row justify-start h-[70px]",
@@ -236,7 +236,7 @@ pub fn ExpandableMenu(
                 SingleSimpleArrow { direction: if expanded { ArrowDirection::Up } else { ArrowDirection::Down } }
             }
             if expanded {
-                div { class: "absolute top-[70px] left-0 w-full flex flex-col gap-[15px]",
+                div { class: "absolute top-[70px] left-0 w-full flex flex-col gap-[15px] z-[100]",
                     {children}
                 }
             }
