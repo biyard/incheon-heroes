@@ -33,6 +33,12 @@ impl Controller {
         self.contents.push(ContentCreateRequest::default());
     }
 
+    pub fn handle_delete(&mut self, idx: usize) {
+        self.contents.with_mut(|contents| {
+            contents.remove(idx);
+        });
+    }
+
     pub fn set_content(&mut self, idx: usize, mut content: ContentCreateRequest) {
         let user_id = self.user_service.user_id().unwrap_or_default();
         self.contents.with_mut(move |contents| {
