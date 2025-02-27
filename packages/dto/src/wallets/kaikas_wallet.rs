@@ -97,14 +97,14 @@ pub struct KaikasRequest<T> {
 #[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Transaction {
-    type_int: u8,
+    r#type: String,
     to: String,
     from: String,
     gas: String,
     gas_price: String,
     value: String,
-    nonce: String,
-    input: String,
+    nonce: u64,
+    data: String,
 }
 
 #[cfg_attr(not(feature = "server"), async_trait(?Send))]
@@ -123,23 +123,27 @@ impl KaiaWallet for KaikasWallet {
     async fn sign_transaction(&self, tx: &KlaytnTransaction) -> Result<Signature> {
         use ethers::abi::AbiEncode;
         use ethers::types::U256;
+        let to = tx.to.unwrap_or_default().encode();
+        let to = format!("0x{}", hex::encode(&to[12..32]));
+        let from = tx.from.unwrap_or_default().encode();
+        let from = format!("0x{}", hex::encode(&from[12..32]));
         let req = KaikasRequest {
             method: "klay_signTransaction".to_string(),
             params: vec![Transaction {
-                type_int: tx.tx_type.to_tx_type_code(),
-                to: tx.to.unwrap_or_default().encode_hex(),
-                from: tx.from.unwrap_or_default().encode_hex(),
+                r#type: tx.tx_type.to_tx_type_string(),
+                to,
+                from,
                 gas: tx.gas.unwrap_or_default().encode_hex(),
                 gas_price: tx.gas_price.unwrap_or_default().encode_hex(),
                 value: tx.value.unwrap_or_default().encode_hex(),
-                nonce: tx.nonce.unwrap_or_default().encode_hex(),
-                input: format!("0x{}", hex::encode(tx.input.clone().unwrap_or_default())),
+                nonce: tx.nonce.unwrap_or_default().as_u64(),
+                data: format!("0x{}", hex::encode(tx.input.clone().unwrap_or_default())),
             }],
         };
         let req = serde_wasm_bindgen::to_value(&req).unwrap();
         web_sys::console::log_1(&req);
         let k = klaytn()?;
-        let _res = match JsFuture::from(k.request(&req)).await {
+        let res = match JsFuture::from(k.request(&req)).await {
             Ok(res) => {
                 web_sys::console::log_1(&res);
                 res
@@ -150,10 +154,20 @@ impl KaiaWallet for KaikasWallet {
             }
         };
 
+        let sig: KaikasSignature = serde_wasm_bindgen::from_value(res).unwrap();
+
         Ok(Signature {
-            r: U256::from(0),
-            s: U256::from(0),
-            v: 0,
+            r: U256::from_str_radix(&sig.r[2..], 16).expect("can't decode sig.r"),
+            s: U256::from_str_radix(&sig.s, 16).expect("can't decode sig.s"),
+            v: u64::from_str_radix(sig.v.trim_start_matches("0x"), 16).expect("can't decode sig.v"),
         })
     }
+}
+
+#[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct KaikasSignature {
+    r: String,
+    s: String,
+    v: String,
 }

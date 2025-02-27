@@ -72,6 +72,7 @@ impl<T: KaiaWallet, W: KaiaWallet> CommonContract<T, W> {
         let fp_sig = fp.sign_transaction(&tx).await?;
 
         let sig = self.wallet.as_ref().unwrap().sign_transaction(&tx).await?;
+        tracing::debug!("sig: {:?}", sig);
 
         let rlp = tx.to_tx_hash_rlp(sig, fp.address(), fp_sig);
 
