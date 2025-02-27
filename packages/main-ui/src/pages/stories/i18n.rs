@@ -4,7 +4,7 @@ translate! {
     StoriesTranslate;
 
     title: {
-        ko: "영웅의 귀환, 인천레인저스를 소개합니다.",
+        ko: "영웅의 귀환, 인천히어로즈를 소개합니다.",
         en: "The Return of the Heroes, Incheon Heroes!",
     },
 
