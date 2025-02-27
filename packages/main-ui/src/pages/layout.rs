@@ -441,7 +441,7 @@ pub fn Menu(
     onclick: EventHandler<MouseEvent>,
 ) -> Element {
     rsx! {
-        div { class: "relative w-full flex flex-col items-start justify-center",
+        div { class: "flex flex-col items-start justify-center",
             Link {
                 to,
                 class: "h-[70px] w-full flex flex-row items-center justify-start text-[16px] font-bold gap-[10px]",

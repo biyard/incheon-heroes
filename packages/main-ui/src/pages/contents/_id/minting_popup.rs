@@ -125,7 +125,6 @@ pub fn MintingPopup(lang: Language, id: ReadOnlySignal<i64>) -> Element {
                             },
                             "{tr.confirm_text}"
                         }
-                    
                     }
                 }
             }

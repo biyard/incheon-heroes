@@ -119,12 +119,6 @@ impl Controller {
             .await;
 
         let endpoint = config::get().new_api_endpoint;
-        tracing::debug!("Endpoint: {:?}", endpoint);
-        tracing::debug!("Address: {:?}", wallet.checksum_address);
-        tracing::debug!("Email: {:?}", self.email());
-        tracing::debug!("Id: {:?}", self.id());
-        tracing::debug!("Picture: {:?}", self.picture());
-        tracing::debug!("Provider: {:?}", self.provider);
         match User::get_client(endpoint)
             .signup_or_login(
                 wallet.checksum_address,

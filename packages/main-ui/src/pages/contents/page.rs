@@ -43,7 +43,6 @@ pub fn ContentsPage(lang: Language) -> Element {
                                     ctrl.sorter.set(*option);
                                 },
                                 "{option.translate(&lang)}"
-                            
                             }
                         }
                     }
