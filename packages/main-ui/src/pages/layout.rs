@@ -145,7 +145,7 @@ pub fn MobileHeader(
                 }
             }
             if expanded() {
-                div { class: "w-full grow bg-white flex flex-col items-center text-black",
+                div { class: "absolute top-[70px] left-0 w-full h-[calc(100vh-70px)] grow bg-white flex flex-col items-center text-black",
                     div {
                         id: "menus",
                         class: "w-full flex flex-col justify-start h-[70px] pl-[12px]",
@@ -212,7 +212,6 @@ pub fn MobileHeader(
                             }
                         }
                     }
-                
                 }
             }
         }
@@ -248,10 +247,10 @@ pub fn Header(
                     img { src: "{LOGO}", class: "w-[145px] h-[50px]" }
                 }
 
-                div { class: "grow flex flex-col items-center justify-center px-[100px] max-[1440px]:px-[50px]",
+                div { class: "w-full flex flex-col items-center justify-center px-[100px] max-[1440px]:px-[50px]",
                     div {
                         id: "menus",
-                        class: "w-full flex flex-row justify-start h-[70px]",
+                        class: "w-full flex flex-row justify-start h-[70px] justify-between",
                         ExpandableMenu {
                             expanded: expanded(),
                             onclick: move |_| {
@@ -347,7 +346,9 @@ pub fn Header(
                     }
 
                     if user_wallet.is_logined() {
-                        Link { to: Route::MyProfilePage { lang },
+                        Link {
+                            to: Route::MyProfilePage { lang },
+                            class: "w-[28px]",
                             img {
                                 class: "w-[28px] h-[28px] rounded-full",
                                 src: asset!("/public/images/profile.png"),
@@ -370,7 +371,7 @@ pub fn ExpandableMenu(
     let responsive: ResponsiveService = use_context();
     let mut mobile_expanded = use_signal(|| true);
     rsx! {
-        div { class: "relative w-full flex flex-col items-start justify-center",
+        div { class: "relative flex flex-col items-start justify-center",
             div {
                 class: "h-[70px] w-full flex flex-row items-center justify-start text-[16px] font-bold gap-[10px] cursor-pointer z-[100]",
                 onclick: move |e| {
