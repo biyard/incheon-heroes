@@ -38,7 +38,7 @@ pub fn MintingPopup(lang: Language, id: ReadOnlySignal<i64>) -> Element {
                         div { class: "flex justify-start items-center",
                             div { class: "form-control cursor-pointer",
                                 label {
-                                    class: "label cursor-pointer flex flex-row gap-[10px] cursor-pointer",
+                                    class: "label cursor-pointer flex flex-row gap-[10px]",
                                     onclick: move |_event| {
                                         checked.set(!checked());
                                     },
@@ -125,7 +125,7 @@ pub fn MintingPopup(lang: Language, id: ReadOnlySignal<i64>) -> Element {
                             },
                             "{tr.confirm_text}"
                         }
-
+                    
                     }
                 }
             }

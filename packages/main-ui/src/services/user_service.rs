@@ -11,7 +11,7 @@ use crate::{
     config,
     models::{
         nft_metadata::NftMetadata,
-        user_wallet::{create_identity, UserWallet},
+        user_wallet::{self, create_identity, UserWallet},
     },
 };
 
@@ -37,6 +37,10 @@ impl UserService {
             Some(user) => Some(user.id),
             None => None,
         }
+    }
+
+    pub async fn logout(&mut self) {
+        LocalStorage::delete("user_wallet");
     }
 
     pub fn init() {
