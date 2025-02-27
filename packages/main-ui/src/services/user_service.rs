@@ -23,9 +23,9 @@ const USER_WALLET_KEY: &str = "user_wallet";
 pub struct UserService {
     wallet: Signal<UserWallet>,
     icp_wallet: Signal<Option<Arc<BasicIdentity>>>,
-    evm_nfts: Resource<Vec<(u64, NftMetadata)>>,
-    sbts: Resource<Vec<(u64, NftMetadata)>>,
-    icp_nfts: Resource<Vec<(u64, NftMetadata)>>,
+    pub evm_nfts: Resource<Vec<(u64, NftMetadata)>>,
+    pub sbts: Resource<Vec<(u64, NftMetadata)>>,
+    pub icp_nfts: Resource<Vec<(u64, NftMetadata)>>,
     icp_canister: IcpCanister,
     user: Signal<Option<User>>,
     klaytn: Klaytn,
@@ -179,6 +179,7 @@ impl UserService {
     }
 
     pub async fn load_wallet_from_storage(&mut self) {
+        LocalStorage::delete(USER_WALLET_KEY);
         if let Ok(wallet) = LocalStorage::get::<UserWallet>(USER_WALLET_KEY) {
             tracing::debug!("Loaded wallet from storage: {wallet}");
             if let Some(seed_hex) = wallet.seed() {

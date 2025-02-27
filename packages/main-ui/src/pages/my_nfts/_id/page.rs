@@ -2,17 +2,33 @@
 use crate::components::icons::{
     Badge, Experience, LinkIcon, Lock, Mint, Send, Swap, Trait, Transfer,
 };
+use crate::config::{self};
 use crate::models::history::{MissionHistory, TokenHistory};
 use crate::models::nft_metadata::NftMetadata;
 use crate::services::mission_contract::Mission;
 use crate::utils::address::parse_address;
-use crate::utils::time::formatted_timestamp;
+use crate::utils::time::{formatted_timestamp, time_diff_from_10};
 
 use super::controller::*;
 use super::i18n::*;
 use by_components::charts::horizontal_bar::HorizontalBar;
 use dioxus::prelude::*;
 use dioxus_translate::*;
+
+#[cfg(feature = "web")]
+use dto::{File, FileType};
+
+#[cfg(feature = "web")]
+use dioxus::html::{FileEngine, HasFileData};
+
+#[cfg(feature = "web")]
+use dto::AssetPresignedUrisReadAction;
+
+#[cfg(feature = "web")]
+use std::sync::Arc;
+
+#[cfg(feature = "web")]
+use crate::BackendApi;
 
 #[derive(Debug, Clone)]
 pub struct CharacterName {
@@ -30,6 +46,7 @@ pub fn MyNftsByIdPage(id: String, lang: Language) -> Element {
     tracing::debug!("nft metadata: {:?}", metadata);
 
     let missions = ctrl.get_mission(lang);
+    let missions_ko = ctrl.get_mission_ko();
     tracing::debug!("daily mission: {:?}", missions);
 
     let mission_historys = ctrl.get_mission_historys();
@@ -37,6 +54,9 @@ pub fn MyNftsByIdPage(id: String, lang: Language) -> Element {
 
     let token_historys = ctrl.get_token_historys();
     tracing::debug!("token historys: {:?}", token_historys);
+
+    let progress_daily_missions = ctrl.get_progress_daily_missions();
+    tracing::debug!("progress daily missions: {:?}", progress_daily_missions);
 
     let klaytn_scope_endpoint = ctrl.get_scope_endpoint();
 
@@ -60,7 +80,15 @@ pub fn MyNftsByIdPage(id: String, lang: Language) -> Element {
                     },
                 }
 
-                DailySection { lang, missions }
+                DailySection {
+                    lang,
+                    missions,
+                    missions_ko,
+                    progress_missions: progress_daily_missions,
+                    send_channel: move |(index, uri): (usize, String)| async move {
+                        ctrl.send_discord_channel(lang, index as i64, uri).await;
+                    },
+                }
 
                 MissionHistorySection { lang, mission_historys }
                 ActivitySection { lang, token_historys, klaytn_scope_endpoint }
@@ -103,7 +131,7 @@ pub fn MissionHistorySection(lang: Language, mission_historys: Vec<MissionHistor
                             ""
                         },
                     ),
-                    div { class: "flex flex-1 w-full h-full justify-center items-center",
+                    div { class: "flex flex-1 w-full h-full justify-center items-center whitespace-pre-line text-center",
                         {
                             ctrl.translate_mission_title(
                                 lang,
@@ -234,22 +262,76 @@ pub fn ActivitySection(
 }
 
 #[component]
-pub fn DailySection(lang: Language, missions: Vec<Mission>) -> Element {
+pub fn DailySection(
+    lang: Language,
+    missions: Vec<Mission>,
+    missions_ko: Vec<Mission>,
+    progress_missions: Vec<String>,
+    send_channel: EventHandler<(usize, String)>,
+) -> Element {
     let len = missions.len();
+
     rsx! {
+
         div { class: "flex flex-col w-full justify-center items-center p-[10px] gap-[10px] bg-white rounded-[15px]",
             div { class: "font-bold text-[#636363] text-[25px]", "Daily Mission" }
 
             div { class: "flex flex-wrap w-full justify-center items-start gap-[10px]",
-                for mission in missions {
-                    DailyEnableBox {
-                        title: mission.mission.clone(),
-                        exp: mission.exp.as_u64() as i64,
+                for (index , mission) in missions.iter().enumerate() {
+                    if progress_missions.contains(&missions_ko[index].mission.clone()) {
+                        ProgressMissionBox { lang }
+                    } else {
+                        DailyEnableBox {
+                            index,
+                            title: mission.mission.clone(),
+                            exp: mission.exp.as_u64() as i64,
+                            send_channel: move |uri: String| {
+                                send_channel.call((index, uri));
+                            },
+                        }
                     }
                 }
 
                 for level in (len + 1)..5 {
                     DailyNotEnableBox { lang, level: level as i64 }
+                }
+            }
+        }
+    }
+}
+
+#[component]
+pub fn ProgressMissionBox(lang: Language) -> Element {
+    let time = time_diff_from_10();
+    let mut mouse_hover = use_signal(|| false);
+    let navigator = use_navigator();
+    let tr: ProgressMissionBoxTranslate = translate(&lang);
+
+    rsx! {
+        div {
+            class: format!(
+                "cursor-pointer flex flex-col w-[230px] min-h-[80px] justify-center items-center {} rounded-[10px] gap-[2px] p-[5px]",
+                if mouse_hover() { "bg-[#a0c1b8]" } else { "bg-[#e4e4e4]" },
+            ),
+            onmouseenter: move |_| {
+                mouse_hover.set(true);
+            },
+            onmouseleave: move |_| {
+                mouse_hover.set(false);
+            },
+            onclick: move |_| {
+                let conf = config::get();
+                let discord_mission_url = conf.discord_mission_url;
+                navigator.push(format!("{}", discord_mission_url));
+            },
+            if mouse_hover() {
+                div { class: "font-semibold text-[14px] text-white text-center", "{tr.go_to_vote}" }
+            } else {
+                div { class: "font-normal text-[14px] text-[#5b5b5b] text-center",
+                    "{tr.inprogress_voting}"
+                }
+                div { class: "font-normal text-[14px] text-[#5b5b5b] text-center",
+                    "{tr.remained_time} : {time}"
                 }
             }
         }
@@ -268,9 +350,47 @@ pub fn DailyNotEnableBox(lang: Language, level: i64) -> Element {
 }
 
 #[component]
-pub fn DailyEnableBox(title: String, exp: i64) -> Element {
+pub fn DailyEnableBox(
+    index: usize,
+    title: String,
+    exp: i64,
+    send_channel: EventHandler<String>,
+) -> Element {
     rsx! {
-        div { class: "flex flex-col w-[230px] min-h-[80px] justify-center items-center bg-[#e4f4e4] rounded-[10px] gap-[2px] p-[5px]",
+        input {
+            id: "file-upload-{index}",
+            class: "hidden",
+            r#type: "file",
+            accept: ".jpg, .png, .jpeg",
+            multiple: false,
+            onchange: move |ev: Event<FormData>| {
+                let _ = ev;
+                spawn(async move {
+                    #[cfg(feature = "web")]
+                    if let Some(file_engine) = ev.files() {
+                        let api: BackendApi = use_context();
+                        let files = handle_file_upload(file_engine, api).await;
+                        tracing::debug!("files: {:?}", files);
+                        send_channel.call(files[0].clone().url.unwrap_or_default());
+                    }
+                });
+            },
+        }
+        button {
+            class: "cursor-pointer flex flex-col w-[230px] min-h-[80px] justify-center items-center bg-[#e4f4e4] rounded-[10px] gap-[2px] p-[5px]",
+            onclick: move |_ev: Event<MouseData>| async move {
+                #[cfg(feature = "web")]
+                {
+                    use wasm_bindgen::JsCast;
+                    let input = web_sys::window()
+                        .unwrap()
+                        .document()
+                        .unwrap()
+                        .get_element_by_id(&format!("file-upload-{index}"))
+                        .unwrap();
+                    input.dyn_ref::<web_sys::HtmlInputElement>().unwrap().click();
+                }
+            },
             div { class: "font-normal text-[#5b5b5b] text-[14px] whitespace-pre-line text-center",
                 "{title}"
             }
@@ -427,4 +547,49 @@ pub fn TraitBox(title: String, description: String) -> Element {
             div { class: "font-bold text-[16px] text-[#16775d]", "{description}" }
         }
     }
+}
+
+#[cfg(feature = "web")]
+pub async fn handle_file_upload(file_engine: Arc<dyn FileEngine>, api: BackendApi) -> Vec<File> {
+    let mut result: Vec<File> = vec![];
+    let files = file_engine.files();
+
+    for f in files {
+        match file_engine.read_file(f.as_str()).await {
+            Some(bytes) => {
+                let file_name: String = f.into();
+                let file_name_copy = file_name.clone();
+                let ext = file_name.rsplitn(2, '.').nth(0).unwrap_or("").to_string();
+
+                let file_type = FileType::from_str(&ext.clone());
+                let file_type = if file_type.is_ok() {
+                    Some(file_type.unwrap())
+                } else {
+                    None
+                };
+
+                let req = AssetPresignedUrisReadAction {
+                    action: None,
+                    total_count: None,
+                    file_type,
+                };
+
+                let url = match api.upload_metadata(bytes.clone(), req).await {
+                    Ok(v) => Some(v),
+                    Err(_) => None,
+                };
+
+                result.push(File {
+                    name: file_name_copy.clone(),
+                    ext: ext.to_string(),
+                    url,
+                });
+            }
+            None => {
+                tracing::error!("Error reading file");
+                continue;
+            }
+        };
+    }
+    result
 }

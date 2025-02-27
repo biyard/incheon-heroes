@@ -11,12 +11,14 @@ use crate::config;
 use super::experience_contract::ExperienceContract;
 use super::holder_contract::HolderContract;
 use super::mission_contract::MissionContract;
+use super::nft_contract::NftContract;
 use super::sbt_contract::SbtContract;
 use super::shop_contract::ShopContract;
 
 #[derive(Clone, Copy)]
 pub struct Klaytn {
     pub shop: Signal<ShopContract<RemoteFeePayer, KaiaLocalWallet>>,
+    pub nft: Signal<NftContract<RemoteFeePayer, KaiaLocalWallet>>,
     pub holder: Signal<HolderContract>,
     pub sbt: Signal<SbtContract>,
     pub experience: Signal<ExperienceContract>,
@@ -46,9 +48,11 @@ impl Klaytn {
         );
 
         let shop = ShopContract::new(conf.contracts.shop, provider.clone());
+        let nft = NftContract::new(conf.contracts.nft, provider.clone());
 
         let srv = Self {
             shop: use_signal(move || shop),
+            nft: use_signal(move || nft),
             holder: use_signal(move || holder),
             sbt: use_signal(move || sbt),
             experience: use_signal(move || experience),
@@ -81,7 +85,11 @@ impl Klaytn {
         };
 
         let mut shop = self.shop.write();
-        shop.set_wallet(user_wallet);
+        shop.set_wallet(user_wallet.clone());
         shop.set_fee_payer(feepayer);
+
+        let mut nft = self.nft.write();
+        nft.set_wallet(user_wallet);
+        nft.set_fee_payer(feepayer);
     }
 }

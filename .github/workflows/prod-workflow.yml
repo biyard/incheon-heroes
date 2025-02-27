@@ -93,6 +93,7 @@ jobs:
           CONTRACT_INCHEON_CONTENTS: "0x345F050DdcdBdEA04Cd34E8456f48160d6b1de83"
 
           OPENSEA_ENDPOINT: "https://opensea.io/assets/klaytn"
+          DISCORD_MISSION_URL: "https://discord.com/channels/1140593363515617372/1216994620945207296"
 
           API_PREFIX: /api
           ENABLE_S3: true

@@ -54,6 +54,8 @@ pub struct Config {
     pub contracts: ContractConfig,
     pub kakao: KakaoConfig,
     pub icp: IcpConfig,
+
+    pub discord_mission_url: &'static str,
 }
 
 impl Default for Config {
@@ -120,6 +122,8 @@ impl Default for Config {
                 endpoint: option_env!("ICP_ENDPOINT").expect("You must set ICP_ENDPOINT"),
                 canister_id: option_env!("ICP_CANISTER_ID").expect("You must set ICP_CANISTER_ID"),
             },
+            discord_mission_url: option_env!("DISCORD_MISSION_URL")
+                .expect("You must set DISCORD_MISSION_URL"),
         }
     }
 }

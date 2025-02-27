@@ -94,6 +94,7 @@ jobs:
           CONTRACT_INCHEON_CONTENTS: "0x54a01cd46b7f585584Fe4a3F7dafC25EE1fac0c9"
 
           OPENSEA_ENDPOINT: "https://testnets.opensea.io/assets/baobab"
+          DISCORD_MISSION_URL: "https://discord.com/channels/1140593363515617372/1169178052647985213"
 
           API_PREFIX: /api
           ENABLE_S3: true
