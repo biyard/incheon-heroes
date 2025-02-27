@@ -29,6 +29,26 @@ pub struct UserController {
 }
 
 impl UserController {
+    async fn register_or_login(
+        &self,
+        auth: Option<Authorization>,
+        UserRegisterOrLoginRequest {
+            evm_address,
+            provider,
+        }: UserRegisterOrLoginRequest,
+    ) -> Result<JsonWithHeaders<User>> {
+        self.signup_or_login(
+            auth,
+            UserSignupOrLoginRequest {
+                evm_address,
+                profile_url: "https://incheonheroes.world/metadata/profile.png".to_string(),
+                provider,
+                ..Default::default()
+            },
+        )
+        .await
+    }
+
     async fn signup_or_login(
         &self,
         _auth: Option<Authorization>,
@@ -117,13 +137,14 @@ impl UserController {
     }
 
     pub async fn act_user(
-        State(_ctrl): State<UserController>,
+        State(ctrl): State<UserController>,
         Extension(_auth): Extension<Option<Authorization>>,
         Json(body): Json<UserAction>,
     ) -> Result<JsonWithHeaders<User>> {
         tracing::debug!("act_user {:?}", body);
         match body {
-            UserAction::SignupOrLogin(req) => _ctrl.signup_or_login(_auth, req).await,
+            UserAction::SignupOrLogin(req) => ctrl.signup_or_login(_auth, req).await,
+            UserAction::RegisterOrLogin(req) => ctrl.register_or_login(_auth, req).await,
         }
     }
     pub async fn get_user_by_id(

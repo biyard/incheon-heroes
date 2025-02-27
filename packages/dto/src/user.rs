@@ -16,7 +16,7 @@ pub struct User {
     #[api_model(summary, auto = [insert, update])]
     pub updated_at: i64,
 
-    #[api_model(unique, action = signup_or_login, read_action = get_user_by_address)]
+    #[api_model(unique, action = [signup_or_login, register_or_login], read_action = get_user_by_address)]
     pub evm_address: String,
     #[api_model(unique, action = signup_or_login)]
     #[validate(email)]
@@ -26,7 +26,7 @@ pub struct User {
     #[api_model(action = signup_or_login)]
     #[validate(url)]
     pub profile_url: String,
-    #[api_model(action = signup_or_login, type = INTEGER)]
+    #[api_model(action = [signup_or_login, register_or_login], type = INTEGER)]
     pub provider: UserAuthProvider,
 }
 
@@ -36,6 +36,7 @@ pub enum UserAuthProvider {
     #[default]
     Kakao = 1,
     Google = 2,
+    Kaia = 3,
 }
 
 /// UserContents is read-only model for users table with contents.

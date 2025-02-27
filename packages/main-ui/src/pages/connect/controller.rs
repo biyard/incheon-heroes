@@ -2,6 +2,7 @@ use by_macros::*;
 use dioxus::prelude::*;
 use dioxus_oauth::prelude::FirebaseService;
 use dioxus_translate::Language;
+use dto::User;
 
 use crate::{
     config,
@@ -148,6 +149,29 @@ impl Controller {
         };
 
         self.user.set_wallet(UserWallet::KaiaWallet(w)).await;
+        let endpoint = conf.new_api_endpoint;
+
+        match User::get_client(endpoint)
+            .register_or_login(
+                self.user.evm_address().unwrap_or_default(),
+                dto::UserAuthProvider::Kaia,
+            )
+            .await
+        {
+            Ok(user) => {
+                self.user.set_user(user);
+            }
+            Err(e) => {
+                tracing::error!("Failed to register or login: {:?}", e);
+            }
+        };
+
+        if self.nav.can_go_back() {
+            self.nav.go_back();
+        } else {
+            tracing::debug!("replace home page");
+            self.nav.replace(Route::HomePage { lang: self.lang });
+        }
     }
 
     pub async fn handle_internet_identity(&self) {}
