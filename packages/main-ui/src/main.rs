@@ -8,6 +8,7 @@ pub mod services;
 pub mod utils;
 
 use crate::route::Route;
+use by_components::responsive::Responsive;
 use by_components::theme::{CardColorTheme, ColorTheme, TextColorTheme};
 use dioxus::prelude::*;
 use dioxus_popup::PopupService;
@@ -81,7 +82,7 @@ fn app() -> Element {
             rel: "stylesheet",
         }
         document::Script { src: "https://cdn.tailwindcss.com" }
-        Router::<Route> {}
+        Responsive { Router::<Route> {} }
     }
 }
 
