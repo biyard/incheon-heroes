@@ -19,7 +19,7 @@ use dioxus_translate::*;
 use dto::{File, FileType};
 
 #[cfg(feature = "web")]
-use dioxus::html::{FileEngine, HasFileData};
+use dioxus::html::FileEngine;
 
 #[cfg(feature = "web")]
 use dto::AssetPresignedUrisReadAction;
