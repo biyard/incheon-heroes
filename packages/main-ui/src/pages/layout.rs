@@ -49,7 +49,7 @@ pub fn RootLayout(lang: Language) -> Element {
                 }
             } else {
                 MobileHeader {
-                    class: "absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center bg-white px-[20px]",
+                    class: "absolute top-0 left-0 w-full h-full flex flex-col items-center justify-start",
                     lang,
                 }
             }
@@ -106,7 +106,7 @@ pub fn MobileHeader(
 
     rsx! {
         div {..attributes,
-            div { class: "w-full flex flex-row items-start justify-between h-[70px]",
+            div { class: "w-full flex flex-row items-center justify-between h-[70px] bg-white px-[20px]",
                 button {
                     onclick: move |_| {
                         expanded.set(!expanded());
@@ -145,7 +145,7 @@ pub fn MobileHeader(
                 }
             }
             if expanded() {
-                div { class: "w-full grow bg-white flex flex-col items-center justify-center",
+                div { class: "w-full grow bg-white flex flex-col items-center justify-center text-black",
                     div {
                         id: "menus",
                         class: "w-full flex flex-col justify-start h-[70px]",
