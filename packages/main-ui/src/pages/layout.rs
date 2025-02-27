@@ -145,10 +145,10 @@ pub fn MobileHeader(
                 }
             }
             if expanded() {
-                div { class: "w-full grow bg-white flex flex-col items-center justify-center text-black",
+                div { class: "w-full grow bg-white flex flex-col items-center text-black",
                     div {
                         id: "menus",
-                        class: "w-full flex flex-col justify-start h-[70px]",
+                        class: "w-full flex flex-col justify-start h-[70px] pl-[12px]",
                         ExpandableMenu { expanded: true, name: "{tr.history}",
                             SubMenu {
                                 to: Route::NoticesPage { lang },
@@ -212,7 +212,7 @@ pub fn MobileHeader(
                             }
                         }
                     }
-
+                
                 }
             }
         }
@@ -243,7 +243,7 @@ pub fn Header(
             }
             div { class: "w-full flex flex-row items-center justify-center max-w-[1440px] max-[1440px]:px-[20px] z-[10]",
                 Link {
-                    class: "flex items-center justify-center h-[70px] z-[1]",
+                    class: "flex items-center justify-center h-[70px] z-[1] max-[400px]:hidden",
                     to: Route::HomePage { lang },
                     img { src: "{LOGO}", class: "w-[145px] h-[50px]" }
                 }
@@ -367,21 +367,34 @@ pub fn ExpandableMenu(
     name: String,
     onclick: Option<EventHandler<MouseEvent>>,
 ) -> Element {
+    let responsive: ResponsiveService = use_context();
+    let mut mobile_expanded = use_signal(|| true);
     rsx! {
-        div { class: "relative w-full flex flex-col gap-[20px] items-start justify-center",
+        div { class: "relative w-full flex flex-col items-start justify-center",
             div {
-                class: "h-[70px] w-full flex flex-row items-center justify-start text-[16px] font-bold gap-[10px] cursor-pointer",
+                class: "h-[70px] w-full flex flex-row items-center justify-start text-[16px] font-bold gap-[10px] cursor-pointer z-[100]",
                 onclick: move |e| {
+                    if responsive.width() <= 1200.0 {
+                        mobile_expanded.set(!mobile_expanded());
+                    }
                     if let Some(onclick) = onclick {
                         onclick(e);
                     }
                 },
                 "{name}"
-                SingleSimpleArrow { direction: if expanded { ArrowDirection::Up } else { ArrowDirection::Down } }
+                SingleSimpleArrow { direction: if responsive.width() > 1200.0 { if expanded { ArrowDirection::Up } else { ArrowDirection::Down } } else { if mobile_expanded() { ArrowDirection::Up } else { ArrowDirection::Down } } }
             }
             if expanded {
-                div { class: "absolute top-[70px] left-0 w-full flex flex-col gap-[15px] z-[100]",
-                    {children}
+                if responsive.width() > 1200.0 {
+                    div { class: "absolute top-[70px] left-0 w-full flex flex-col gap-[15px] z-[100]",
+                        {children}
+                    }
+                } else {
+                    if mobile_expanded() {
+                        div { class: "w-full flex flex-col gap-[10px] z-[100] py-[5px] pl-[18px] z-[100]",
+                            {children}
+                        }
+                    }
                 }
             }
         }
@@ -406,11 +419,13 @@ pub fn Menu(
     onclick: EventHandler<MouseEvent>,
 ) -> Element {
     rsx! {
-        Link {
-            to,
-            class: "w-full flex flex-row items-center justify-start text-[16px] font-bold gap-[10px]",
-            onclick,
-            {children}
+        div { class: "relative flex flex-col",
+            Link {
+                to,
+                class: "h-[70px] w-full flex flex-row items-center justify-start text-[16px] font-bold gap-[10px]",
+                onclick,
+                {children}
+            }
         }
     }
 }
