@@ -1,3 +1,6 @@
+#[cfg(feature = "web")]
+pub mod kaikas_browser;
+pub mod kaikas_wallet;
 pub mod local_fee_payer;
 pub mod remote_fee_payer;
 pub mod wallet;

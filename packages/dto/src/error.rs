@@ -42,6 +42,12 @@ pub enum Error {
     // Contents
     #[error("Content not found")]
     NotFoundContent,
+    #[error("Kaikas wallet not found")]
+    NoKaikasWallet,
+    #[error("could not sign message")]
+    SignError,
+    #[error("Wallet not initialized")]
+    WalletNotInitialized,
 }
 
 impl From<reqwest::Error> for Error {
