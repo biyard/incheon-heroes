@@ -268,6 +268,8 @@ impl KaiaWallet for UserService {
     }
 
     async fn sign_transaction(&self, tx: &KlaytnTransaction) -> dto::Result<Signature> {
+        tracing::debug!("Sign transaction: {tx:?}");
+
         match self.wallet() {
             UserWallet::SocialWallet {
                 ref private_key, ..
