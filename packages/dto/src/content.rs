@@ -25,7 +25,6 @@ pub struct Content {
     pub source: String,
 
     #[api_model(action = create, query_action = search)]
-    #[validate(length(min = 1, max = 300))]
     pub description: String,
 
     #[api_model(many_to_one = users, action = create)]
