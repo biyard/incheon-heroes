@@ -97,7 +97,7 @@ pub struct KaikasRequest<T> {
 #[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Transaction {
-    tx_type: u8,
+    type_int: u8,
     to: String,
     from: String,
     gas: String,
@@ -126,7 +126,7 @@ impl KaiaWallet for KaikasWallet {
         let req = KaikasRequest {
             method: "klay_signTransaction".to_string(),
             params: vec![Transaction {
-                tx_type: tx.tx_type.to_tx_type_code(),
+                type_int: tx.tx_type.to_tx_type_code(),
                 to: tx.to.unwrap_or_default().encode_hex(),
                 from: tx.from.unwrap_or_default().encode_hex(),
                 gas: tx.gas.unwrap_or_default().encode_hex(),

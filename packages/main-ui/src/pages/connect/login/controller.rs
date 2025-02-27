@@ -87,6 +87,7 @@ impl Controller {
         match self.provider {
             LoginProvider::Kakao => self.backup_kakao().await,
             LoginProvider::Google => self.backup_google().await,
+            LoginProvider::Kaia => {}
         }
     }
 
