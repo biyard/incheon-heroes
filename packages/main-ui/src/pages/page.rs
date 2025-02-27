@@ -308,8 +308,7 @@ pub fn LoginButton(
             Link {
                 to: Route::ConnectPage { lang },
                 onclick: |_| println!("Button clicked!"),
-                class: "px-4 py-2 bg-gray-500 text-white rounded-full hover:bg-gray-600 text-xl font-bold",
-                style: "width: 250px; height: 60px; padding-10 px",
+                class: "p-4 bg-gray-500 text-white rounded-full hover:bg-gray-600 text-xl font-bold w-[250px] text-center",
                 "{tr.button_text}"
             }
         }

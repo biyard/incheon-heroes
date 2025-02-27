@@ -24,7 +24,7 @@ pub fn MyNftsPage(lang: Language) -> Element {
             Heading1 { lang, "{tr.title}" }
             div { class: "flex flex-col w-full max-w-[1325px] bg-white rounded-[30px] p-[20px] gap-[20px]",
                 div { class: "flex flex-row w-full justify-end items-end",
-                    div { class: "w-[150px] h-[40px] rounded-[10px] bg-[#2ab28c] justify-center items-center",
+                    div { class: "min-w-[150px] px-4 h-[40px] rounded-[10px] bg-[#2ab28c] justify-center items-center",
                         div { class: "flex flex-row w-full h-full justify-center items-center font-bold text-base text-white",
                             "{tr.distribute_exp}"
                         }
