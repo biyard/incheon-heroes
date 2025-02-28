@@ -124,7 +124,7 @@ pub fn MissionHistorySection(lang: Language, mission_historys: Vec<MissionHistor
             for (index , history) in mission_historys.iter().enumerate() {
                 div {
                     class: format!(
-                        "flex flex-row w-full h-[55px] {} justify-start items-start font-light text-[18px] text-[#636363]",
+                        "flex flex-row w-full min-h-[55px] {} justify-start items-center font-light text-[18px] text-[#636363]",
                         if index != mission_historys.len() - 1 {
                             "border-b border-b-[#e0e0e0]"
                         } else {
@@ -179,7 +179,7 @@ pub fn ActivitySection(
     let navigator = use_navigator();
 
     rsx! {
-        div { class: "flex flex-col w-full justify-start items-start bg-white border border-[#e0e0e0] rounded-[10px]",
+        div { class: "flex flex-col w-full justify-start items-center bg-white border border-[#e0e0e0] rounded-[10px]",
             div { class: "flex flex-row w-full h-[55px] justify-center items-center font-semibold text-[#636363] text-[20px]",
                 "Activity"
             }
@@ -201,7 +201,7 @@ pub fn ActivitySection(
             for (index , history) in token_historys.iter().enumerate() {
                 div {
                     class: format!(
-                        "flex flex-row w-full h-[55px] {} justify-start items-start font-light text-[18px] text-[#636363]",
+                        "flex flex-row w-full min-h-[55px] {} justify-start items-center font-light text-[18px] text-[#636363]",
                         if index != token_historys.len() - 1 {
                             "border-b border-b-[#e0e0e0]"
                         } else {
@@ -278,16 +278,18 @@ pub fn DailySection(
 
             div { class: "flex flex-wrap w-full justify-center items-start gap-[10px]",
                 for (index , mission) in missions.iter().enumerate() {
-                    if progress_missions.contains(&missions_ko[index].mission.clone()) {
-                        ProgressMissionBox { lang }
-                    } else {
-                        DailyEnableBox {
-                            index,
-                            title: mission.mission.clone(),
-                            exp: mission.exp.as_u64() as i64,
-                            send_channel: move |uri: String| {
-                                send_channel.call((index, uri));
-                            },
+                    if index < 4 {
+                        if progress_missions.contains(&missions_ko[index].mission.clone()) {
+                            ProgressMissionBox { lang }
+                        } else {
+                            DailyEnableBox {
+                                index,
+                                title: mission.mission.clone(),
+                                exp: mission.exp.as_u64() as i64,
+                                send_channel: move |uri: String| {
+                                    send_channel.call((index, uri));
+                                },
+                            }
                         }
                     }
                 }
