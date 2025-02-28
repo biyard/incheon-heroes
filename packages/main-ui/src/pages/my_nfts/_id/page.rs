@@ -10,9 +10,11 @@ use crate::utils::time::{formatted_timestamp, time_diff_from_10};
 use super::controller::*;
 use super::i18n::*;
 use by_components::charts::horizontal_bar::HorizontalBar;
-use dioxus::prelude::*;
+use by_components::files::DropZone;
+use dioxus::{prelude::*, CapturedError};
 use dioxus_translate::*;
 
+use dto::AssetPresignedUris;
 #[cfg(feature = "web")]
 use dto::{File, FileType};
 
@@ -21,6 +23,7 @@ use dioxus::html::FileEngine;
 
 #[cfg(feature = "web")]
 use dto::AssetPresignedUrisReadAction;
+use reqwest::header::{HeaderMap, HeaderValue, CONTENT_TYPE};
 
 #[cfg(feature = "web")]
 use std::sync::Arc;
@@ -361,38 +364,16 @@ pub fn DailyEnableBox(
     send_channel: EventHandler<String>,
 ) -> Element {
     rsx! {
-        input {
-            id: "file-upload-{index}",
-            class: "hidden",
-            r#type: "file",
-            accept: ".jpg, .png, .jpeg",
-            multiple: false,
-            onchange: move |ev: Event<FormData>| {
-                let _ = ev;
-                spawn(async move {
-                    #[cfg(feature = "web")]
-                    if let Some(file_engine) = ev.files() {
-                        let api: BackendApi = use_context();
-                        let files = handle_file_upload(file_engine, api).await;
-                        tracing::debug!("files: {:?}", files);
-                        send_channel.call(files[0].clone().url.unwrap_or_default());
-                    }
-                });
-            },
-        }
-        button {
+        DropZone {
             class: "cursor-pointer flex flex-col w-[230px] min-h-[80px] justify-center items-center bg-[#e4f4e4] rounded-[10px] gap-[2px] p-[5px]",
-            onclick: move |_ev: Event<MouseData>| async move {
-                #[cfg(feature = "web")]
-                {
-                    use wasm_bindgen::JsCast;
-                    let input = web_sys::window()
-                        .unwrap()
-                        .document()
-                        .unwrap()
-                        .get_element_by_id(&format!("file-upload-{index}"))
-                        .unwrap();
-                    input.dyn_ref::<web_sys::HtmlInputElement>().unwrap().click();
+            onupload: move |(file_bytes, ext)| async move {
+                match handle_upload(file_bytes, ext).await {
+                    Ok((uri, _)) => {
+                        send_channel(uri);
+                    }
+                    Err(e) => {
+                        btracing::error!("Failed to upload source file: {:?}", e);
+                    }
                 }
             },
             div { class: "font-normal text-[#5b5b5b] text-[14px] whitespace-pre-line text-center",
@@ -612,4 +593,47 @@ pub fn process_image(input: &[u8], width: u32, height: u32) -> Vec<u8> {
     }
 
     output.to_vec()
+}
+
+pub async fn handle_upload(
+    file_bytes: Vec<u8>,
+    ext: String,
+) -> std::result::Result<(String, String), CapturedError> {
+    let cli = AssetPresignedUris::get_client(config::get().new_api_endpoint);
+    let res = match cli
+        .get_presigned_uris(1, dto::FileType::from_str(&ext).unwrap_or_default())
+        .await
+    {
+        Ok(res) => res,
+        Err(e) => {
+            tracing::error!("Failed to get presigned uris: {:?}", e);
+            return Err(e.into());
+        }
+    };
+
+    let presigned_uri = res.presigned_uris.first().context("No presigned uri")?;
+    let uri = res.uris.first().context("No uri")?;
+
+    use infer;
+
+    let kind = infer::get(&file_bytes).context("Failed to infer file type")?;
+    tracing::debug!("Inferred file type: {:?}", kind);
+
+    let content_type = kind.mime_type().to_string();
+    tracing::debug!("Content type: {:?}", content_type);
+    let mut headers = HeaderMap::new();
+    headers.insert(
+        CONTENT_TYPE,
+        HeaderValue::from_str(&content_type).context("could not convert content type to header")?,
+    );
+
+    reqwest::Client::new()
+        .put(presigned_uri)
+        .body(file_bytes)
+        .headers(headers)
+        .send()
+        .await
+        .context("Failed to upload file")?;
+
+    Ok((uri.to_string(), content_type))
 }
