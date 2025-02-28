@@ -12,7 +12,7 @@ use dioxus_translate::*;
 pub fn ShopPage(lang: Language) -> Element {
     let ctrl = Controller::new()?;
     let tr: ShopTranslate = translate(&lang);
-
+    let responsive: ResponsiveService = use_context();
     let stacks = vec![
         (
             tr.usb_title,
@@ -42,7 +42,6 @@ pub fn ShopPage(lang: Language) -> Element {
     ]
     .iter()
     .map(|(title, desc, img)| {
-        let responsive: ResponsiveService = use_context();
         rsx! {
             div { class: "relative w-full flex flex-col gap-[10px]",
                 img { class: "w-full h-[450px] object-cover", src: "{img}" }
