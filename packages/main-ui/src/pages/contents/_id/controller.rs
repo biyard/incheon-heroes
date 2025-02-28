@@ -68,7 +68,7 @@ impl Controller {
         )
         .await;
 
-        btracing::info!("Copied URL for sharing: {}", self.path());
+        btracing::info!("Copied sharing URL");
     }
 
     pub fn opensea_url(&self) -> String {
@@ -84,16 +84,7 @@ impl Controller {
             .await
             .unwrap_or_default();
         self.rsc.restart();
-    }
-
-    #[allow(dead_code)]
-    pub async fn handle_mint(&mut self) {
-        let endpoint = config::get().new_api_endpoint;
-        let _ = Content::get_client(endpoint)
-            .mint(self.id())
-            .await
-            .unwrap_or_default();
-        self.rsc.restart();
+        btracing::info!("Liked!");
     }
 
     pub fn open_minting_popup(&mut self) {

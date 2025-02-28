@@ -33,6 +33,11 @@ translate! {
         en: "Like",
     },
 
+    already_like: {
+        ko: "이미 좋아요를 했습니다.",
+        en: "You already liked it.",
+    }
+
     btn_login: {
         ko: "로그인하기",
         en: "Login",
