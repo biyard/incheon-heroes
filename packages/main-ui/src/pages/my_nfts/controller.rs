@@ -41,11 +41,11 @@ impl Controller {
 
         match account.distribute_account_exp(id as i64, exp as i64).await {
             Ok(_) => {
-                tracing::debug!("success to distribute account exp");
+                btracing::debug!("success to distribute account exp");
                 user.account_exp.restart();
             }
             Err(e) => {
-                tracing::error!("distribute exp failed: {:?}", e);
+                btracing::error!("distribute exp failed: {:?}", e);
             }
         }
     }

@@ -288,6 +288,8 @@ pub fn VideoSection() -> Element {
                 autoplay: "true",
                 r#loop: "true",
                 muted: "true",
+                playsinline: "true",
+                controls: "false",
                 src: "{VIDEO}",
             }
         }

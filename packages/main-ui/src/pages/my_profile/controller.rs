@@ -161,12 +161,12 @@ impl Controller {
 
         match account.claim_account_exp().await {
             Ok(_) => {
-                tracing::debug!("success to claim account exp");
+                btracing::debug!("success to claim account exp");
                 user.account_exp.restart();
                 user.account_activities.restart();
             }
             Err(e) => {
-                tracing::error!("claim exp failed: {:?}", e);
+                btracing::error!("claim exp failed: {:?}", e);
             }
         }
     }

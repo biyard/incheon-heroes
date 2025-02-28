@@ -94,11 +94,16 @@ pub async fn handle_upload(
 
     use infer;
 
-    let kind = infer::get(&file_bytes).context("Failed to infer file type")?;
-    tracing::debug!("Inferred file type: {:?}", kind);
+    let is_svg_image = is_svg(&file_bytes.clone());
 
-    let content_type = kind.mime_type().to_string();
-    tracing::debug!("Content type: {:?}", content_type);
+    let content_type = if is_svg_image {
+        "image/svg+xml".to_string()
+    } else {
+        let kind = infer::get(&file_bytes.clone()).context("Failed to infer file type")?;
+        tracing::debug!("Inferred file type: {:?}", kind);
+        kind.mime_type().to_string()
+    };
+
     let mut headers = HeaderMap::new();
     headers.insert(
         CONTENT_TYPE,
@@ -114,4 +119,12 @@ pub async fn handle_upload(
         .context("Failed to upload file")?;
 
     Ok((uri.to_string(), content_type))
+}
+
+fn is_svg(bytes: &[u8]) -> bool {
+    if let Ok(content) = std::str::from_utf8(bytes) {
+        content.trim_start().starts_with("<svg")
+    } else {
+        false
+    }
 }

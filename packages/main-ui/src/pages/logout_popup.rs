@@ -1,4 +1,5 @@
 #![allow(non_snake_case)]
+use crate::Route;
 use crate::{pages::i18n::LogoutPopupTranslate, services::user_service::UserService};
 use dioxus::prelude::*;
 use dioxus_popup::PopupService;
@@ -12,7 +13,7 @@ pub fn LogoutPopup(
     let mut popup: PopupService = use_context();
     let mut user_wallet: UserService = use_context();
     let tr = translate::<LogoutPopupTranslate>(&lang);
-
+    let nav = use_navigator();
     rsx! {
         div { class: "popup-custom bg-white w-[450px] h-[170px] mt-[30px]rounded-lg flex flex-col items-center gap-[30px]",
             p { class: "font-bold text-lg", "{tr.title}" }
@@ -24,6 +25,7 @@ pub fn LogoutPopup(
                         tracing::debug!("Logout button clicked");
                         spawn(async move {
                             user_wallet.logout().await;
+                            nav.push(Route::HomePage { lang });
                             popup.close();
                         });
                     },

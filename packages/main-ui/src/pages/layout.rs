@@ -108,10 +108,16 @@ pub fn MobileHeader(
         expanded.set(false);
     };
     let tr: HeaderTranslate = translate(&lang);
+    let mut popup: PopupService = use_context();
+    let custom_class = if expanded() {
+        "fixed top-0 left-0 z-[100]"
+    } else {
+        ""
+    };
 
     rsx! {
         div {..attributes,
-            div { class: "w-full flex flex-row items-center justify-between h-[70px] bg-white px-[20px]",
+            div { class: "{custom_class} w-full flex flex-row items-center justify-between h-[70px] bg-white px-[20px]",
                 button {
                     onclick: move |_| {
                         expanded.set(!expanded());
@@ -129,9 +135,22 @@ pub fn MobileHeader(
                 div { class: "flex flex-row gap-[15px] items-center h-full z-[1]",
                     button {
                         onclick: move |_| {
-                            nav.push(Route::ConnectPage { lang });
+                            if user_wallet.is_logined() {
+                                tracing::debug!("logout popup clicked");
+                                popup.open(rsx! {
+                                    LogoutPopup { lang: lang.clone() }
+                                }).with_id("logout_popup");
+                            } else {
+                                nav.push(Route::ConnectPage {
+                                    lang: lang.clone(),
+                                });
+                            }
                         },
-                        c::Connect { fill: if user_wallet.is_logined() { "#CEF7E3" } else { "black" } }
+                        if user_wallet.is_logined() {
+                            c::Logout { fill: "black" }
+                        } else {
+                            c::Connect { fill: "black" }
+                        }
                     }
                     Link {
                         class: "flex flex-row gap-[10px] items-center",
@@ -150,7 +169,7 @@ pub fn MobileHeader(
                 }
             }
             if expanded() {
-                div { class: "absolute top-[70px] left-0 w-full h-[calc(100vh-70px)] grow bg-white flex flex-col items-center text-black",
+                div { class: "fixed top-[70px] left-0 w-full h-full grow bg-white flex flex-col items-center text-black z-[100]",
                     div {
                         id: "menus",
                         class: "w-full flex flex-col justify-start h-[70px] pl-[12px]",
@@ -240,24 +259,28 @@ pub fn Header(
         expanded.set(false);
     };
 
-    #[cfg(feature = "web")]
-    use_effect(move || {
-        use gloo_events::EventListener;
-        use web_sys::window;
+    // #[cfg(feature = "web")]
+    // use_effect(move || {
+    //     use gloo_events::EventListener;
+    //     use web_sys::window;
 
-        let listener = EventListener::new(
-            &window().expect("no global `window` exists"),
-            "scroll",
-            move |_| {
-                // Close expanded menu on any scroll
-                expanded.set(false);
-            },
-        );
+    //     let current_expanded = expanded.read().clone();
+    //     let mut expanded_clone = expanded.clone();
 
-        std::mem::forget(listener);
+    //     let listener = EventListener::new(
+    //         &window().expect("no global `window` exists"),
+    //         "scroll",
+    //         move |_| {
+    //             if current_expanded {
+    //                 expanded_clone.set(false);
+    //             }
+    //         },
+    //     );
 
-        (move || {})()
-    });
+    //     std::mem::forget(listener);
+
+    //     (move || {})()
+    // });
 
     rsx! {
         div { id, class,
@@ -284,6 +307,7 @@ pub fn Header(
                                 expanded.set(!expanded());
                             },
                             name: "{tr.history}",
+                            min_width: "130px",
                             SubMenu {
                                 to: Route::NoticesPage { lang },
                                 onclick: handle_select_menu,
@@ -307,6 +331,7 @@ pub fn Header(
                                 expanded.set(!expanded());
                             },
                             name: "{tr.event}",
+                            min_width: "120px",
                             // SubMenu {
                             //     to: Route::CalendarPage { lang },
                             //     onclick: handle_select_menu,
@@ -408,6 +433,7 @@ pub fn ExpandableMenu(
     children: Element,
     name: String,
     onclick: Option<EventHandler<MouseEvent>>,
+    min_width: Option<String>,
 ) -> Element {
     let responsive: ResponsiveService = use_context();
     let mut mobile_expanded = use_signal(|| true);
@@ -428,7 +454,9 @@ pub fn ExpandableMenu(
             }
             if expanded {
                 if responsive.width() > 1200.0 {
-                    div { class: "absolute top-[70px] left-0 w-full flex flex-col gap-[15px] z-[100]",
+                    div {
+                        class: "absolute top-[70px] left-0 w-full flex flex-col gap-[15px] z-[100]",
+                        style: if let Some(w) = min_width { "min-width: {w}" } else { "" },
                         {children}
                     }
                 } else {

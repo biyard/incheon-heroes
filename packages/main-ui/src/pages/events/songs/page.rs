@@ -1,13 +1,13 @@
 #![allow(non_snake_case)]
+use super::controller::*;
+use super::i18n::*;
 use crate::components::headings::Heading1;
 use crate::components::icons::arrows::LeftArrow;
 use crate::components::icons::arrows::RightArrow;
 use crate::models::nft_metadata::NftMetadata;
 use crate::models::songs::Song;
 use crate::route::Route;
-
-use super::controller::*;
-use super::i18n::*;
+use by_components::responsive::ResponsiveService;
 use dioxus::prelude::*;
 use dioxus_translate::*;
 
@@ -17,8 +17,9 @@ pub fn SongsPage(lang: Language) -> Element {
     let tr: SongsTranslate = translate(&lang);
     let mut song: Signal<Option<String>> = use_signal(|| None);
     let page = ctrl.page();
-    let size = 12;
     let songs = ctrl.songs()?;
+    let responsive: ResponsiveService = use_context();
+    let size = if responsive.width() > 1200.0 { 12 } else { 6 };
 
     let start = page * size;
     let mut end = start + size;
@@ -51,7 +52,7 @@ pub fn SongsPage(lang: Language) -> Element {
                     },
                     LeftArrow {}
                 }
-                div { class: "grow grid grid-cols-3 gap-[10px]",
+                div { class: if responsive.width() > 1200.0 { "grow grid grid-cols-3 gap-[10px]" } else { "flex flex-col gap-[10px]" },
                     if let Some(ref song) = song() {
                         video {
                             class: "w-0 h-0 hidden",
@@ -249,7 +250,7 @@ pub fn SongCard(
                             .with_size(ImageSize::Manual { width : 20, height : 20 })
                         ),
                     }
-
+                
                 }
             }
         }

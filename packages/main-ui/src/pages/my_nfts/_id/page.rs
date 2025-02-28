@@ -11,6 +11,7 @@ use super::controller::*;
 use super::i18n::*;
 use by_components::charts::horizontal_bar::HorizontalBar;
 use by_components::files::DropZone;
+use by_components::responsive::ResponsiveService;
 use dioxus::{prelude::*, CapturedError};
 use dioxus_translate::*;
 
@@ -104,63 +105,68 @@ pub fn MissionHistorySection(lang: Language, mission_historys: Vec<MissionHistor
     let tr: MissionHistorySectionTranslate = translate(&lang);
     rsx! {
         div { class: "flex flex-col w-full justify-start items-start bg-white border border-[#e0e0e0] rounded-[10px]",
-            div { class: "flex flex-row w-full h-[55px] justify-center items-center font-semibold text-[#636363] text-[20px]",
+            div { class: "flex flex-row w-full h-[55px] justify-center items-center font-semibold text-[#636363] text-[20px] max-[900px]:text-[16px] max-[650]:text-[12px] max-[650]:text-[10px]",
                 "Mission History"
             }
-            div { class: "flex flex-row w-full h-[55px] border-t border-t-[#e0e0e0] border-b border-b-[#e0e0e0] justify-start items-start font-medium text-[20px] text-[#636363]",
-                div { class: "flex flex-1 w-full h-full justify-center items-center",
-                    "{tr.mission_name}"
-                }
-                div { class: "flex flex-1 w-full h-full justify-center items-center",
-                    "{tr.progress_date}"
-                }
-                div { class: "flex flex-1 w-full h-full justify-center items-center",
-                    "{tr.verification}"
-                }
-                div { class: "flex flex-1 w-full h-full justify-center items-center",
-                    "{tr.gained_experience}"
-                }
-            }
 
-            for (index , history) in mission_historys.iter().enumerate() {
-                div {
-                    class: format!(
-                        "flex flex-row w-full min-h-[55px] {} justify-start items-center font-light text-[18px] text-[#636363]",
-                        if index != mission_historys.len() - 1 {
-                            "border-b border-b-[#e0e0e0]"
-                        } else {
-                            ""
-                        },
-                    ),
-                    div { class: "flex flex-1 w-full h-full justify-center items-center whitespace-pre-line text-center",
-                        {
-                            ctrl.translate_mission_title(
-                                lang,
-                                history.mission_name.clone(),
-                                history.mission_name_en.clone(),
-                            )
+            div { class: "w-full overflow-x-scroll touch-auto",
+                div { class: "min-w-[900px]",
+                    div { class: "flex flex-row w-full h-[55px] border-t border-t-[#e0e0e0] border-b border-b-[#e0e0e0] justify-start items-start font-medium text-[20px] text-[#636363] max-[900px]:text-[16px] max-[650]:text-[12px] max-[650]:text-[10px]",
+                        div { class: "flex flex-1 w-full h-full justify-center items-center text-center",
+                            "{tr.mission_name}"
+                        }
+                        div { class: "flex flex-1 w-full h-full justify-center items-center text-center",
+                            "{tr.progress_date}"
+                        }
+                        div { class: "flex flex-1 w-full h-full justify-center items-center text-center",
+                            "{tr.verification}"
+                        }
+                        div { class: "flex flex-1 w-full h-full justify-center items-center text-center",
+                            "{tr.gained_experience}"
                         }
                     }
-                    div { class: "flex flex-1 w-full h-full justify-center items-center",
-                        {formatted_timestamp(history.mission_start_date.parse::<i64>().unwrap())}
-                    }
-                    div { class: "flex flex-1 w-full h-full justify-center items-center",
-                        {
-                            if history.progress == "Inprogress" {
-                                tr.verification_in_progress
-                            } else if history.progress == "accepted" {
-                                tr.accepted
-                            } else {
-                                tr.rejected
+
+                    for (index , history) in mission_historys.iter().enumerate() {
+                        div {
+                            class: format!(
+                                "flex flex-row w-full min-h-[55px] {} justify-start items-center font-light text-[18px] text-[#636363]",
+                                if index != mission_historys.len() - 1 {
+                                    "border-b border-b-[#e0e0e0]"
+                                } else {
+                                    ""
+                                },
+                            ),
+                            div { class: "flex flex-1 w-full h-full justify-center items-center whitespace-pre-line text-center",
+                                {
+                                    ctrl.translate_mission_title(
+                                        lang,
+                                        history.mission_name.clone(),
+                                        history.mission_name_en.clone(),
+                                    )
+                                }
                             }
-                        }
-                    }
-                    div { class: "flex flex-1 w-full h-full justify-center items-center",
-                        {
-                            if history.experience <= 0 {
-                                "0 EXP".to_string()
-                            } else {
-                                format!("{} EXP", history.experience)
+                            div { class: "flex flex-1 w-full h-full justify-center items-center",
+                                {formatted_timestamp(history.mission_start_date.parse::<i64>().unwrap())}
+                            }
+                            div { class: "flex flex-1 w-full h-full justify-center items-center",
+                                {
+                                    if history.progress == "Inprogress" {
+                                        tr.verification_in_progress
+                                    } else if history.progress == "accepted" {
+                                        tr.accepted
+                                    } else {
+                                        tr.rejected
+                                    }
+                                }
+                            }
+                            div { class: "flex flex-1 w-full h-full justify-center items-center",
+                                {
+                                    if history.experience <= 0 {
+                                        "0 EXP".to_string()
+                                    } else {
+                                        format!("{} EXP", history.experience)
+                                    }
+                                }
                             }
                         }
                     }
@@ -181,79 +187,84 @@ pub fn ActivitySection(
 
     rsx! {
         div { class: "flex flex-col w-full justify-start items-center bg-white border border-[#e0e0e0] rounded-[10px]",
-            div { class: "flex flex-row w-full h-[55px] justify-center items-center font-semibold text-[#636363] text-[20px]",
+            div { class: "flex flex-row w-full h-[55px] justify-center items-center font-semibold text-[#636363] text-[20px] max-[900px]:text-[16px] max-[650]:text-[12px] max-[650]:text-[10px]",
                 "Activity"
             }
-            div { class: "flex flex-row w-full h-[55px] border-t border-t-[#e0e0e0] border-b border-b-[#e0e0e0] justify-start items-start font-medium text-[20px] text-[#636363]",
-                div { class: "flex flex-1 w-full h-full justify-center items-center",
-                    "Event"
-                }
-                div { class: "flex flex-1 w-full h-full justify-center items-center",
-                    "From"
-                }
-                div { class: "flex flex-1 w-full h-full justify-center items-center",
-                    "To"
-                }
-                div { class: "flex flex-1 w-full h-full justify-center items-center",
-                    "Transaction"
-                }
-            }
 
-            for (index , history) in token_historys.iter().enumerate() {
-                div {
-                    class: format!(
-                        "flex flex-row w-full min-h-[55px] {} justify-start items-center font-light text-[18px] text-[#636363]",
-                        if index != token_historys.len() - 1 {
-                            "border-b border-b-[#e0e0e0]"
-                        } else {
-                            ""
-                        },
-                    ),
-                    div { class: "flex flex-row flex-1 w-full h-full justify-center items-center gap-[10px]",
-                        {
-                            if history.from == ZERO_ADDRESS {
-                                rsx! {
-                                    Mint {}
-                                    div { "Mint" }
-                                }
-                            } else {
-                                rsx! {
-                                    Transfer {}
-                                    div { "Transfer" }
-                                }
-                            }
+            div { class: "w-full overflow-x-scroll touch-auto",
+                div { class: "w-full min-w-[900px]",
+                    div { class: "flex flex-row w-full h-[55px] border-t border-t-[#e0e0e0] border-b border-b-[#e0e0e0] justify-start items-start font-medium text-[20px] text-[#636363] max-[900px]:text-[16px] max-[650]:text-[12px] max-[650]:text-[10px]",
+                        div { class: "flex flex-1 w-full h-full justify-center items-center",
+                            "Event"
+                        }
+                        div { class: "flex flex-1 w-full h-full justify-center items-center",
+                            "From"
+                        }
+                        div { class: "flex flex-1 w-full h-full justify-center items-center",
+                            "To"
+                        }
+                        div { class: "flex flex-1 w-full h-full justify-center items-center",
+                            "Transaction"
                         }
                     }
-                    div { class: "flex flex-1 w-full h-full justify-center items-center",
-                        {
-                            if history.from == ZERO_ADDRESS {
-                                "NullAddress".to_string()
-                            } else {
-                                parse_address(history.from.clone())
-                            }
-                        }
-                    }
-                    div { class: "flex flex-1 w-full h-full justify-center items-center",
-                        {
-                            if history.to == ZERO_ADDRESS {
-                                "NullAddress".to_string()
-                            } else {
-                                parse_address(history.to.clone())
-                            }
-                        }
-                    }
-                    div { class: "flex flex-1 w-full h-full justify-center items-center",
+
+                    for (index , history) in token_historys.iter().enumerate() {
                         div {
-                            class: "flex flex-row w-fit h-fit cursor-pointer",
-                            onclick: {
-                                let history = history.clone();
-                                let klaytn_scope_endpoint = klaytn_scope_endpoint.clone();
-                                move |_| {
-                                    navigator
-                                        .push(format!("{}/{}", klaytn_scope_endpoint, history.transaction_hash));
+                            class: format!(
+                                "flex flex-row w-full min-h-[55px] {} justify-start items-center font-light text-[18px] text-[#636363] max-[900px]:text-[16px] max-[650]:text-[12px] max-[650]:text-[10px]",
+                                if index != token_historys.len() - 1 {
+                                    "border-b border-b-[#e0e0e0]"
+                                } else {
+                                    ""
+                                },
+                            ),
+                            div { class: "flex flex-row flex-1 w-full h-full justify-center items-center gap-[10px]",
+                                {
+                                    if history.from == ZERO_ADDRESS {
+                                        rsx! {
+                                            Mint {}
+                                            div { "Mint" }
+                                        }
+                                    } else {
+                                        rsx! {
+                                            Transfer {}
+                                            div { "Transfer" }
+                                        }
+                                    }
                                 }
-                            },
-                            LinkIcon {}
+                            }
+                            div { class: "flex flex-1 w-full h-full justify-center items-center",
+                                {
+                                    if history.from == ZERO_ADDRESS {
+                                        "NullAddress".to_string()
+                                    } else {
+                                        parse_address(history.from.clone())
+                                    }
+                                }
+                            }
+                            div { class: "flex flex-1 w-full h-full justify-center items-center",
+                                {
+                                    if history.to == ZERO_ADDRESS {
+                                        "NullAddress".to_string()
+                                    } else {
+                                        parse_address(history.to.clone())
+                                    }
+                                }
+                            }
+                            div { class: "flex flex-1 w-full h-full justify-center items-center",
+                                div {
+                                    class: "flex flex-row w-fit h-fit cursor-pointer",
+                                    onclick: {
+                                        let history = history.clone();
+                                        let klaytn_scope_endpoint = klaytn_scope_endpoint.clone();
+                                        move |_| {
+                                            navigator
+                                                .push(format!("{}/{}", klaytn_scope_endpoint, history.transaction_hash));
+                                        }
+                                    },
+                                    LinkIcon {}
+                                }
+                            }
                         }
                     }
                 }
@@ -277,7 +288,7 @@ pub fn DailySection(
         div { class: "flex flex-col w-full justify-center items-center p-[10px] gap-[10px] bg-white rounded-[15px]",
             div { class: "font-bold text-[#636363] text-[25px]", "Daily Mission" }
 
-            div { class: "flex flex-wrap w-full justify-center items-start gap-[10px]",
+            div { class: "flex flex-row flex-wrap w-full justify-center items-center gap-[10px]",
                 for (index , mission) in missions.iter().enumerate() {
                     if index < 4 {
                         if progress_missions.contains(&missions_ko[index].mission.clone()) {
@@ -438,35 +449,56 @@ pub fn MetadataSection(
         }
     });
 
+    let responsive: ResponsiveService = use_context();
+    let flex = if responsive.width() > 500.0 {
+        "flex-row"
+    } else {
+        "flex-col"
+    };
+
+    let icon_size = if responsive.width() > 500.0 {
+        "40"
+    } else {
+        "20"
+    };
+
     rsx! {
-        div { class: "flex flex-col w-full md:grid md:grid-cols-2 gap-[20px] items-start md:items-end auto-rows-fr",
-            img {
-                class: "flex w-full aspect-square object-cover max-w-[600px] rounded-[15px]",
-                src: "{metadata.image}",
+        div { class: "grid grid-cols-2 w-full max-[1200px]:grid-cols-1 gap-[20px] items-start",
+            div { class: "col-span-1 w-full h-full flex items-center justify-center",
+                img {
+                    class: "w-full object-cover max-w-[600px] rounded-[15px]",
+                    src: "{metadata.image}",
+                }
             }
-            div { class: "flex flex-col w-full justify-end items-end gap-[20px]",
+            div { class: "col-span-1 flex flex-col w-full justify-end items-end gap-[20px]",
                 div { class: "flex flex-col w-full justify-start items-start px-[20px] gap-[10px]",
                     div { class: "flex flex-row w-full justify-between items-center",
                         div { class: "flex flex-col w-full justify-start items-start gap-[5px]",
-                            div { class: "font-extrabold text-[35px] text-[#636363]",
+                            div { class: "font-extrabold text-[35px] max-[630px]:text-[18px] text-[#636363]",
                                 "{metadata.name}"
                             }
                         }
 
                         div { class: "flex flex-row w-fit gap-[10px]",
                             div {
-                                class: "w-[40px] h-[40px] cursor-pointer",
+                                class: "cursor-pointer",
                                 onclick: move |e: Event<MouseData>| {
                                     open_swap_modal.call(e);
                                 },
-                                Swap { width: "40", height: "40" }
+                                Swap {
+                                    width: "{icon_size}",
+                                    height: "{icon_size}",
+                                }
                             }
                             div {
-                                class: "w-[40px] h-[40px] cursor-pointer",
+                                class: "cursor-pointer",
                                 onclick: move |e: Event<MouseData>| {
                                     open_send_modal.call(e);
                                 },
-                                Send { width: "40", height: "40" }
+                                Send {
+                                    width: "{icon_size}",
+                                    height: "{icon_size}",
+                                }
                             }
                         }
                     }
@@ -474,17 +506,15 @@ pub fn MetadataSection(
                     div { class: "font-normal text-[16px] text-[#636363]", "{metadata.description}" }
                 }
 
-                if character().is_some() {
-                    div { class: "flex flex-row w-full justify-between items-center p-[10px] bg-white rounded-[10px]",
-                        div { class: "flex flex-col min-w-[110px] justify-center items-center gap-[3px]",
+                if let Some(ref character) = character() {
+                    div { class: "flex {flex} w-full justify-center items-center p-[10px] bg-white rounded-[10px] p-[30px] gap-[30px]",
+                        div { class: "flex flex-col justify-center items-center gap-[3px]",
                             Badge { width: "30", height: "30" }
-                            div { class: "font-bold text-[#16775d] text-[25px]",
-                                "{character().unwrap().name}"
-                            }
+                            div { class: "font-bold text-[#16775d] text-[25px]", "{character.name}" }
                         }
 
-                        div { class: "flex flex-row w-full px-[10px] py-[6px] justify-start items-start whitespace-pre-line",
-                            "{character().unwrap().description}"
+                        div { class: "flex flex-row justify-start items-start whitespace-pre-line",
+                            "{character.description}"
                         }
                     }
                 }
@@ -495,7 +525,7 @@ pub fn MetadataSection(
                         div { class: "font-bold text-[25px] text-[#636363]", "Traits" }
                     }
 
-                    div { class: "w-full grid gird-cols-2 md: grid-cols-3 gap-[10px] items-start auto-rows-fr",
+                    div { class: "w-full grid grid-cols-3 max-[600px]:grid-cols-2 max-[460px]:grid-cols-1 gap-[10px] items-start auto-rows-fr",
                         for attribute in attributes.clone() {
                             TraitBox {
                                 title: attribute.trait_type.clone(),
@@ -527,9 +557,11 @@ pub fn MetadataSection(
 #[component]
 pub fn TraitBox(title: String, description: String) -> Element {
     rsx! {
-        div { class: "flex flex-col w-full justify-center items-center p-[10px] gap-[5px] bg-[#e4f4e4] rounded-[10px]",
+        div { class: "col-span-1 flex flex-col w-full justify-center items-center p-[10px] gap-[5px] bg-[#e4f4e4] rounded-[10px]",
             div { class: "font-medium text-[14px] text-[#5b5b5b]", "{title}" }
-            div { class: "font-bold text-[16px] text-[#16775d]", "{description}" }
+            div { class: "font-bold text-[16px] max-[700px]:text-[14px]  text-[#16775d]",
+                "{description}"
+            }
         }
     }
 }
