@@ -1,11 +1,7 @@
 use by_macros::DioxusController;
 use dioxus::prelude::*;
-use dto::wallets::KaiaWallet;
 
-use crate::{
-    services::{klaytn::Klaytn, shop_contract::ShopItem, user_service::UserService},
-    utils::address,
-};
+use crate::services::{klaytn::Klaytn, shop_contract::ShopItem, user_service::UserService};
 
 #[derive(Clone, Copy, DioxusController)]
 pub struct Controller {
@@ -76,8 +72,6 @@ impl Controller {
             return;
         }
         let item_id = item.id;
-
-        let item = (self.items)();
 
         tracing::debug!("buying item: {:?}", item_id);
 

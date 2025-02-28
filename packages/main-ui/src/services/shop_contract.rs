@@ -1,11 +1,6 @@
 use std::sync::Arc;
 
-use dioxus::html::li;
-use dto::{
-    contracts::common_contract::CommonContract,
-    wallets::{wallet, KaiaWallet},
-    *,
-};
+use dto::{contracts::common_contract::CommonContract, wallets::KaiaWallet, *};
 use ethers::prelude::*;
 
 #[derive(Debug, Clone)]
