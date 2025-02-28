@@ -227,7 +227,6 @@ pub fn MobileHeader(
 pub fn Header(
     #[props(default ="header".to_string())] id: String,
     #[props(default ="".to_string())] class: String,
-
     lang: Language,
 ) -> Element {
     let route: Route = use_route();
@@ -240,6 +239,25 @@ pub fn Header(
     let handle_select_menu = move |_| {
         expanded.set(false);
     };
+
+    #[cfg(feature = "web")]
+    use_effect(move || {
+        use gloo_events::EventListener;
+        use web_sys::window;
+
+        let listener = EventListener::new(
+            &window().expect("no global `window` exists"),
+            "scroll",
+            move |_| {
+                // Close expanded menu on any scroll
+                expanded.set(false);
+            },
+        );
+
+        std::mem::forget(listener);
+
+        (move || {})()
+    });
 
     rsx! {
         div { id, class,
@@ -259,7 +277,7 @@ pub fn Header(
                 div { class: "w-full flex flex-col items-center justify-center px-[100px] max-[1440px]:px-[50px]",
                     div {
                         id: "menus",
-                        class: "w-full flex flex-row justify-start h-[70px] justify-between",
+                        class: "w-full flex flex-row h-[70px] justify-between",
                         ExpandableMenu {
                             expanded: expanded(),
                             onclick: move |_| {

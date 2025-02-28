@@ -157,11 +157,11 @@ pub fn CreateNftButton(
     let w = if hover() { "" } else { "w-[0px]" };
 
     rsx! {
-        div { class: "absolute bottom-[40px] right-[40px]", ..attributes,
+        div { class: "fixed bottom-[40px] right-[40px]", ..attributes,
             Link { to: Route::NewContentsPage { lang },
                 div {
                     class: "transition-all duration-500 ease-in-out flex flex-row items-center justify-center h-[58px] w-[58px] px-[23px] bg-white hover:bg-[#E4F4E4] hover:border-[1px] hover:border-[#16775D] hover:px-[35px] hover:gap-[16px] rounded-full cursor-pointer overflow-hidden hover:w-[200px]",
-                    box_shadow: "0px 4px 20px rgba(84, 157, 159, 0.25)",
+                    box_shadow: "0px 4px 30px rgba(84, 157, 159, 0.8)",
                     onmouseenter: move |_| hover.set(true),
                     onmouseleave: move |_| hover.set(false),
                     span { class: "transition-all {w} overflow-hidden text-[#16775D] font-semibold",
