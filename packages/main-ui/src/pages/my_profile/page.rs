@@ -132,27 +132,28 @@ pub fn MissionHistoryComponent(lang: Language, histories: Vec<MissionHistory>) -
     let tr: MissionHistoryComponentTranslate = translate(&lang);
     let ctrl = MissionHistoryController::new()?;
     let responsive: ResponsiveService = use_context();
+
     rsx! {
         div {
-            class: "flex flex-col justify-start items-start bg-transparent border border-[#e0e0e0] rounded-[12px]",
-            style: if responsive.width() > 1200.0 { "width: 100%;" } else { "width: 110px; height: 100%" },
-            div { class: if responsive.width() > 1200.0 { "flex flex-row w-full h-[45px] justify-start items-start font-semibold text-[16px] text-[#636363] border-b border-b-[#e0e0e0]" } else { "flex flex-col h-full justify-start items-start font-semibold text-[14px] text-[#636363] border-b border-b-[#e0e0e0]" },
-                div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
+            class: "flex flex-col justify-start items-start bg-transparent border border-[#e0e0e0] rounded-[12px] overflow-x-auto",
+            style: if responsive.width() > 1200.0 { "width: 100%;" } else { "width: 100%; min-width: 300px;" },
+            div { class: "flex flex-row w-full h-[45px] justify-start items-start font-semibold text-[16px] text-[#636363] border-b border-b-[#e0e0e0]",
+                div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
                     "{tr.mission_name}"
                 }
-                div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
+                div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
                     "{tr.progress_date}"
                 }
-                div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
+                div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
                     "{tr.verification}"
                 }
-                div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
+                div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
                     "{tr.gained_experience}"
                 }
             }
             for history in histories {
                 div { class: "flex flex-row w-full min-h-[45px] justify-start items-center font-normal text-[16px] text-[#636363] border-b border-b-[#e0e0e0]",
-                    div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px] whitespace-pre-line",
+                    div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px] whitespace-pre-line",
                         {
                             ctrl.mission_name(
                                     lang,
@@ -162,14 +163,14 @@ pub fn MissionHistoryComponent(lang: Language, histories: Vec<MissionHistory>) -
                                 .unwrap_or_default()
                         }
                     }
-                    div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
+                    div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
                         {
                             formatted_timestamp(
                                 history.mission_start_date.parse::<i64>().unwrap_or_default(),
                             )
                         }
                     }
-                    div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
+                    div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
                         {
                             if history.progress == "Inprogress" {
                                 tr.verification_in_progress
@@ -180,7 +181,7 @@ pub fn MissionHistoryComponent(lang: Language, histories: Vec<MissionHistory>) -
                             }
                         }
                     }
-                    div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
+                    div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
                         {
                             if history.experience <= 0 {
                                 "0 EXP".to_string()
@@ -203,8 +204,8 @@ pub fn ExperienceHistoryComponent(lang: Language, histories: Vec<ExperienceHisto
     rsx! {
         div {
             class: "flex flex-col justify-start items-start bg-transparent border border-[#e0e0e0] rounded-[12px]",
-            style: if responsive.width() > 1200.0 { "width: 100%;" } else { "width: 110px; height: 100%" },
-            div { class: if responsive.width() > 1200.0 { "flex flex-row w-full h-[45px] justify-start items-start font-semibold text-[16px] text-[#636363] border-b border-b-[#e0e0e0]" } else { "flex flex-col h-full justify-start items-start font-semibold text-[14px] text-[#636363] border-b border-b-[#e0e0e0]" },
+            style: if responsive.width() > 1200.0 { "width: 100%;" } else { "width: 100%;" },
+            div { class: if responsive.width() > 1200.0 { "flex flex-row w-full h-[45px] justify-start items-start font-semibold text-[16px] text-[#636363] border-b border-b-[#e0e0e0]" } else { "hidden" },
                 div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
                     "{tr.participation_event}"
                 }
@@ -220,7 +221,7 @@ pub fn ExperienceHistoryComponent(lang: Language, histories: Vec<ExperienceHisto
             }
 
             for history in histories {
-                div { class: "flex flex-row w-full min-h-[45px] h-fit justify-start items-center font-normal text-[16px] text-[#636363] border-b border-b-[#e0e0e0]",
+                div { class: if responsive.width() > 1200.0 { "flex flex-row w-full min-h-[45px] h-fit justify-start items-center font-normal text-[16px] text-[#636363] border-b border-b-[#e0e0e0]" } else { "flex flex-col w-full p-[10px] border-b border-b-[#e0e0e0]" },
                     div { class: "flex flex-1 h-full justify-start items-center px-[20px] py-[10px] whitespace-pre-line gap-[10px]",
                         {
                             ctrl.event_name(lang, history.event_name, history.event_name_en)
@@ -257,8 +258,8 @@ pub fn NftTransferHistoryComponent(
     rsx! {
         div {
             class: "flex flex-col justify-start items-start bg-transparent border border-[#e0e0e0] rounded-[12px]",
-            style: if responsive.width() > 1200.0 { "width: 100%;" } else { "width: 110px; height: 100%" },
-            div { class: if responsive.width() > 1200.0 { "flex flex-row w-full h-[45px] justify-start items-start font-semibold text-[16px] text-[#636363] border-b border-b-[#e0e0e0]" } else { "flex flex-col h-full justify-start items-start font-semibold text-[14px] text-[#636363] border-b border-b-[#e0e0e0]" },
+            style: if responsive.width() > 1200.0 { "width: 100%;" } else { "width: 100%;" },
+            div { class: if responsive.width() > 1200.0 { "flex flex-row w-full h-[45px] justify-start items-start font-semibold text-[16px] text-[#636363] border-b border-b-[#e0e0e0]" } else { "hidden" },
                 div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
                     "Event"
                 }
@@ -276,9 +277,8 @@ pub fn NftTransferHistoryComponent(
                 }
             }
 
-
             for history in histories {
-                div { class: "flex flex-row w-full min-h-[45px] h-fit justify-start items-center font-normal text-[16px] text-[#636363] border-b border-b-[#e0e0e0]",
+                div { class: if responsive.width() > 1200.0 { "flex flex-row w-full min-h-[45px] h-fit justify-start items-center font-normal text-[16px] text-[#636363] border-b border-b-[#e0e0e0]" } else { "flex flex-col w-full p-[10px] border-b border-b-[#e0e0e0]" },
                     div { class: "flex flex-1 h-full justify-start items-center px-[20px] py-[10px] whitespace-pre-line gap-[10px]",
                         {
                             if history.from == ZERO_ADDRESS {
@@ -344,8 +344,8 @@ pub fn GoodsPurchaseHistoryComponent(lang: Language, histories: Vec<GoodsItem>) 
     rsx! {
         div {
             class: "flex flex-col justify-start items-start bg-transparent border border-[#e0e0e0] rounded-[12px]",
-            style: if responsive.width() > 1200.0 { "width: 100%;" } else { "width: 110px; height: 100%" },
-            div { class: if responsive.width() > 1200.0 { "flex flex-row w-full h-[45px] justify-start items-start font-semibold text-[16px] text-[#636363] border-b border-b-[#e0e0e0]" } else { "flex flex-col h-full justify-start items-start font-semibold text-[14px] text-[#636363] border-b border-b-[#e0e0e0]" },
+            style: if responsive.width() > 1200.0 { "width: 100%;" } else { "width: 100%;" },
+            div { class: if responsive.width() > 1200.0 { "flex flex-row w-full h-[45px] justify-start items-start font-semibold text-[16px] text-[#636363] border-b border-b-[#e0e0e0]" } else { "hidden" },
                 div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
                     "Event"
                 }
@@ -360,7 +360,7 @@ pub fn GoodsPurchaseHistoryComponent(lang: Language, histories: Vec<GoodsItem>) 
                 }
             }
             for goods in histories {
-                div { class: "flex flex-row w-full min-h-[45px] h-fit justify-start items-center font-normal text-[16px] text-[#636363] border-b border-b-[#e0e0e0]",
+                div { class: if responsive.width() > 1200.0 { "flex flex-row w-full min-h-[45px] h-fit justify-start items-center font-normal text-[16px] text-[#636363] border-b border-b-[#e0e0e0]" } else { "flex flex-col w-full p-[10px] border-b border-b-[#e0e0e0]" },
                     div { class: "flex flex-1 h-full justify-start items-center px-[20px] py-[10px] whitespace-pre-line gap-[10px]",
                         "{tr.purchase_product}"
                     }
