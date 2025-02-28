@@ -80,7 +80,8 @@ impl AssetPresignedUrisClient
         ("{}{}/{}", self.endpoint, path, id); rest_api ::
         get(& endpoint).await
     }
-}
+} impl AssetPresignedUris
+{ pub fn url() -> String { "/v1/assets".to_string() } }
 #[derive(Debug, Clone, serde :: Serialize, serde :: Deserialize, Default,
 PartialEq, by_macros :: QueryDisplay)]
 #[cfg_attr(feature = "server",

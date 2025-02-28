@@ -1,4 +1,5 @@
 use dioxus_translate::Translate;
+use dto::wallets::kaikas_wallet::KaikasWallet;
 use ethers::prelude::*;
 use ethers::signers::LocalWallet;
 use ethers::utils::to_checksum;
@@ -16,6 +17,9 @@ pub enum UserWallet {
         checksum_address: String,
         principal: String,
     },
+    #[translate(ko = "카이아 지갑", en = "Kaia Wallet")]
+    KaiaWallet(KaikasWallet),
+
     #[default]
     #[translate(ko = "없음")]
     None,
@@ -26,6 +30,13 @@ impl UserWallet {
         match self {
             UserWallet::SocialWallet { seed, .. } => Some(seed.clone()),
             _ => None,
+        }
+    }
+
+    pub fn can_cached(&self) -> bool {
+        match self {
+            UserWallet::SocialWallet { .. } => true,
+            _ => false,
         }
     }
 
@@ -41,6 +52,7 @@ impl UserWallet {
             UserWallet::SocialWallet {
                 checksum_address, ..
             } => Some(checksum_address.clone()),
+            UserWallet::KaiaWallet(wallet) => Some(wallet.address.clone()),
             _ => None,
         }
     }

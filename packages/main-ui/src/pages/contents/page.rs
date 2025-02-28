@@ -33,17 +33,16 @@ pub fn ContentsPage(lang: Language) -> Element {
                         icons::arrows::ChevronDown { color: "#16775D", width: "12", height: "12" }
                     }
                     ul {
-                        class: "menu dropdown-content bg-white rounded-[12px] z-[1] w-[117px] shadow",
+                        class: "menu dropdown-content bg-white rounded-[12px] z-[1] w-[117px] shadow overflow-hidden",
                         padding: "0px",
                         for option in ContentSorter::VARIANTS {
                             li {
-                                class: "hover:bg-[#E4F4E4] px-[20px] py-[15px] cursor-pointer",
+                                class: "hover:bg-[#E4F4E4] px-[20px] py-[15px] cursor-pointer overflow-hidden",
                                 role: "button",
                                 onclick: move |_| {
                                     ctrl.sorter.set(*option);
                                 },
                                 "{option.translate(&lang)}"
-
                             }
                         }
                     }
@@ -60,30 +59,32 @@ pub fn ContentsPage(lang: Language) -> Element {
 }
 
 #[component]
-pub fn ColGridCards(lang: Language, contents: Vec<ContentSummary>) -> Element {
-    let mut cols: Signal<usize> = use_signal(|| 4);
-    let mut cols_contents = vec![vec![]; cols()];
-    for (i, content) in contents.iter().enumerate() {
-        cols_contents[i % cols()].push(content.clone());
-    }
+pub fn ColGridCards(lang: Language, contents: ReadOnlySignal<Vec<ContentSummary>>) -> Element {
+    use by_components::responsive::ResponsiveService;
+
+    let responsive: ResponsiveService = use_context();
+    let cols_contents = use_memo(move || {
+        let width = responsive.width();
+        let cols: usize = if width >= 1140.0 {
+            4
+        } else if width >= 640.0 {
+            3
+        } else if width >= 340.0 {
+            2
+        } else {
+            1
+        };
+
+        let mut cols_contents = vec![vec![]; cols];
+        for (i, content) in contents().iter().enumerate() {
+            cols_contents[i % cols].push(content.clone());
+        }
+        cols_contents
+    });
 
     rsx! {
-        div {
-            class: "w-full grid grid-cols-4 max-[1200px]:grid-cols-3 max-[700px]:grid-cols-2 max-[400px]:grid-cols-1 gap-[24px]",
-            onresize: move |e| {
-                let width = e.get_border_box_size().unwrap_or_default().width;
-                let c: usize = if width >= 1200.0 {
-                    4
-                } else if width >= 700.0 {
-                    3
-                } else if width >= 400.0 {
-                    2
-                } else {
-                    1
-                };
-                cols.set(c);
-            },
-            for contents in cols_contents.iter() {
+        div { class: "w-full grid grid-cols-4 max-[1200px]:grid-cols-3 max-[700px]:grid-cols-2 max-[400px]:grid-cols-1 gap-[24px]",
+            for contents in cols_contents().iter() {
                 div { class: "w-full col-span-1 flex flex-col justify-start gap-[24px]",
                     for content in contents.iter() {
                         ContentCard {
@@ -156,7 +157,7 @@ pub fn CreateNftButton(
     let w = if hover() { "" } else { "w-[0px]" };
 
     rsx! {
-        div { class: "absolute fixed bottom-[40px] right-[40px]", ..attributes,
+        div { class: "absolute bottom-[40px] right-[40px]", ..attributes,
             Link { to: Route::NewContentsPage { lang },
                 div {
                     class: "transition-all duration-500 ease-in-out flex flex-row items-center justify-center h-[58px] w-[58px] px-[23px] bg-white hover:bg-[#E4F4E4] hover:border-[1px] hover:border-[#16775D] hover:px-[35px] hover:gap-[16px] rounded-full cursor-pointer overflow-hidden hover:w-[200px]",

@@ -8,6 +8,7 @@ pub mod services;
 pub mod utils;
 
 use crate::route::Route;
+use by_components::responsive::Responsive;
 use by_components::theme::{CardColorTheme, ColorTheme, TextColorTheme};
 use dioxus::prelude::*;
 use dioxus_popup::PopupService;
@@ -23,6 +24,10 @@ fn main() {
 }
 
 fn app() -> Element {
+    std::panic::set_hook(Box::new(|info| {
+        tracing::error!("Panic: {}", info);
+    }));
+
     use_context_provider(|| ColorTheme {
         background: "#E9F2EC",
         card: CardColorTheme {
@@ -43,6 +48,8 @@ fn app() -> Element {
     PopupService::init();
 
     rsx! {
+        btracing::ToastTracing {}
+
         document::Meta {
             name: "viewport",
             content: "width=device-width, initial-scale=1.0",
@@ -73,6 +80,7 @@ fn app() -> Element {
         document::Link { rel: "stylesheet", href: asset!("/public/main.css") }
         document::Link { rel: "stylesheet", href: asset!("/public/tailwind.css") }
 
+        document::Script { src: asset!("/public/dep.js") }
         document::Script { src: "https://cdn.tailwindcss.com/3.4.16" }
         document::Link {
             href: "https://cdn.jsdelivr.net/npm/daisyui@4.12.23/dist/full.min.css",
@@ -80,7 +88,7 @@ fn app() -> Element {
             rel: "stylesheet",
         }
         document::Script { src: "https://cdn.tailwindcss.com" }
-        Router::<Route> {}
+        Responsive { Router::<Route> {} }
     }
 }
 

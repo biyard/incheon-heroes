@@ -1,14 +1,24 @@
 use by_macros::*;
 use dioxus::prelude::*;
+use dioxus_oauth::prelude::FirebaseService;
 use dioxus_translate::Language;
+use dto::User;
 
-use crate::{config, pages::LoginProvider, route::Route, services::backend_api::BackendApi};
+use crate::{
+    config,
+    models::user_wallet::UserWallet,
+    pages::LoginProvider,
+    route::Route,
+    services::{backend_api::BackendApi, user_service::UserService},
+};
 
 #[derive(Clone, Copy, DioxusController)]
 pub struct Controller {
     pub backend_api: BackendApi,
     pub nav: Navigator,
     pub lang: Language,
+    pub firebase: FirebaseService,
+    pub user: UserService,
 }
 
 impl Controller {
@@ -17,12 +27,46 @@ impl Controller {
             backend_api: use_context(),
             nav: use_navigator(),
             lang,
+            firebase: use_context(),
+            user: use_context(),
         };
 
         Ok(ctrl)
     }
 
-    pub async fn handle_google(&self) {}
+    pub async fn handle_google(&self) {
+        let cred = self
+            .firebase
+            .sign_in_with_popup(vec![
+                "https://www.googleapis.com/auth/drive.appdata".to_string()
+            ])
+            .await;
+
+        tracing::debug!("cred: {:?}", cred);
+        let conf = &config::get().kakao;
+
+        let hint = match self
+            .backend_api
+            .get_account_hint("google", &cred.id_token, conf.redirect_uri)
+            .await
+        {
+            Ok(hint) => hint,
+            Err(e) => {
+                tracing::error!("Failed to get account hint: {:?}", e);
+                return;
+            }
+        };
+
+        self.nav.replace(Route::LoginPage {
+            lang: self.lang,
+            provider: LoginProvider::Google,
+            id: hint.id,
+            hint: hint.private_key_hint,
+            address: hint.address.unwrap_or_default(),
+            email: cred.email,
+            picture: cred.photo_url,
+        });
+    }
 
     pub async fn handle_kakao(&self) {
         let conf = &config::get().kakao;
@@ -89,7 +133,46 @@ impl Controller {
         });
     }
 
-    pub async fn handle_kaia(&self) {}
+    pub async fn handle_kaikas(&mut self) {
+        let conf = config::get();
+        let provider =
+            ethers::providers::Provider::<ethers::providers::Http>::try_from(conf.klaytn.endpoint)
+                .unwrap();
+        let provider = std::sync::Arc::new(provider);
+
+        let w = match dto::wallets::kaikas_wallet::KaikasWallet::new(provider).await {
+            Ok(wallet) => wallet,
+            Err(e) => {
+                tracing::error!("Failed to get kaikas wallet: {:?}", e);
+                return;
+            }
+        };
+
+        self.user.set_wallet(UserWallet::KaiaWallet(w)).await;
+        let endpoint = conf.new_api_endpoint;
+
+        match User::get_client(endpoint)
+            .register_or_login(
+                self.user.evm_address().unwrap_or_default(),
+                dto::UserAuthProvider::Kaia,
+            )
+            .await
+        {
+            Ok(user) => {
+                self.user.set_user(user);
+            }
+            Err(e) => {
+                tracing::error!("Failed to register or login: {:?}", e);
+            }
+        };
+
+        if self.nav.can_go_back() {
+            self.nav.go_back();
+        } else {
+            tracing::debug!("replace home page");
+            self.nav.replace(Route::HomePage { lang: self.lang });
+        }
+    }
 
     pub async fn handle_internet_identity(&self) {}
 }

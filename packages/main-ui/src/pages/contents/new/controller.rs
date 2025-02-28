@@ -1,5 +1,3 @@
-use std::str::FromStr;
-
 use by_macros::*;
 use dioxus::{prelude::*, CapturedError};
 use dioxus_translate::Language;
@@ -31,6 +29,12 @@ impl Controller {
 
     pub fn add_content(&mut self) {
         self.contents.push(ContentCreateRequest::default());
+    }
+
+    pub fn handle_delete(&mut self, idx: usize) {
+        self.contents.with_mut(|contents| {
+            contents.remove(idx);
+        });
     }
 
     pub fn set_content(&mut self, idx: usize, mut content: ContentCreateRequest) {

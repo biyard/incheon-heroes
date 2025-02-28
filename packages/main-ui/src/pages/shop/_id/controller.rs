@@ -1,6 +1,7 @@
 use by_macros::DioxusController;
 use dioxus::prelude::*;
 use dioxus_translate::Language;
+use ethers::types::U256;
 
 use crate::services::{klaytn::Klaytn, shop_contract::ShopItem};
 
@@ -11,22 +12,24 @@ pub struct Controller {
 }
 
 impl Controller {
-    pub fn new(lang: Language, id: String) -> std::result::Result<Self, RenderError> {
+    pub fn new(
+        lang: Language,
+        id: ReadOnlySignal<String>,
+    ) -> std::result::Result<Self, RenderError> {
         let klaytn: Klaytn = use_context();
 
-        let id_cloned = id.clone();
         let item = use_server_future(move || {
-            let id = id_cloned.clone();
+            let id: u64 = id().clone().parse().unwrap();
+            tracing::debug!("id: {:?}", id);
             async move {
-                (klaytn.shop)()
-                    .get_item(id.clone().parse().unwrap())
-                    .await
-                    .unwrap()
+                let item = (klaytn.shop)().get_item(U256::from(id)).await.unwrap();
+                tracing::debug!("{:?}", item);
+                item
             }
         })?;
 
         let details = use_server_future(move || {
-            let id = id.clone();
+            let id = id();
             async move {
                 let res = reqwest::get(format!(
                     "https://metadata.biyard.co/incheon-heroes/html/shop-items/{}/{}.html",

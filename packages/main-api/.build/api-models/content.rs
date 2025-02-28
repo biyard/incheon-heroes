@@ -23,34 +23,35 @@ impl Content
     {
         tracing :: debug!
         ("{} base_sql_with group: {}",
-        "SELECT COUNT(*) OVER() as total_count, id, created_at, updated_at, title, thumbnail_image, source FROM contents",
-        ""); let query = if where_and_statements.is_empty()
+        "SELECT  COUNT(*) OVER() as total_count, p.id, p.created_at, p.updated_at, p.title, p.thumbnail_image, p.source, COALESCE(MAX(likes.value), 0) AS likes FROM contents p \nLEFT JOIN (\n    SELECT content_id, COUNT(id) AS value\n    FROM content_likes \n    GROUP BY content_id\n) likes ON p.id = likes.content_id\n",
+        "GROUP BY p.id"); let query = if where_and_statements.is_empty()
         {
             format!
             ("{} {}", format!
-            ("SELECT COUNT(*) OVER() as total_count, id, created_at, updated_at, title, thumbnail_image, source FROM contents",),
-            "")
+            ("SELECT  COUNT(*) OVER() as total_count, p.id, p.created_at, p.updated_at, p.title, p.thumbnail_image, p.source, COALESCE(MAX(likes.value), 0) AS likes FROM contents p \nLEFT JOIN (\n    SELECT content_id, COUNT(id) AS value\n    FROM content_likes \n    GROUP BY content_id\n) likes ON p.id = likes.content_id\n",),
+            "GROUP BY p.id")
         } else
         {
             if where_and_statements.to_lowercase().starts_with("where")
             {
                 format!
                 ("{} {} {}", format!
-                ("SELECT COUNT(*) OVER() as total_count, id, created_at, updated_at, title, thumbnail_image, source FROM contents",),
-                where_and_statements, "")
+                ("SELECT  COUNT(*) OVER() as total_count, p.id, p.created_at, p.updated_at, p.title, p.thumbnail_image, p.source, COALESCE(MAX(likes.value), 0) AS likes FROM contents p \nLEFT JOIN (\n    SELECT content_id, COUNT(id) AS value\n    FROM content_likes \n    GROUP BY content_id\n) likes ON p.id = likes.content_id\n",),
+                where_and_statements, "GROUP BY p.id")
             } else
             {
                 format!
                 ("{} WHERE {} {}", format!
-                ("SELECT COUNT(*) OVER() as total_count, id, created_at, updated_at, title, thumbnail_image, source FROM contents",),
-                where_and_statements, "")
+                ("SELECT  COUNT(*) OVER() as total_count, p.id, p.created_at, p.updated_at, p.title, p.thumbnail_image, p.source, COALESCE(MAX(likes.value), 0) AS likes FROM contents p \nLEFT JOIN (\n    SELECT content_id, COUNT(id) AS value\n    FROM content_likes \n    GROUP BY content_id\n) likes ON p.id = likes.content_id\n",),
+                where_and_statements, "GROUP BY p.id")
             }
         }; query
     } pub fn query_builder() -> ContentRepositoryQueryBuilder
     {
         let base_sql = format!
-        ("SELECT COUNT(*) OVER() as total_count, id, created_at, updated_at, title, thumbnail_image, source FROM contents",);
-        ContentRepositoryQueryBuilder :: from(& base_sql, "").with_count()
+        ("SELECT  COUNT(*) OVER() as total_count, p.id, p.created_at, p.updated_at, p.title, p.thumbnail_image, p.source, COALESCE(MAX(likes.value), 0) AS likes FROM contents p \nLEFT JOIN (\n    SELECT content_id, COUNT(id) AS value\n    FROM content_likes \n    GROUP BY content_id\n) likes ON p.id = likes.content_id\n",);
+        ContentRepositoryQueryBuilder ::
+        from(& base_sql, "GROUP BY p.id").with_count()
     }
 } #[derive(Debug, Clone)] pub struct ContentRepository
 { pool : sqlx :: Pool < sqlx :: Postgres > , }
@@ -342,7 +343,8 @@ ContentRepositoryUpdateRequest
             row.try_get("updated_at").unwrap_or_default(), title :
             row.try_get("title").unwrap_or_default(), thumbnail_image :
             row.try_get("thumbnail_image").unwrap_or_default(), source :
-            row.try_get("source").unwrap_or_default()
+            row.try_get("source").unwrap_or_default(), likes :
+            row.try_get("likes").unwrap_or_default()
         }
     }
 } #[derive(Debug, Clone, serde :: Serialize, serde :: Deserialize, Default)]
@@ -882,6 +884,100 @@ pub struct ContentRepositoryQueryBuilder
             self.order = by_types :: Order ::
             Desc(vec! ["creator_id".to_string()]);
         } self
+    } pub fn downloads_equals(mut self, downloads : i64) -> Self
+    {
+        self.conditions.push(by_types :: Conditions ::
+        EqualsBigint("downloads".to_string(), downloads)); self
+    } pub fn downloads_not_equals(mut self, downloads : i64) -> Self
+    {
+        self.conditions.push(by_types :: Conditions ::
+        NotEqualsBigint("downloads".to_string(), downloads)); self
+    } pub fn downloads_greater_than(mut self, downloads : i64) -> Self
+    {
+        self.conditions.push(by_types :: Conditions ::
+        GreaterThanBigint("downloads".to_string(), downloads)); self
+    } pub fn downloads_less_than(mut self, downloads : i64) -> Self
+    {
+        self.conditions.push(by_types :: Conditions ::
+        LessThanBigint("downloads".to_string(), downloads)); self
+    } pub fn downloads_greater_than_equals(mut self, downloads : i64) -> Self
+    {
+        self.conditions.push(by_types :: Conditions ::
+        GreaterThanEqualsBigint("downloads".to_string(), downloads)); self
+    } pub fn downloads_less_than_equals(mut self, downloads : i64) -> Self
+    {
+        self.conditions.push(by_types :: Conditions ::
+        LessThanEqualsBigint("downloads".to_string(), downloads)); self
+    } pub fn downloads_between(mut self, from : i64, to : i64) -> Self
+    {
+        self.conditions.push(by_types :: Conditions ::
+        BetweenBigint("downloads".to_string(), from, to)); self
+    } pub fn order_by_downloads_asc(mut self) -> Self
+    {
+        if let by_types :: Order :: Asc(ref mut field) = self.order
+        { field.push(format! (",{}", "downloads")); } else
+        {
+            self.order = by_types :: Order ::
+            Asc(vec! ["downloads".to_string()]);
+        } self
+    } pub fn order_by_downloads_desc(mut self) -> Self
+    {
+        if let by_types :: Order :: Desc(ref mut field) = self.order
+        { field.push(format! (",{}", "downloads")); } else
+        {
+            self.order = by_types :: Order ::
+            Desc(vec! ["downloads".to_string()]);
+        } self
+    } pub fn likes_equals(mut self, likes : i64) -> Self
+    {
+        self.conditions.push(by_types :: Conditions ::
+        EqualsBigint("likes".to_string(), likes)); self
+    } pub fn likes_not_equals(mut self, likes : i64) -> Self
+    {
+        self.conditions.push(by_types :: Conditions ::
+        NotEqualsBigint("likes".to_string(), likes)); self
+    } pub fn likes_greater_than(mut self, likes : i64) -> Self
+    {
+        self.conditions.push(by_types :: Conditions ::
+        GreaterThanBigint("likes".to_string(), likes)); self
+    } pub fn likes_less_than(mut self, likes : i64) -> Self
+    {
+        self.conditions.push(by_types :: Conditions ::
+        LessThanBigint("likes".to_string(), likes)); self
+    } pub fn likes_greater_than_equals(mut self, likes : i64) -> Self
+    {
+        self.conditions.push(by_types :: Conditions ::
+        GreaterThanEqualsBigint("likes".to_string(), likes)); self
+    } pub fn likes_less_than_equals(mut self, likes : i64) -> Self
+    {
+        self.conditions.push(by_types :: Conditions ::
+        LessThanEqualsBigint("likes".to_string(), likes)); self
+    } pub fn likes_between(mut self, from : i64, to : i64) -> Self
+    {
+        self.conditions.push(by_types :: Conditions ::
+        BetweenBigint("likes".to_string(), from, to)); self
+    } pub fn order_by_likes_asc(mut self) -> Self
+    {
+        if let by_types :: Order :: Asc(ref mut field) = self.order
+        { field.push(format! (",{}", "likes")); } else
+        { self.order = by_types :: Order :: Asc(vec! ["likes".to_string()]); }
+        self
+    } pub fn order_by_likes_desc(mut self) -> Self
+    {
+        if let by_types :: Order :: Desc(ref mut field) = self.order
+        { field.push(format! (",{}", "likes")); } else
+        {
+            self.order = by_types :: Order ::
+            Desc(vec! ["likes".to_string()]);
+        } self
+    } pub fn liked_is_true(mut self) -> Self
+    {
+        self.conditions.push(by_types :: Conditions ::
+        TrueBoolean("liked".to_string())); self
+    } pub fn liked_is_false(mut self) -> Self
+    {
+        self.conditions.push(by_types :: Conditions ::
+        FalseBoolean("liked".to_string())); self
     }
 } /// Content is a generated struct that represents the model
 ///
@@ -899,9 +995,8 @@ derive(schemars :: JsonSchema, aide :: OperationIo))] pub struct Content
 {
     pub id : i64, pub created_at : i64, pub updated_at : i64, pub title :
     String, #[validate(url)] pub thumbnail_image : String, #[validate(url)]
-    pub source : String, #[validate(length(min = 1, max = 300))] pub
-    description : String, pub creator_id : i64, pub downloads : i64, pub likes
-    : i64, pub liked : bool
+    pub source : String, pub description : String, pub creator_id : i64, pub
+    downloads : i64, pub likes : i64, pub liked : bool
 } #[derive(Debug, Clone, serde :: Serialize, serde :: Deserialize, PartialEq)]
 #[serde(rename_all = "snake_case")]
 #[cfg_attr(feature = "server",
@@ -932,8 +1027,7 @@ derive(schemars :: JsonSchema, aide :: OperationIo))] pub struct
 ContentCreateRequest
 {
     pub title : String, #[validate(url)] pub thumbnail_image : String,
-    #[validate(url)] pub source : String,
-    #[validate(length(min = 1, max = 300))] pub description : String, pub
+    #[validate(url)] pub source : String, pub description : String, pub
     creator_id : i64,
 } impl ContentClient
 {
@@ -1033,7 +1127,8 @@ derive(schemars :: JsonSchema, aide :: OperationIo, sqlx :: FromRow))] pub
 struct ContentSummary
 {
     pub id : i64, pub created_at : i64, pub updated_at : i64, pub title :
-    String, pub thumbnail_image : String, pub source : String,
+    String, pub thumbnail_image : String, pub source : String, pub likes :
+    i64,
 } impl From < Content > for ContentSummary
 {
     fn from(item : Content) -> Self
@@ -1042,7 +1137,7 @@ struct ContentSummary
         {
             id : item.id, created_at : item.created_at, updated_at :
             item.updated_at, title : item.title, thumbnail_image :
-            item.thumbnail_image, source : item.source,
+            item.thumbnail_image, source : item.source, likes : item.likes,
         }
     }
 } impl Into < Content > for ContentSummary
@@ -1053,8 +1148,8 @@ struct ContentSummary
         {
             id : self.id, created_at : self.created_at, updated_at :
             self.updated_at, title : self.title, thumbnail_image :
-            self.thumbnail_image, source : self.source, .. Default ::
-            default()
+            self.thumbnail_image, source : self.source, likes : self.likes, ..
+            Default :: default()
         }
     }
 } #[derive(validator :: Validate)]
@@ -1065,8 +1160,7 @@ derive(schemars :: JsonSchema, aide :: OperationIo))] pub struct ContentQuery
 {
     #[serde(deserialize_with = "parse_size_of_content_query")] pub size :
     usize, pub bookmark : Option < String > , pub action : Option <
-    ContentQueryActionType > , #[validate(length(min = 1, max = 300))] pub
-    description : Option < String > ,
+    ContentQueryActionType > , pub description : Option < String > ,
 } pub fn parse_size_of_content_query < 'de, D > (deserializer : D) -> std ::
 result :: Result < usize, D :: Error > where D : serde :: Deserializer < 'de >
 ,
@@ -1127,13 +1221,21 @@ ContentClient
         ("{}{}", self.endpoint, path); let query = format!
         ("{}?{}", endpoint, ContentParam :: Query(params)); rest_api ::
         get(& query).await
+    } pub async fn query_by_custom(& self, params : ContentQueryBy,) ->
+    crate::Result < by_types::QueryResponse<ContentSummary> >
+    {
+        let path = format! ("/v1/contents",); let endpoint = format!
+        ("{}{}", self.endpoint, path); let query = format!
+        ("{}?{}", endpoint, ContentParam :: Custom(params)); rest_api ::
+        get(& query).await
     } pub async fn get(& self, id : i64) -> crate::Result < Content >
     {
         let path = format! ("/v1/contents",); let endpoint = format!
         ("{}{}/{}", self.endpoint, path, id); rest_api ::
         get(& endpoint).await
     }
-} #[derive(validator :: Validate)]
+} impl Content { pub fn url() -> String { "/v1/contents".to_string() } }
+#[derive(validator :: Validate)]
 #[derive(Debug, Clone, serde :: Serialize, serde :: Deserialize, Default,
 PartialEq, by_macros :: QueryDisplay)]
 #[cfg_attr(feature = "server",
@@ -1144,8 +1246,8 @@ ContentReadAction {} impl ContentReadAction
 by_macros :: QueryDisplay)]
 #[cfg_attr(feature = "server", derive(aide :: OperationIo))]
 #[serde(tag = "param-type", rename_all = "kebab-case")] pub enum ContentParam
-{ Query(ContentQuery), } #[cfg(feature = "server")] impl schemars ::
-JsonSchema for ContentParam
+{ Query(ContentQuery), Custom(ContentQueryBy), } #[cfg(feature = "server")]
+impl schemars :: JsonSchema for ContentParam
 {
     fn schema_name() -> String { "ContentParam".to_string() } fn
     json_schema(_gen : & mut schemars :: gen :: SchemaGenerator) -> schemars

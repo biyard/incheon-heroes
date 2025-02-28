@@ -15,6 +15,7 @@ pub enum LoginProvider {
     #[default]
     Kakao,
     Google,
+    Kaia,
 }
 
 impl Into<UserAuthProvider> for LoginProvider {
@@ -22,6 +23,7 @@ impl Into<UserAuthProvider> for LoginProvider {
         match self {
             Self::Kakao => UserAuthProvider::Kakao,
             Self::Google => UserAuthProvider::Google,
+            Self::Kaia => UserAuthProvider::Kaia,
         }
     }
 }

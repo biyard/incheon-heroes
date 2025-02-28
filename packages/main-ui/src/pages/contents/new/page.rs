@@ -39,7 +39,11 @@ pub fn NewContentsPage(lang: Language) -> Element {
                 }
             }
             for i in 0..ctrl.contents().len() {
-                SingleContent { lang, onchange: move |req| ctrl.set_content(i, req) }
+                SingleContent {
+                    lang,
+                    onchange: move |req| ctrl.set_content(i, req),
+                    ondelete: move || ctrl.handle_delete(i),
+                }
             }
 
             div { class: "fixed bottom-0 left-0 w-full h-[110px] bg-white z-[10] flex flex-row items-center justify-center",
@@ -70,7 +74,11 @@ pub fn NewContentsPage(lang: Language) -> Element {
 }
 
 #[component]
-pub fn SingleContent(lang: Language, onchange: EventHandler<ContentCreateRequest>) -> Element {
+pub fn SingleContent(
+    lang: Language,
+    onchange: EventHandler<ContentCreateRequest>,
+    ondelete: EventHandler<()>,
+) -> Element {
     let mut dropping = use_signal(|| false);
     let bg = if dropping() {
         "bg-[#FF2D55]/5 border-[#FF2D55]"
@@ -153,13 +161,11 @@ pub fn SingleContent(lang: Language, onchange: EventHandler<ContentCreateRequest
 
             div { class: "w-full flex flex-col gap-[10px] items-start justify-start",
                 label { class: "text-[#5B5B5B] font-bold text-[14px] font-bold flex flex-row items-center",
-                    span { "{tr.label_thumbnail}" }
+                    span { "{tr.label_source}" }
                     span { class: "text-[#FF0000]", "*" }
                 }
 
                 div { class: "w-full p-[16px] flex flex-col items-start justify-start rounded-[12px] border-[1px] border-[#dfdfdf] text-[#979797] font-normal text-[15px] bg-transparent gap-[16px]",
-
-                    p { class: "font-bold text-[14px] text-[#8d8d8d]", "{tr.label_source}" }
 
                     if let Some(ref s) = source() {
                         div { class: "flex flex-row gap-[10px] items-center justify-between w-full px-[20px] border-[1px] py-[10px] rounded-[12px] border-[#dfdfdf] text-[#979797] font-normal text-[15px] bg-transparent",
@@ -210,6 +216,15 @@ pub fn SingleContent(lang: Language, onchange: EventHandler<ContentCreateRequest
                 value: description(),
                 multiline: true,
                 mandatory: false,
+            }
+
+            div { class: "w-full flex flex-row items-center justify-end",
+                button {
+                    class: "rounded-[12px] border-[1px] border-[#CACACA] flex flex-row items-center justify-center h-[44px] py-[14px] px-[24px] text-[14px] font-bold text-[#191919] hover:bg-[#F5F5F5] transition-all duration-500 ease-in-out",
+                    onclick: move |_| ondelete(()),
+                    by_components::icons::edit::Delete3 {}
+                    span { "{tr.btn_delete}" }
+                }
             }
         } // end of this page
     }

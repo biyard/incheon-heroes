@@ -1,6 +1,6 @@
 #![allow(non_snake_case)]
-use crate::components::icons::heart::HeartIcon;
-use crate::components::icons::send::SendIcon;
+use crate::components::buttons::HeartButton;
+use crate::components::buttons::ShareButton;
 use crate::pages::ColGridCards;
 
 use super::controller::*;
@@ -20,7 +20,7 @@ pub fn ContentsByIdPage(id: ReadOnlySignal<i64>, lang: Language) -> Element {
     let (content, user) = ctrl.rsc()?;
 
     rsx! {
-        by_components::meta::MetaPage { title: "{tr.title}" }
+        by_components::meta::MetaPage { title: "{content.title}", description: "{content.description}" }
         div { class: "w-full max-w-[1200px] flex flex-col gap-[80px]",
 
             NftDescription {
@@ -99,18 +99,18 @@ pub fn NftDescription(
 
                 div { class: "flex flex-row justify-start items-center gap-[10px] text-[#5B5B5B]",
                     //like
-                    button {
-                        class: "flex flex-row items-center justify-center gap-[10px] hover:bg-gray-200 px-[20px] py-[10px] rounded-[12px]",
+                    HeartButton {
                         onclick: move |_| async move {
                             ctrl.handle_like().await;
                         },
-                        HeartIcon {}
+                        liked: content.liked,
                         "{content.likes}"
                     }
                     //share
-                    button { class: "flex flex-row items-center justify-center gap-[10px] hover:bg-gray-200 px-[20px] py-[10px] rounded-[12px]",
-                        SendIcon {}
-                        "Share"
+                    ShareButton {
+                        onclick: move |_| async move {
+                            ctrl.handle_share().await;
+                        },
                     }
                     a {
                         class: " hover:bg-gray-200 px-[20px] py-[10px] rounded-[12px] flex flex-row items-center justify-center gap-[10px]",
