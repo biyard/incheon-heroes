@@ -144,7 +144,7 @@ pub fn SingleContent(
                         onchange: move |hover| dropping.set(hover),
                         if let Some(image) = thumbnail() {
                             img {
-                                class: "w-full object-cover rounded-[12px]",
+                                class: "w-full max-w-[200px] object-cover rounded-[12px]",
                                 src: image,
                             }
                         } else {
