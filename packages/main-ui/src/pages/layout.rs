@@ -114,12 +114,16 @@ pub fn MobileHeader(
         use gloo_events::EventListener;
         use web_sys::window;
 
+        let current_expanded = expanded.read().clone();
+        let mut expanded_clone = expanded.clone();
+
         let listener = EventListener::new(
             &window().expect("no global `window` exists"),
             "scroll",
             move |_| {
-                // Close expanded menu on any scroll
-                expanded.set(false);
+                if current_expanded {
+                    expanded_clone.set(false);
+                }
             },
         );
 
@@ -277,12 +281,16 @@ pub fn Header(
         use gloo_events::EventListener;
         use web_sys::window;
 
+        let current_expanded = expanded.read().clone();
+        let mut expanded_clone = expanded.clone();
+
         let listener = EventListener::new(
             &window().expect("no global `window` exists"),
             "scroll",
             move |_| {
-                // Close expanded menu on any scroll
-                expanded.set(false);
+                if current_expanded {
+                    expanded_clone.set(false);
+                }
             },
         );
 

@@ -4,6 +4,7 @@ use crate::route::Route;
 
 use super::controller::*;
 use super::i18n::*;
+use by_components::responsive::ResponsiveService;
 use dioxus::prelude::*;
 use dioxus_translate::*;
 
@@ -41,13 +42,23 @@ pub fn ShopPage(lang: Language) -> Element {
     ]
     .iter()
     .map(|(title, desc, img)| {
+        let responsive: ResponsiveService = use_context();
         rsx! {
             div { class: "relative w-full flex flex-col gap-[10px]",
                 img { class: "w-full h-[450px] object-cover", src: "{img}" }
-                div { class: "absolute bottom-0 left-0  w-full bg-black bg-opacity-50 p-[20px] flex flex-row justify-between items-center",
-                    p { class: "text-white text-[25px] font-bold", "{title}" }
-                    p { class: "text-white",
-                        pre { class: "text-white text-[12px]", "{desc}" }
+                if responsive.width() > 1200.0 {
+                    div { class: "absolute bottom-0 left-0  w-full bg-black bg-opacity-50 p-[20px] flex flex-row justify-between items-center",
+                        p { class: "text-white text-[25px] font-bold", "{title}" }
+                        p { class: "text-white",
+                            pre { class: "text-white text-[12px]", "{desc}" }
+                        }
+                    }
+                } else {
+                    div { class: "absolute bottom-0 left-0  w-full bg-black bg-opacity-50 p-[20px] flex flex-col gap-[10px]",
+                        p { class: "text-white text-[25px] font-bold", "{title}" }
+                        p { class: "text-white",
+                            pre { class: "text-white text-[12px]", "{desc}" }
+                        }
                     }
                 }
             }
@@ -112,22 +123,29 @@ pub fn HorizontalSlide(
     right: Element,
     stacks: Vec<Element>,
 ) -> Element {
+    let mut current_slide = use_signal(|| 0);
+    let stack_count = stacks.len();
     rsx! {
         div { class: "carousel w-full",
             for (i , stack) in stacks.iter().enumerate() {
                 div {
                     class: "carousel-item relative w-full",
+                    style: if i == current_slide() { "display: block" } else { "display: none" },
                     id: format!("slide{}", i),
                     {stack}
                     div { class: "absolute left-5 right-5 top-1/2 flex -translate-y-1/2 transform justify-between",
-                        a {
+                        button {
                             class: "btn-ghost rounded-full p-[10px]",
-                            href: format!("#slide{}", (i + stacks.len() - 1) % stacks.len()),
+                            onclick: move |_| {
+                                current_slide.set((i + stack_count - 1) % stack_count);
+                            },
                             {left.clone()}
                         }
-                        a {
+                        button {
                             class: "btn-ghost rounded-full p-[10px]",
-                            href: format!("#slide{}", (i + 1) % stacks.len()),
+                            onclick: move |_| {
+                                current_slide.set((i + 1) % stack_count);
+                            },
                             {right.clone()}
                         }
                     }
@@ -234,9 +252,7 @@ pub fn ShopItemCard(
                         src: asset!("/public/images/heart.png"),
                     }
                     "{likes}"
-                
                 }
-            
             }
         }
     }
