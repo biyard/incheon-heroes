@@ -24,6 +24,10 @@ fn main() {
 }
 
 fn app() -> Element {
+    std::panic::set_hook(Box::new(|info| {
+        tracing::error!("Panic: {}", info);
+    }));
+
     use_context_provider(|| ColorTheme {
         background: "#E9F2EC",
         card: CardColorTheme {
@@ -44,6 +48,8 @@ fn app() -> Element {
     PopupService::init();
 
     rsx! {
+        btracing::ToastTracing {}
+
         document::Meta {
             name: "viewport",
             content: "width=device-width, initial-scale=1.0",
