@@ -4,9 +4,10 @@ use dioxus_popup::PopupService;
 use dioxus_translate::Language;
 
 use crate::{
+    config,
     models::history::{
-        AccountExperienceHistorys, AccountMissionHistorys, AccountTokenHistorys, ExperienceHistory,
-        MissionHistory, TokenHistory,
+        AccountExperienceHistorys, AccountMissionHistorys, AccountTokenHistory,
+        AccountTokenHistorys, ExperienceHistory, MissionHistory,
     },
     pages::NftClaimModal,
     route::Route,
@@ -27,8 +28,10 @@ pub struct Controller {
 
     pub mission_histories: Resource<Vec<MissionHistory>>,
     pub experience_histories: Resource<Vec<ExperienceHistory>>,
-    pub token_histories: Resource<Vec<TokenHistory>>,
+    pub token_histories: Resource<Vec<AccountTokenHistory>>,
     pub goods_info: Resource<Vec<GoodsItem>>,
+
+    klaytn_scope_endpoint: Signal<String>,
 }
 
 impl Controller {
@@ -36,6 +39,8 @@ impl Controller {
         let popup_service: PopupService = use_context();
         let user_service: UserService = use_context();
         let klaytn: Klaytn = use_context();
+
+        let klaytn_scope_endpoint = config::get().klaytn_scope_endpoint;
 
         let mission_histories = use_server_future(move || {
             let account = user_service.evm_address().unwrap_or_default();
@@ -99,6 +104,8 @@ impl Controller {
             experience_histories,
             token_histories,
             goods_info,
+
+            klaytn_scope_endpoint: use_signal(|| klaytn_scope_endpoint.to_string()),
         };
 
         let nav = use_navigator();
@@ -125,6 +132,10 @@ impl Controller {
         }
     }
 
+    pub fn get_scope_endpoint(&self) -> String {
+        (self.klaytn_scope_endpoint)()
+    }
+
     pub fn get_experience_histories(&self) -> Vec<ExperienceHistory> {
         match self.experience_histories.value()() {
             Some(v) => v,
@@ -132,7 +143,7 @@ impl Controller {
         }
     }
 
-    pub fn get_token_histories(&self) -> Vec<TokenHistory> {
+    pub fn get_token_histories(&self) -> Vec<AccountTokenHistory> {
         match self.token_histories.value()() {
             Some(v) => v,
             None => vec![],
@@ -180,5 +191,74 @@ impl Controller {
             })
             .with_id("claim")
             .without_close();
+    }
+}
+
+#[derive(Clone, Copy, DioxusController)]
+pub struct MissionHistoryController {}
+
+impl MissionHistoryController {
+    pub fn new() -> std::result::Result<Self, RenderError> {
+        let ctrl = Self {};
+
+        Ok(ctrl)
+    }
+
+    pub fn mission_name(
+        &self,
+        lang: Language,
+        mission_name_ko: String,
+        mission_name_en: String,
+    ) -> Result<String, RenderError> {
+        match lang {
+            Language::Ko => Ok(mission_name_ko),
+            Language::En => Ok(mission_name_en),
+        }
+    }
+}
+
+#[derive(Clone, Copy, DioxusController)]
+pub struct GoodsPurchaseHistoryController {}
+
+impl GoodsPurchaseHistoryController {
+    pub fn new() -> std::result::Result<Self, RenderError> {
+        let ctrl = Self {};
+
+        Ok(ctrl)
+    }
+
+    pub fn goods_name(
+        &self,
+        lang: Language,
+        goods_name_ko: String,
+        goods_name_en: String,
+    ) -> Result<String, RenderError> {
+        match lang {
+            Language::Ko => Ok(goods_name_ko),
+            Language::En => Ok(goods_name_en),
+        }
+    }
+}
+
+#[derive(Clone, Copy, DioxusController)]
+pub struct ExperienceHistoryController {}
+
+impl ExperienceHistoryController {
+    pub fn new() -> std::result::Result<Self, RenderError> {
+        let ctrl = Self {};
+
+        Ok(ctrl)
+    }
+
+    pub fn event_name(
+        &self,
+        lang: Language,
+        event_name_ko: String,
+        event_name_en: String,
+    ) -> Result<String, RenderError> {
+        match lang {
+            Language::Ko => Ok(event_name_ko),
+            Language::En => Ok(event_name_en),
+        }
     }
 }
