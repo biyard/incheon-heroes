@@ -103,7 +103,6 @@ pub struct Transaction {
     gas: String,
     gas_price: String,
     value: String,
-    nonce: u64,
     data: String,
 }
 
@@ -121,12 +120,17 @@ impl KaiaWallet for KaikasWallet {
 
     #[cfg(feature = "web")]
     async fn sign_transaction(&self, tx: &KlaytnTransaction) -> Result<Signature> {
+        tracing::debug!("signing transaction: {tx:?}");
         use ethers::abi::AbiEncode;
         use ethers::types::U256;
         let to = tx.to.unwrap_or_default().encode();
         let to = format!("0x{}", hex::encode(&to[12..32]));
         let from = tx.from.unwrap_or_default().encode();
         let from = format!("0x{}", hex::encode(&from[12..32]));
+        // NOTE: nonce in integer normally works. Sometime kaia wallet requires string but never accept.
+        //       omitted nonce only works fine.
+        //       But, concrete logic for this, tx argument should be mutable.
+        //       Now it is negligible due to the nonce is gotten right before this.
         let req = KaikasRequest {
             method: "klay_signTransaction".to_string(),
             params: vec![Transaction {
@@ -136,7 +140,6 @@ impl KaiaWallet for KaikasWallet {
                 gas: tx.gas.unwrap_or_default().encode_hex(),
                 gas_price: tx.gas_price.unwrap_or_default().encode_hex(),
                 value: tx.value.unwrap_or_default().encode_hex(),
-                nonce: tx.nonce.unwrap_or_default().as_u64(),
                 data: format!("0x{}", hex::encode(tx.input.clone().unwrap_or_default())),
             }],
         };
