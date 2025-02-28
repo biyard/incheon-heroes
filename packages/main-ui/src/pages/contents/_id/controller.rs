@@ -4,7 +4,7 @@ use dioxus_popup::PopupService;
 use dioxus_translate::Language;
 use dto::{Content, UserContents};
 
-use crate::{config, pages::minting_popup::MintingPopup};
+use crate::{config, pages::minting_popup::MintingPopup, route::Route};
 
 #[derive(Clone, Copy, DioxusController)]
 pub struct Controller {
@@ -13,6 +13,7 @@ pub struct Controller {
     pub rsc: Resource<(Content, UserContents)>,
     pub id: ReadOnlySignal<i64>,
     pub popup: PopupService,
+    pub path: Memo<String>,
 }
 
 impl Controller {
@@ -36,16 +37,38 @@ impl Controller {
             }
         })?;
 
+        let route: Route = use_route();
+
+        let path = use_memo(move || {
+            let _ = id();
+
+            format!("{route}")
+        });
+
         let ctrl = Self {
             lang,
             rsc,
             id,
+            path,
             popup: use_context(),
         };
 
         use_context_provider(move || ctrl);
 
         Ok(ctrl)
+    }
+
+    pub async fn handle_share(&self) {
+        let _ = wasm_bindgen_futures::JsFuture::from(
+            web_sys::window()
+                .unwrap()
+                .navigator()
+                .clipboard()
+                .write_text(&self.path()),
+        )
+        .await;
+
+        btracing::info!("Copied URL for sharing: {}", self.path());
     }
 
     pub fn opensea_url(&self) -> String {
