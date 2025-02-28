@@ -59,7 +59,7 @@ impl UserService {
 
     pub async fn logout(&mut self) {
         self.user.set(None);
-        LocalStorage::delete("user_wallet");
+        LocalStorage::delete(USER_WALLET_KEY);
     }
 
     pub fn init() {
@@ -279,7 +279,6 @@ impl UserService {
     }
 
     pub async fn load_wallet_from_storage(&mut self) {
-        LocalStorage::delete(USER_WALLET_KEY);
         if let Ok(wallet) = LocalStorage::get::<UserWallet>(USER_WALLET_KEY) {
             tracing::debug!("Loaded wallet from storage: {wallet}");
             if let Some(seed_hex) = wallet.seed() {

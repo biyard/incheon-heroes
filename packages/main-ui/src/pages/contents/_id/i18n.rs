@@ -34,8 +34,8 @@ translate! {
     }
 
     description : {
-        ko: "민팅을 진행함으로써 스마트 컨트랙트에 명시된 조건에 동의하게 됩니다. NFT는 지적 재산권, 로열티 및 블록체인 거래 수수료가 적용될 수 있는 디지털 자산입니다. 민팅을 진행하기 전에 법적 사항을 충분히 이해했는지 확인하세요.",
-        en: "By minting, you agree to the terms and conditions specified in the smart contract. NFTs are digital assets that may be subject to intellectual property rights, royalties, and blockchain transaction fees. Make sure you fully understand the legal aspects before proceeding with minting.",
+        ko: "민팅을 진행함으로써 지갑에 해당 NFT 이미지의 사본을 추가로 소유하고 무료로 사용할 수 있습니다. NFT는 지적 재산권, 로열티 및 블록체인 거래 수수료가 적용될 수 있는 디지털 자산으므로, 향후 2차 판매 시 오리지널 제작자에 대한 로열티와 거래 수수료가 발생할 수 있으니 참고하시기 바랍니다.",
+        en: "By proceeding with minting, you will own an additional copy of this NFT image in your wallet and be able to use it for free. Please note that royalties to the original creator and blockchain transaction fees may apply in future secondary sales.",
     }
 
     agreement : {

@@ -35,7 +35,7 @@ chrono = "0.4.39"
 base64 = "0.22.1"
 url = "2.5.4"
 serde_json.workspace = true
-ethers = "2.0.14"
+ethers.workspace = true
 hex = "0.4.3"
 tiny-keccak = "2.0.2"
 bip32 = "0.5.3"
@@ -51,6 +51,8 @@ by-types.workspace = true
 async-trait = "0.1.86"
 dioxus-toast = { version = "0.6.0", default-features = false, features = ["web"] }
 btracing.workspace = true
+gloo-events = "0.2.0"
+image = "0.25.5"
 
 [features]
 default = []

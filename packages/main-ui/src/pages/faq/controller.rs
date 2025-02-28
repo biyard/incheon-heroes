@@ -45,7 +45,7 @@ impl Controller {
                     },
                     Faq {
                         question: "지갑은 어떻게 설치하나요?".to_string(),
-                        answer: "1) 카이카스 지갑으로 로그인 하려는 경우 구글에서 kaikas를 검색 후 구글 webstore를 통해 지갑을 설치해주세요.\n2) 구글이나 카카오를 활용한 소셜 로그인도 가능합니다. 우측 상단의 클립 모양을 클릭해주세요.".to_string(),
+                        answer: "1) 카이아 지갑으로 로그인 하려는 경우 구글에서 kaia를 검색 후 구글 webstore를 통해 지갑을 설치해주세요.\n2) 구글이나 카카오를 활용한 소셜 로그인도 가능합니다. 우측 상단의 클립 모양을 클릭해주세요.".to_string(),
                     }
                 ]
             } else {
@@ -76,7 +76,7 @@ impl Controller {
                     },
                     Faq {
                         question: "How do I install a wallet?".to_string(),
-                        answer: "1) If you wish to log in with the Kaikas wallet, please search for 'Kaikas' on Google and install the wallet through the Google Web Store. \n2) You can also use social login options through Google or Kakao. Please click on the clip icon in the upper right corner.".to_string(),
+                        answer: "1) If you wish to log in with the Kaia wallet, please search for 'Kaia' on Google and install the wallet through the Google Web Store. \n2) You can also use social login options through Google or Kakao. Please click on the clip icon in the upper right corner.".to_string(),
                     }
                 ]
             }

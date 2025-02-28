@@ -28,6 +28,11 @@ translate! {
         en: "Kaikas",
     },
 
+    kaia: {
+        ko: "카이아 지갑",
+        en: "Kaia",
+    }
+
     ii: {
         ko: "Internet Identity",
         en: "Internet Identity",

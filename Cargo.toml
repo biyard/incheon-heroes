@@ -1,5 +1,5 @@
 [workspace]
-members = [ "packages/*"]
+members = ["packages/*"]
 resolver = "2"
 exclude = ["deps", "contracts"]
 
@@ -30,6 +30,7 @@ reqwest = { version = "0.12.5", features = ["blocking", "json", "multipart"] }
 dioxus = { version = "0.6.3" }
 dioxus-web = { version = "0.6.3" }
 candid = "0.10.13"
+ethers = "=2.0.14"
 
 sqlx = { version = "0.8.3", features = [
     "sqlite",
