@@ -315,7 +315,10 @@ impl UserService {
 #[cfg_attr(feature = "server", async_trait)]
 impl KaiaWallet for UserService {
     fn address(&self) -> ethers::types::H160 {
-        self.evm_address().unwrap_or_default().parse().unwrap()
+        self.evm_address()
+            .unwrap_or_default()
+            .parse()
+            .unwrap_or_default()
     }
 
     async fn sign_transaction(&self, tx: &KlaytnTransaction) -> dto::Result<Signature> {
