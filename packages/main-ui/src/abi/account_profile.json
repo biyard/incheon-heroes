@@ -58,5 +58,50 @@
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "listAccountActivities",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "string",
+              "name": "key",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "missionInfo",
+              "type": "string"
+            },
+            {
+              "internalType": "uint256",
+              "name": "exp",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "progressDate",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "startDate",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "endDate",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct ExperienceActivityData[]",
+          "name": "",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
     }
 ]

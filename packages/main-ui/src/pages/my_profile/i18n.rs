@@ -28,3 +28,36 @@ translate! {
         en: "Account Experience",
     },
 }
+
+translate! {
+    NftClaimModalTranslate;
+
+    title: {
+        ko: "경험치 클레임",
+        en: "Experience Claim"
+    },
+    participation_activities: {
+        ko: "참여 활동",
+        en: "Participation activities"
+    },
+    participation_date: {
+        ko: "참여 일자",
+        en: "Participation date"
+    },
+    gained_experience: {
+        ko: "참여 획득 경험치",
+        en: "Experience gained through participation"
+    },
+    total_gained_experience: {
+        ko: "총 획득 경험치",
+        en: "Total experience gained"
+    },
+    distribute: {
+        ko: "분배하기",
+        en: "Distribute"
+    },
+    cancel: {
+        ko: "취소하기",
+        en: "Cancel"
+    }
+}
