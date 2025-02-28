@@ -108,6 +108,7 @@ pub fn MobileHeader(
         expanded.set(false);
     };
     let tr: HeaderTranslate = translate(&lang);
+    let mut popup: PopupService = use_context();
     let custom_class = if expanded() {
         "fixed top-0 left-0 z-[100]"
     } else {
