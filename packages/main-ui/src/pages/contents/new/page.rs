@@ -185,6 +185,7 @@ pub fn SingleContent(
                     } else {
                         DropZone {
                             class: "w-full border-[1px] rounded-[14px] flex flex-col items-center justify-center  border-dashed gap-[16px] {bg}",
+                            accept: "*",
                             onupload: move |(file_bytes, ext)| async move {
                                 match handle_upload(file_bytes, ext).await {
                                     Ok(uri) => {

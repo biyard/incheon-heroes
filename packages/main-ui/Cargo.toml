@@ -52,6 +52,7 @@ async-trait = "0.1.86"
 dioxus-toast = { version = "0.6.0", default-features = false, features = ["web"] }
 btracing.workspace = true
 gloo-events = "0.2.0"
+image = "0.25.5"
 
 [features]
 default = []

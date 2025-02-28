@@ -121,6 +121,7 @@ impl KaiaWallet for KaikasWallet {
 
     #[cfg(feature = "web")]
     async fn sign_transaction(&self, tx: &KlaytnTransaction) -> Result<Signature> {
+        tracing::debug!("signing transaction: {tx:?}");
         use ethers::abi::AbiEncode;
         use ethers::types::U256;
         let to = tx.to.unwrap_or_default().encode();
