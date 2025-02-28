@@ -25,7 +25,7 @@ use crate::{
     },
 };
 
-use super::{icp_canister::IcpCanister, klaytn::Klaytn};
+use super::{account_contract::AccountActivity, icp_canister::IcpCanister, klaytn::Klaytn};
 
 const USER_WALLET_KEY: &str = "user_wallet";
 
@@ -37,6 +37,7 @@ pub struct UserService {
     wallet: Signal<UserWallet>,
     icp_wallet: Signal<Option<Arc<BasicIdentity>>>,
     pub account_exp: Resource<U256>,
+    pub account_activities: Resource<Vec<AccountActivity>>,
     pub evm_nfts: Resource<Vec<(u64, NftMetadata)>>,
     pub sbts: Resource<Vec<(u64, NftMetadata)>>,
     pub icp_nfts: Resource<Vec<(u64, NftMetadata)>>,
@@ -176,8 +177,24 @@ impl UserService {
             match (klaytn.account)().get_account_exp(address).await {
                 Ok(exp) => exp,
                 Err(e) => {
-                    tracing::error!("Failed to get token ids: {e:?}");
+                    tracing::error!("Failed to get exp: {e:?}");
                     U256::from(0)
+                }
+            }
+        });
+
+        let account_activities = use_resource(move || async move {
+            let w = wallet();
+            let address = match w.evm_address() {
+                Some(address) => address,
+                None => return vec![],
+            };
+
+            match (klaytn.account)().get_account_activities(&address).await {
+                Ok(activities) => activities,
+                Err(e) => {
+                    tracing::error!("Failed to get activities: {e:?}");
+                    vec![]
                 }
             }
         });
@@ -191,6 +208,7 @@ impl UserService {
             sbts,
             icp_nfts,
             account_exp,
+            account_activities,
             klaytn: use_context(),
 
             total_nfts: use_signal(|| vec![]),
@@ -219,6 +237,11 @@ impl UserService {
         });
 
         use_context_provider(move || srv);
+    }
+
+    pub fn get_account_activities(&self) -> Vec<AccountActivity> {
+        let account_activites = (self.account_activities)().unwrap_or_default();
+        account_activites
     }
 
     pub fn get_account_exp(&self) -> u64 {
