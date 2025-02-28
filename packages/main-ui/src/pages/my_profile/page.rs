@@ -1,4 +1,7 @@
 #![allow(non_snake_case)]
+use super::controller::*;
+use super::i18n::*;
+use super::models::*;
 use crate::components::headings::Heading1;
 use crate::components::icons::LinkIcon;
 use crate::components::icons::Mint;
@@ -11,13 +14,6 @@ use crate::services::goods_contract::GoodsItem;
 use crate::utils::address::parse_address;
 use crate::utils::constant::SHIPPING_FORM_URL;
 use crate::utils::constant::ZERO_ADDRESS;
-use crate::utils::time::formatted_timestamp;
-
-use super::controller::*;
-use super::i18n::*;
-use super::models::*;
-use crate::components::headings::Heading1;
-use crate::services::account_contract::AccountActivity;
 use crate::utils::time::formatted_timestamp;
 use by_components::responsive::ResponsiveService;
 use dioxus::prelude::*;
