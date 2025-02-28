@@ -32,6 +32,7 @@ pub fn RootLayout(lang: Language) -> Element {
         document::Meta { property: "og:title", content: "{tr.title}" }
         document::Meta { name: "description", content: "{tr.description}" }
         document::Meta { property: "og:description", content: "{tr.description}" }
+        document::Meta { property: "og:type", content: "website" }
 
         MetaSeoTemplate {
             lang,
@@ -249,7 +250,10 @@ pub fn Header(
                 Link {
                     class: "flex items-center justify-center h-[70px] z-[1] max-[400px]:hidden",
                     to: Route::HomePage { lang },
-                    img { src: "{LOGO}", class: "w-[145px] h-[50px]" }
+                    img {
+                        src: "{LOGO}",
+                        class: "w-[145px] h-[50px] object-contain",
+                    }
                 }
 
                 div { class: "w-full flex flex-col items-center justify-center px-[100px] max-[1440px]:px-[50px]",
