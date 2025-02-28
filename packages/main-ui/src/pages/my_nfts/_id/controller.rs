@@ -173,11 +173,11 @@ impl Controller {
 
         match PostResult::send_discord_channel(req).await {
             Ok(_) => {
-                tracing::debug!("success to send discord message");
+                btracing::debug!("success to send discord metadata");
                 ctrl.mission_histories.restart();
             }
             Err(e) => {
-                tracing::debug!("failed to send discord channel: {:?}", e);
+                btracing::debug!("failed to send discord metadata: {:?}", e);
             }
         }
     }
@@ -196,11 +196,12 @@ impl Controller {
                 user.evm_nfts.restart();
                 user.sbts.restart();
                 user.icp_nfts.restart();
+                btracing::debug!("success to send nft");
 
                 nav.push(Route::MyNftsPage { lang });
             }
             Err(e) => {
-                tracing::error!("send failed: {:?}", e);
+                btracing::error!("send failed: {:?}", e);
             }
         }
     }
@@ -265,11 +266,11 @@ impl Controller {
         let from = user.evm_address().unwrap_or_default();
 
         match icp_canister.bridge(token_id as u64, from).await {
-            Ok(nft) => {
-                tracing::debug!("success to call icp canister: {:?}", nft);
+            Ok(_) => {
+                btracing::debug!("success to call icp canister");
             }
             Err(e) => {
-                tracing::error!("failed to swap token: {:?}", e);
+                btracing::error!("failed to swap token: {:?}", e);
             }
         }
     }
