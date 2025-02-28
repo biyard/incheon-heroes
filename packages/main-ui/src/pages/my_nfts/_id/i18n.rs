@@ -10,6 +10,23 @@ translate! {
 }
 
 translate! {
+    ProgressMissionBoxTranslate;
+
+    go_to_vote: {
+        ko: "나의 미션 투표하러 가기",
+        en: "Go vote for my mission"
+    }
+    inprogress_voting: {
+        ko: "미션 검증 투표 진행중",
+        en: "Mission verification voting in progress"
+    }
+    remained_time: {
+        ko: "남은 시간",
+        en: "Remained Time"
+    }
+}
+
+translate! {
     ExchangePopupTranslate;
 
     title: {

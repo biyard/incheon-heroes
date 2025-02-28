@@ -1,9 +1,19 @@
 #![allow(non_snake_case)]
+use async_trait::async_trait;
 use std::sync::Arc;
 
 use by_macros::DioxusController;
 use dioxus::prelude::*;
-use dto::User;
+use dioxus_oauth::prelude::FirebaseService;
+use dto::{
+    contracts::klaytn_transaction::KlaytnTransaction,
+    wallets::{wallet::KaiaLocalWallet, KaiaWallet},
+    User,
+};
+use ethers::{
+    providers::{Http, Provider},
+    types::{Signature, U256},
+};
 use gloo_storage::{LocalStorage, Storage};
 use ic_agent::{identity::BasicIdentity, Identity};
 
@@ -19,15 +29,22 @@ use super::{icp_canister::IcpCanister, klaytn::Klaytn};
 
 const USER_WALLET_KEY: &str = "user_wallet";
 
+unsafe impl Sync for UserService {}
+unsafe impl Send for UserService {}
+
 #[derive(Clone, Copy, DioxusController)]
 pub struct UserService {
     wallet: Signal<UserWallet>,
     icp_wallet: Signal<Option<Arc<BasicIdentity>>>,
-    evm_nfts: Resource<Vec<(u64, NftMetadata)>>,
-    sbts: Resource<Vec<(u64, NftMetadata)>>,
-    icp_nfts: Resource<Vec<(u64, NftMetadata)>>,
+    pub account_exp: Resource<U256>,
+    pub evm_nfts: Resource<Vec<(u64, NftMetadata)>>,
+    pub sbts: Resource<Vec<(u64, NftMetadata)>>,
+    pub icp_nfts: Resource<Vec<(u64, NftMetadata)>>,
+    pub total_nfts: Signal<Vec<u64>>,
+
     icp_canister: IcpCanister,
     user: Signal<Option<User>>,
+    #[allow(dead_code)]
     klaytn: Klaytn,
 }
 
@@ -39,9 +56,27 @@ impl UserService {
         }
     }
 
+    pub async fn logout(&mut self) {
+        self.user.set(None);
+        LocalStorage::delete("user_wallet");
+    }
+
     pub fn init() {
+        let firebase = FirebaseService::new(
+            config::get().firebase.api_key.clone(),
+            config::get().firebase.auth_domain.clone(),
+            config::get().firebase.project_id.clone(),
+            config::get().firebase.storage_bucket.clone(),
+            config::get().firebase.messaging_sender_id.clone(),
+            config::get().firebase.app_id.clone(),
+            config::get().firebase.measurement_id.clone(),
+        );
+
+        use_context_provider(move || firebase);
+
         let wallet = use_signal(|| UserWallet::None);
-        let klaytn: Klaytn = use_context();
+        #[allow(unused_mut)]
+        let mut klaytn: Klaytn = use_context();
 
         let sbts = use_resource(move || async move {
             let w = wallet();
@@ -131,7 +166,23 @@ impl UserService {
             }
         });
 
-        let srv = Self {
+        let account_exp = use_resource(move || async move {
+            let w = wallet();
+            let address = match w.evm_address() {
+                Some(address) => address,
+                None => return U256::from(0),
+            };
+
+            match (klaytn.account)().get_account_exp(address).await {
+                Ok(exp) => exp,
+                Err(e) => {
+                    tracing::error!("Failed to get token ids: {e:?}");
+                    U256::from(0)
+                }
+            }
+        });
+
+        let mut srv = Self {
             user: use_signal(|| None),
             wallet,
             icp_wallet,
@@ -139,18 +190,44 @@ impl UserService {
             evm_nfts,
             sbts,
             icp_nfts,
+            account_exp,
             klaytn: use_context(),
+
+            total_nfts: use_signal(|| vec![]),
         };
+
+        use_effect(move || {
+            let evm_nfts = srv.get_evm_nfts();
+            let icp_nfts = srv.get_icp_nfts();
+
+            srv.total_nfts.set(
+                evm_nfts
+                    .iter()
+                    .map(|(id, _)| *id)
+                    .chain(icp_nfts.iter().map(|(id, _)| *id))
+                    .collect(),
+            );
+        });
 
         #[cfg(feature = "web")]
         use_effect(move || {
             spawn(async move {
                 let mut srv = srv;
                 srv.load_wallet_from_storage().await;
+                klaytn.set_signer(srv).await;
             });
         });
 
         use_context_provider(move || srv);
+    }
+
+    pub fn get_account_exp(&self) -> u64 {
+        let account_exp = (self.account_exp)().unwrap_or_default();
+        account_exp.as_u64()
+    }
+
+    pub fn get_total_nfts(&self) -> Vec<u64> {
+        (self.total_nfts)()
     }
 
     pub fn get_evm_nfts(&self) -> Vec<(u64, NftMetadata)> {
@@ -179,6 +256,7 @@ impl UserService {
     }
 
     pub async fn load_wallet_from_storage(&mut self) {
+        LocalStorage::delete(USER_WALLET_KEY);
         if let Ok(wallet) = LocalStorage::get::<UserWallet>(USER_WALLET_KEY) {
             tracing::debug!("Loaded wallet from storage: {wallet}");
             if let Some(seed_hex) = wallet.seed() {
@@ -192,7 +270,6 @@ impl UserService {
             match User::get_client(endpoint).get_user_by_address(addr).await {
                 Ok(user) => {
                     self.user.set(Some(user));
-                    self.set_contract_config().await;
                 }
                 Err(e) => {
                     tracing::error!("Failed to get user by address: {e}");
@@ -206,9 +283,12 @@ impl UserService {
     }
 
     pub async fn set_wallet(&mut self, wallet: UserWallet) {
-        if let Err(e) = LocalStorage::set(USER_WALLET_KEY, &wallet) {
-            tracing::warn!("Failed to save wallet to storage: {e}");
-        };
+        LocalStorage::delete(USER_WALLET_KEY);
+        if wallet.can_cached() {
+            if let Err(e) = LocalStorage::set(USER_WALLET_KEY, &wallet) {
+                tracing::warn!("Failed to save wallet to storage: {e}");
+            }
+        }
 
         if let Some(wallet) = wallet.icp_identity() {
             self.icp_canister.agent().set_identity(wallet);
@@ -218,34 +298,42 @@ impl UserService {
             self.icp_wallet.set(Some(Arc::new(wallet)));
         }
 
+        tracing::debug!("Set wallet: {wallet:?}");
         self.wallet.set(wallet);
-        self.set_contract_config().await;
     }
 
     pub fn evm_address(&self) -> Option<String> {
-        match self.wallet() {
-            UserWallet::SocialWallet {
-                checksum_address, ..
-            } => Some(checksum_address),
-            UserWallet::None => None,
-        }
+        self.wallet().evm_address()
     }
 
     pub fn icp_address(&self) -> Option<String> {
-        match self.wallet() {
-            UserWallet::SocialWallet { principal, .. } => Some(principal),
-            UserWallet::None => None,
-        }
+        self.wallet().principal()
+    }
+}
+
+#[cfg_attr(not(feature = "server"), async_trait(?Send))]
+#[cfg_attr(feature = "server", async_trait)]
+impl KaiaWallet for UserService {
+    fn address(&self) -> ethers::types::H160 {
+        self.evm_address().unwrap_or_default().parse().unwrap()
     }
 
-    async fn set_contract_config(&mut self) {
+    async fn sign_transaction(&self, tx: &KlaytnTransaction) -> dto::Result<Signature> {
+        tracing::debug!("Sign transaction: {tx:?}");
+
         match self.wallet() {
             UserWallet::SocialWallet {
                 ref private_key, ..
             } => {
-                self.klaytn.set_wallet_provider(private_key).await;
+                let conf = config::get();
+                let provider = Provider::<Http>::try_from(conf.klaytn.endpoint).unwrap();
+                let provider: Arc<Provider<Http>> = Arc::new(provider);
+
+                let w = KaiaLocalWallet::new(private_key, provider).await?;
+                w.sign_transaction(tx).await
             }
-            _ => {}
+            UserWallet::KaiaWallet(ref wallet) => wallet.sign_transaction(tx).await,
+            UserWallet::None => Err(dto::Error::WalletNotInitialized),
         }
     }
 }

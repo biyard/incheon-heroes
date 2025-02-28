@@ -2,7 +2,7 @@ use by_macros::*;
 use by_types::QueryResponse;
 use dioxus::prelude::*;
 use dioxus_translate::Language;
-use dto::{Content, ContentQuery, ContentSorter, ContentSummary};
+use dto::{Content, ContentQueryBy, ContentSorter, ContentSummary};
 
 use crate::{config, services::user_service::UserService};
 
@@ -24,7 +24,7 @@ impl Controller {
 
         let contents: Resource<QueryResponse<ContentSummary>> = use_server_future(move || {
             let keyword = search_keyword();
-            let _sort = sorter();
+            let sorter = sorter();
 
             async move {
                 let endpoint = config::get().new_api_endpoint;
@@ -42,7 +42,7 @@ impl Controller {
                     }
                 } else {
                     match Content::get_client(endpoint)
-                        .query(ContentQuery::new(100))
+                        .query_by_custom(ContentQueryBy { sorter })
                         .await
                     {
                         Ok(contents) => contents,

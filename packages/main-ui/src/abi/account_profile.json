@@ -28,5 +28,35 @@
       ],
       "stateMutability": "view",
       "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "nftContractAddress",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "nftNum",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "e",
+          "type": "uint256"
+        }
+      ],
+      "name": "distributeAccountEXP",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "claimAccountEXPs",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
     }
 ]

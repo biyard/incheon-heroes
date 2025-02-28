@@ -9,7 +9,7 @@ use num_format::Locale;
 use num_format::ToFormattedString;
 
 #[component]
-pub fn ShopByIdPage(id: String, lang: Language) -> Element {
+pub fn ShopByIdPage(id: ReadOnlySignal<String>, lang: Language) -> Element {
     let ctrl = Controller::new(lang, id.clone())?;
     let tr: ShopByIdTranslate = translate(&lang);
 

@@ -131,7 +131,6 @@ pub fn HorizontalSlide(
                     }
                 }
             }
-        
         }
     }
 }
@@ -216,14 +215,14 @@ pub fn ShopItemCard(
                 }
 
                 // Like
-                div { class: "absolute top-0 right-0 p-[10px] flex flex-row items-center gap-[10px] text-[12px] text-white font-semibold justify-center",
+                div { class: "absolute top-2 right-2 px-2 py-1 flex flex-row items-center gap-2 text-[12px] text-white font-semibold justify-center rounded-full bg-gray-500",
                     img {
                         class: "w-[15px]",
                         src: asset!("/public/images/heart.png"),
                     }
                     "{likes}"
+
                 }
-            
 
             }
         }

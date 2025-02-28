@@ -34,6 +34,7 @@ pub struct ContractConfig {
     pub experience: &'static str,
     pub nft: &'static str,
     pub mission: &'static str,
+    pub account: &'static str,
     pub incheon_contents: &'static str,
 }
 
@@ -54,6 +55,8 @@ pub struct Config {
     pub contracts: ContractConfig,
     pub kakao: KakaoConfig,
     pub icp: IcpConfig,
+
+    pub discord_mission_url: &'static str,
 }
 
 impl Default for Config {
@@ -102,6 +105,7 @@ impl Default for Config {
             },
             contracts: ContractConfig {
                 shop: option_env!("CONTRACT_SHOP").expect("You must set CONTRACT_SHOP"),
+                account: option_env!("CONTRACT_ACCOUNT").expect("You must set CONTRACT_ACCOUNT"),
                 holder: option_env!("CONTRACT_HOLDER").expect("You must set CONTRACT_HOLDER"),
                 sbt: option_env!("CONTRACT_SBT").expect("You must set CONTRACT_SBT"),
                 experience: option_env!("CONTRACT_EXPERIENCE")
@@ -120,6 +124,8 @@ impl Default for Config {
                 endpoint: option_env!("ICP_ENDPOINT").expect("You must set ICP_ENDPOINT"),
                 canister_id: option_env!("ICP_CANISTER_ID").expect("You must set ICP_CANISTER_ID"),
             },
+            discord_mission_url: option_env!("DISCORD_MISSION_URL")
+                .expect("You must set DISCORD_MISSION_URL"),
         }
     }
 }

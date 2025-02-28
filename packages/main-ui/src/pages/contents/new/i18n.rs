@@ -33,6 +33,11 @@ translate! {
         en: "File Upload",
     },
 
+    btn_delete: {
+        ko: "삭제",
+        en: "Remove",
+    },
+
     label_source: {
         ko: "원본 파일",
         en: "Source File",

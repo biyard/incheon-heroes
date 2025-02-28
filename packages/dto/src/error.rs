@@ -24,6 +24,8 @@ pub enum Error {
     CandidError(String),
     #[error("Agent error: {0}")]
     AgentError(String),
+    #[error("Failed to upload metadata {0}")]
+    UploadMetadataError(String),
     #[error("Service error: {0}")]
     DatabaseError(String),
     #[error("Asset error: {0}")]
@@ -38,10 +40,21 @@ pub enum Error {
     JwtGenerationFailed,
     #[error("Failed to verify JWT")]
     Unauthorized,
+    #[error("Invalid Type")]
+    InvalidType,
 
     // Contents
     #[error("Content not found")]
     NotFoundContent,
+    #[error("Kaikas wallet not found")]
+    NoKaikasWallet,
+    #[error("could not sign message")]
+    SignError,
+    #[error("Wallet not initialized")]
+    WalletNotInitialized,
+
+    #[error("MisUsed: {0}")]
+    MisUsed(String),
 }
 
 impl From<reqwest::Error> for Error {

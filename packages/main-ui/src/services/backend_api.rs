@@ -2,6 +2,7 @@
 use by_macros::DioxusController;
 use dioxus::prelude::*;
 use dto::*;
+use reqwest::header::{HeaderMap, HeaderValue, CONTENT_TYPE};
 
 use crate::config;
 
@@ -36,6 +37,69 @@ impl BackendApi {
             &serde_json::json!({ "id": id, "address": address }),
         )
         .await
+    }
+
+    pub async fn upload_metadata(
+        &self,
+        bytes: Vec<u8>,
+        req: AssetPresignedUrisReadAction,
+    ) -> Result<String> {
+        let conf = config::get();
+        let api_endpoint = conf.new_api_endpoint;
+
+        let res = match AssetPresignedUris::get_client(api_endpoint)
+            .get_presigned_uris(1, req.file_type.unwrap())
+            .await
+        {
+            Ok(v) => Ok(v),
+            Err(e) => {
+                tracing::error!("Failed to upload metadata: network error {}", e);
+                Err(ServerFnError::new(format!(
+                    "upload metadata failed: network error: {:?}",
+                    e
+                )))
+            }
+        }
+        .unwrap_or_default();
+
+        let presigned_uri = res.presigned_uris[0].clone();
+        let uri = res.uris[0].clone();
+
+        tracing::debug!(
+            "presigned_uri: {} uri: {}",
+            presigned_uri.clone(),
+            uri.clone()
+        );
+
+        let ext = match req.file_type {
+            Some(v) => {
+                if v == FileType::JPG {
+                    "jpg"
+                } else {
+                    "png"
+                }
+            }
+            None => "",
+        };
+        let content_type = HeaderValue::from_str(&format!("image/{}", ext)).unwrap();
+
+        let mut headers = HeaderMap::new();
+        headers.insert(CONTENT_TYPE, content_type);
+
+        match reqwest::Client::new()
+            .put(presigned_uri.clone())
+            .headers(headers)
+            .body(bytes)
+            .send()
+            .await
+        {
+            Ok(_) => Ok(uri.clone()),
+            Err(e) => {
+                tracing::error!("Failed to upload metadata {:?}", e);
+
+                Err(Error::UploadMetadataError(e.to_string()))
+            }
+        }
     }
 }
 
