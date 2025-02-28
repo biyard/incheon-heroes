@@ -147,6 +147,7 @@ jobs:
           RUST_LOG: error
           SERVICE: main-api
           DOMAIN: api.incheonheroes.world
+          BUCKET_NAME: incheonheroes.world
           JWT_SECRET_KEY: ${{ secrets.DEV_JWT_SECRET }}
 
           DATABASE_TYPE: postgres
