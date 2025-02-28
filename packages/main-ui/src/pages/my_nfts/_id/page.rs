@@ -1,7 +1,5 @@
 #![allow(non_snake_case)]
-use crate::components::icons::{
-    Badge, Experience, LinkIcon, Lock, Mint, Send, Swap, Trait, Transfer,
-};
+use crate::components::icons::{Badge, Experience, LinkIcon, Mint, Send, Swap, Trait, Transfer};
 use crate::config::{self};
 use crate::models::history::{MissionHistory, TokenHistory};
 use crate::models::nft_metadata::NftMetadata;
@@ -345,7 +343,11 @@ pub fn DailyNotEnableBox(lang: Language, level: i64) -> Element {
     let tr: DailyNotEnableBoxTranslate = translate(&lang);
     rsx! {
         div { class: "flex flex-col w-[230px] min-h-[80px] justify-center items-center bg-[#dadfdb] rounded-[10px] gap-[2px] p-[5px]",
-            Lock {}
+            img {
+                src: asset!("/public/images/lock.png"),
+                width: 25,
+                height: 25,
+            }
             div { class: "font-semibold text-[#5b5b5b] text-[14px]", "LV.{level}{tr.unlocked}" }
         }
     }
