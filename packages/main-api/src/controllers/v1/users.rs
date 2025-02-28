@@ -40,11 +40,11 @@ impl UserController {
         self.signup_or_login(
             auth,
             UserSignupOrLoginRequest {
+                email: evm_address.clone(),
+                subject: evm_address.clone(),
                 evm_address,
                 profile_url: "https://incheonheroes.world/metadata/profile.png".to_string(),
                 provider,
-                email: evm_address,
-                subject: evm_address,
                 ..Default::default()
             },
         )
