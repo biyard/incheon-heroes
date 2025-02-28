@@ -32,6 +32,7 @@ pub fn RootLayout(lang: Language) -> Element {
         document::Meta { property: "og:title", content: "{tr.title}" }
         document::Meta { name: "description", content: "{tr.description}" }
         document::Meta { property: "og:description", content: "{tr.description}" }
+        document::Meta { property: "og:type", content: "website" }
 
         MetaSeoTemplate {
             lang,
@@ -108,33 +109,15 @@ pub fn MobileHeader(
     };
     let tr: HeaderTranslate = translate(&lang);
     let mut popup: PopupService = use_context();
-
-    // #[cfg(feature = "web")]
-    // use_effect(move || {
-    //     use gloo_events::EventListener;
-    //     use web_sys::window;
-
-    //     let current_expanded = expanded.read().clone();
-    //     let mut expanded_clone = expanded.clone();
-
-    //     let listener = EventListener::new(
-    //         &window().expect("no global `window` exists"),
-    //         "scroll",
-    //         move |_| {
-    //             if current_expanded {
-    //                 expanded_clone.set(false);
-    //             }
-    //         },
-    //     );
-
-    //     std::mem::forget(listener);
-
-    //     (move || {})()
-    // });
+    let custom_class = if expanded() {
+        "fixed top-0 left-0 z-[100]"
+    } else {
+        ""
+    };
 
     rsx! {
         div {..attributes,
-            div { class: "w-full flex flex-row items-center justify-between h-[70px] bg-white px-[20px]",
+            div { class: "{custom_class} w-full flex flex-row items-center justify-between h-[70px] bg-white px-[20px]",
                 button {
                     onclick: move |_| {
                         expanded.set(!expanded());
@@ -186,7 +169,7 @@ pub fn MobileHeader(
                 }
             }
             if expanded() {
-                div { class: "absolute top-[70px] left-0 w-full h-[calc(100vh-70px)] grow bg-white flex flex-col items-center text-black z-[20]",
+                div { class: "fixed top-[70px] left-0 w-full h-full grow bg-white flex flex-col items-center text-black z-[100]",
                     div {
                         id: "menus",
                         class: "w-full flex flex-col justify-start h-[70px] pl-[12px]",
@@ -308,7 +291,10 @@ pub fn Header(
                 Link {
                     class: "flex items-center justify-center h-[70px] z-[1] max-[400px]:hidden",
                     to: Route::HomePage { lang },
-                    img { src: "{LOGO}", class: "w-[145px] h-[50px]" }
+                    img {
+                        src: "{LOGO}",
+                        class: "w-[145px] h-[50px] object-contain",
+                    }
                 }
 
                 div { class: "w-full flex flex-col items-center justify-center px-[100px] max-[1440px]:px-[50px]",

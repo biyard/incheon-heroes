@@ -43,6 +43,10 @@ impl IcpCanister {
         self.query("list_tokens_by", (principal,)).await
     }
 
+    pub async fn bridge(&self, id: u64, address: String) -> Result<Nft> {
+        self.update("bridge", (id, address, "".to_string())).await
+    }
+
     pub async fn update<'a, Tuple: ArgumentEncoder, R>(
         &self,
         method: &'a str,

@@ -11,7 +11,10 @@ use crate::{
     },
     pages::my_nfts::_id::{exchange_popup::ExchangePopup, send_popup::SendPopup},
     route::Route,
-    services::{klaytn::Klaytn, mission_contract::Mission, user_service::UserService},
+    services::{
+        icp_canister::IcpCanister, klaytn::Klaytn, mission_contract::Mission,
+        user_service::UserService,
+    },
 };
 
 #[derive(Debug, Clone, Copy)]
@@ -170,11 +173,11 @@ impl Controller {
 
         match PostResult::send_discord_channel(req).await {
             Ok(_) => {
-                tracing::debug!("success to send discord message");
+                btracing::debug!("success to send discord metadata");
                 ctrl.mission_histories.restart();
             }
             Err(e) => {
-                tracing::debug!("failed to send discord channel: {:?}", e);
+                btracing::debug!("failed to send discord metadata: {:?}", e);
             }
         }
     }
@@ -193,11 +196,12 @@ impl Controller {
                 user.evm_nfts.restart();
                 user.sbts.restart();
                 user.icp_nfts.restart();
+                btracing::debug!("success to send nft");
 
                 nav.push(Route::MyNftsPage { lang });
             }
             Err(e) => {
-                tracing::error!("send failed: {:?}", e);
+                btracing::error!("send failed: {:?}", e);
             }
         }
     }
@@ -255,6 +259,22 @@ impl Controller {
         }
     }
 
+    pub async fn swap_token(&self) {
+        let icp_canister: IcpCanister = use_context();
+        let user: UserService = use_context();
+        let token_id = (self.token_id)();
+        let from = user.evm_address().unwrap_or_default();
+
+        match icp_canister.bridge(token_id as u64, from).await {
+            Ok(_) => {
+                btracing::debug!("success to call icp canister");
+            }
+            Err(e) => {
+                btracing::error!("failed to swap token: {:?}", e);
+            }
+        }
+    }
+
     pub fn open_send_modal(&self, lang: Language) {
         let mut popup_service = (self.popup_service)();
         let ctrl = self.clone();
@@ -277,14 +297,16 @@ impl Controller {
     }
 
     pub fn open_swap_modal(&self, lang: Language) {
+        let ctrl = self.clone();
         let mut popup_service = (self.popup_service)();
 
         popup_service
             .open(rsx! {
                 ExchangePopup {
                     lang,
-                    onexchange: move |_| {
-                        tracing::debug!("call exchange function");
+                    onexchange: move |_| async move {
+                        ctrl.swap_token().await;
+                        popup_service.close();
                     },
                     oncancel: move |_| {
                         popup_service.close();

@@ -1,4 +1,18 @@
 #![allow(non_snake_case)]
+use crate::components::headings::Heading1;
+use crate::components::icons::LinkIcon;
+use crate::components::icons::Mint;
+use crate::components::icons::Transfer;
+use crate::models::history::AccountTokenHistory;
+use crate::models::history::ExperienceHistory;
+use crate::models::history::MissionHistory;
+use crate::services::account_contract::AccountActivity;
+use crate::services::goods_contract::GoodsItem;
+use crate::utils::address::parse_address;
+use crate::utils::constant::SHIPPING_FORM_URL;
+use crate::utils::constant::ZERO_ADDRESS;
+use crate::utils::time::formatted_timestamp;
+
 use super::controller::*;
 use super::i18n::*;
 use super::models::*;
@@ -15,32 +29,27 @@ pub fn MyProfilePage(lang: Language) -> Element {
     let mut ctrl = Controller::new(lang)?;
 
     let mission_histories = ctrl.get_mission_historys();
-    tracing::debug!("mission histories: {:?}", mission_histories);
-
     let experience_histories = ctrl.get_experience_histories();
-    tracing::debug!("experience histories: {:?}", experience_histories);
-
     let token_histories = ctrl.get_token_histories();
-    tracing::debug!("token histories: {:?}", token_histories);
-
     let goods_info = ctrl.get_goods_info();
-    tracing::debug!("goods histories: {:?}", goods_info);
+
+    let klaytn_scope = ctrl.get_scope_endpoint();
 
     let responsive: ResponsiveService = use_context();
 
     let tr: MyProfileTranslate = translate(&lang);
     let tab = match ctrl.selected_tab() {
         ProfileTabs::MissionHistory => rsx! {
-            MissionHistory { lang }
+            MissionHistoryComponent { lang, histories: mission_histories }
         },
         ProfileTabs::ExperienceHistory => rsx! {
-            ExperienceHistory { lang }
+            ExperienceHistoryComponent { lang, histories: experience_histories }
         },
         ProfileTabs::NftTransferHistory => rsx! {
-            NftTransferHistory { lang }
+            NftTransferHistoryComponent { lang, histories: token_histories, klaytn_scope }
         },
         ProfileTabs::GoodsPurchaseHistory => rsx! {
-            GoodsPurchaseHistory { lang }
+            GoodsPurchaseHistoryComponent { lang, histories: goods_info }
         },
     };
 
@@ -119,23 +128,255 @@ pub fn MyProfilePage(lang: Language) -> Element {
 }
 
 #[component]
-pub fn MissionHistory(lang: Language) -> Element {
-    rsx! { "Mission History" }
+pub fn MissionHistoryComponent(lang: Language, histories: Vec<MissionHistory>) -> Element {
+    let tr: MissionHistoryComponentTranslate = translate(&lang);
+    let ctrl = MissionHistoryController::new()?;
+    rsx! {
+        div { class: "flex flex-col w-full justify-start items-start bg-transparent border border-[#e0e0e0] rounded-[12px]",
+            div { class: "flex flex-row w-full h-[45px] justify-start items-start font-semibold text-[16px] text-[#636363] border-b border-b-[#e0e0e0]",
+                div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
+                    "{tr.mission_name}"
+                }
+                div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
+                    "{tr.progress_date}"
+                }
+                div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
+                    "{tr.verification}"
+                }
+                div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
+                    "{tr.gained_experience}"
+                }
+            }
+            for history in histories {
+                div { class: "flex flex-row w-full min-h-[45px] justify-start items-center font-normal text-[16px] text-[#636363] border-b border-b-[#e0e0e0]",
+                    div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px] whitespace-pre-line",
+                        {
+                            ctrl.mission_name(
+                                    lang,
+                                    history.mission_name.clone(),
+                                    history.mission_name_en.clone(),
+                                )
+                                .unwrap_or_default()
+                        }
+                    }
+                    div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
+                        {
+                            formatted_timestamp(
+                                history.mission_start_date.parse::<i64>().unwrap_or_default(),
+                            )
+                        }
+                    }
+                    div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
+                        {
+                            if history.progress == "Inprogress" {
+                                tr.verification_in_progress
+                            } else if history.progress == "accepted" {
+                                tr.accepted
+                            } else {
+                                tr.rejected
+                            }
+                        }
+                    }
+                    div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
+                        {
+                            if history.experience <= 0 {
+                                "0 EXP".to_string()
+                            } else {
+                                format!("{} EXP", history.experience)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 #[component]
-pub fn ExperienceHistory(lang: Language) -> Element {
-    rsx! { "ExperienceHistory" }
+pub fn ExperienceHistoryComponent(lang: Language, histories: Vec<ExperienceHistory>) -> Element {
+    let ctrl = ExperienceHistoryController::new()?;
+    let tr: ExperienceHistoryComponentTranslate = translate(&lang);
+
+    rsx! {
+        div { class: "flex flex-col w-full justify-start items-start bg-transparent border border-[#e0e0e0] rounded-[12px]",
+            div { class: "flex flex-row w-full h-[45px] justify-start items-start font-semibold text-[16px] text-[#636363] border-b border-b-[#e0e0e0]",
+                div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
+                    "{tr.participation_event}"
+                }
+                div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
+                    "{tr.acquired_nft}"
+                }
+                div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
+                    "{tr.progress_date}"
+                }
+                div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
+                    "{tr.gained_experience}"
+                }
+            }
+
+            for history in histories {
+                div { class: "flex flex-row w-full min-h-[45px] h-fit justify-start items-center font-normal text-[16px] text-[#636363] border-b border-b-[#e0e0e0]",
+                    div { class: "flex flex-1 h-full justify-start items-center px-[20px] py-[10px] whitespace-pre-line gap-[10px]",
+                        {
+                            ctrl.event_name(lang, history.event_name, history.event_name_en)
+                                .unwrap_or_default()
+                        }
+                    }
+                    div { class: "flex flex-1 h-full justify-start items-center px-[20px] py-[10px]",
+                        "#{history.token_id}"
+                    }
+                    div { class: "flex flex-1 h-full justify-start items-center px-[20px]",
+                        {
+                            formatted_timestamp(
+                                history.mission_reward_date.parse::<i64>().unwrap_or_default(),
+                            )
+                        }
+                    }
+                    div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
+                        "{history.experience} EXP"
+                    }
+                }
+            }
+        }
+    }
 }
 
 #[component]
-pub fn NftTransferHistory(lang: Language) -> Element {
-    rsx! { "NftTransferHistory" }
+pub fn NftTransferHistoryComponent(
+    lang: Language,
+    histories: Vec<AccountTokenHistory>,
+    klaytn_scope: String,
+) -> Element {
+    let navigator = use_navigator();
+
+    rsx! {
+        div { class: "flex flex-col w-full justify-start items-start bg-transparent border border-[#e0e0e0] rounded-[12px]",
+            div { class: "flex flex-row w-full h-[45px] justify-start items-start font-semibold text-[16px] text-[#636363] border-b border-b-[#e0e0e0]",
+                div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
+                    "Event"
+                }
+                div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
+                    "NFT"
+                }
+                div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
+                    "From"
+                }
+                div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
+                    "To"
+                }
+                div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
+                    "Transaction"
+                }
+            }
+
+            for history in histories {
+                div { class: "flex flex-row w-full min-h-[45px] h-fit justify-start items-center font-normal text-[16px] text-[#636363] border-b border-b-[#e0e0e0]",
+                    div { class: "flex flex-1 h-full justify-start items-center px-[20px] py-[10px] whitespace-pre-line gap-[10px]",
+                        {
+                            if history.from == ZERO_ADDRESS {
+                                rsx! {
+                                    Mint {}
+                                    div { "Mint" }
+                                }
+                            } else {
+                                rsx! {
+                                    Transfer {}
+                                    div { "Transfer" }
+                                }
+                            }
+                        }
+                    }
+                    div { class: "flex flex-1 h-full justify-start items-center px-[20px] py-[10px]",
+                        "#{history.token_id}"
+                    }
+                    div { class: "flex flex-1 h-full justify-start items-center px-[20px]",
+                        {
+                            if history.from == ZERO_ADDRESS {
+                                "NullAddress".to_string()
+                            } else {
+                                parse_address(history.from.clone())
+                            }
+                        }
+                    }
+                    div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
+                        {
+                            if history.to == ZERO_ADDRESS {
+                                "NullAddress".to_string()
+                            } else {
+                                parse_address(history.to.clone())
+                            }
+                        }
+                    }
+                    div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
+                        div {
+                            class: "flex flex-row w-fit h-fit cursor-pointer",
+                            onclick: {
+                                let history = history.clone();
+                                let klaytn_scope_endpoint = klaytn_scope.clone();
+                                move |_| {
+                                    navigator
+                                        .push(format!("{}/{}", klaytn_scope_endpoint, history.transaction_hash));
+                                }
+                            },
+                            LinkIcon {}
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 #[component]
-pub fn GoodsPurchaseHistory(lang: Language) -> Element {
-    rsx! { "GoodsPurchaseHistory" }
+pub fn GoodsPurchaseHistoryComponent(lang: Language, histories: Vec<GoodsItem>) -> Element {
+    let navigator = use_navigator();
+    let ctrl = GoodsPurchaseHistoryController::new()?;
+    let tr: GoodsPurchaseHistoryTranslate = translate(&lang);
+
+    rsx! {
+        div { class: "flex flex-col w-full justify-start items-start bg-transparent border border-[#e0e0e0] rounded-[12px]",
+            div { class: "flex flex-row w-full h-[45px] justify-start items-start font-semibold text-[16px] text-[#636363] border-b border-b-[#e0e0e0]",
+                div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
+                    "Event"
+                }
+                div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
+                    "{tr.purchase_date}"
+                }
+                div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
+                    "{tr.goods_name}"
+                }
+                div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
+                    "{tr.directed_information}"
+                }
+            }
+            for goods in histories {
+                div { class: "flex flex-row w-full min-h-[45px] h-fit justify-start items-center font-normal text-[16px] text-[#636363] border-b border-b-[#e0e0e0]",
+                    div { class: "flex flex-1 h-full justify-start items-center px-[20px] py-[10px] whitespace-pre-line gap-[10px]",
+                        "{tr.purchase_product}"
+                    }
+                    div { class: "flex flex-1 h-full justify-start items-center px-[20px] py-[10px]",
+                        {formatted_timestamp(goods.buy_date.as_u64() as i64)}
+                    }
+                    div { class: "flex flex-1 h-full justify-start items-center px-[20px] gap-[5px]",
+                        div { {ctrl.goods_name(lang, goods.name_ko, goods.name_en).unwrap_or_default()} }
+                    }
+                    div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px] gap-[10px]",
+                        div { "{tr.enter_shipping_address}" }
+                        div {
+                            class: "flex flex-row w-fit h-fit cursor-pointer",
+                            onclick: {
+                                move |_| {
+                                    let shipping_form_url = SHIPPING_FORM_URL;
+                                    navigator.push(shipping_form_url);
+                                }
+                            },
+                            LinkIcon {}
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 #[component]
