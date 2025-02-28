@@ -3,6 +3,7 @@ use std::sync::Arc;
 use abi::Abi;
 use dto::*;
 use ethers::prelude::*;
+use serde_json::Value;
 
 #[derive(Debug, Clone)]
 pub struct GoodsContract {
@@ -52,7 +53,8 @@ pub enum GoodsType {
 #[derive(Debug, Clone, serde::Deserialize, serde::Serialize, Default, PartialEq)]
 pub struct GoodsItem {
     pub goods_type: GoodsType,
-    pub name: String,
+    pub name_ko: String,
+    pub name_en: String,
     pub buy_date: U256,
 }
 
@@ -60,13 +62,18 @@ impl TryFrom<(U256, String, U256)> for GoodsItem {
     type Error = String;
 
     fn try_from(item: (U256, String, U256)) -> std::result::Result<Self, Self::Error> {
+        let parsed: Value = serde_json::from_str(&item.1).unwrap();
+
+        let ko = parsed["ko"].as_str().unwrap();
+        let en = parsed["en"].as_str().unwrap();
         let item = GoodsItem {
             goods_type: if item.0 == U256::from(0) {
                 GoodsType::Goods
             } else {
                 GoodsType::Ticket
             },
-            name: item.1,
+            name_ko: ko.to_string(),
+            name_en: en.to_string(),
             buy_date: item.2,
         };
 

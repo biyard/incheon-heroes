@@ -1,0 +1,2 @@
+pub const SHIPPING_FORM_URL: &str = "https://forms.gle/h541XVjkeLw92gCc9";
+pub const ZERO_ADDRESS: &str = "0x0000000000000000000000000000000000000000";
