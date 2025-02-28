@@ -9,6 +9,7 @@ use crate::config;
 
 use super::account_contract::AccountContract;
 use super::experience_contract::ExperienceContract;
+use super::goods_contract::GoodsContract;
 use super::holder_contract::HolderContract;
 use super::mission_contract::MissionContract;
 use super::nft_contract::NftContract;
@@ -25,6 +26,7 @@ pub struct Klaytn {
     pub sbt: Signal<SbtContract>,
     pub experience: Signal<ExperienceContract>,
     pub mission: Signal<MissionContract>,
+    pub goods: Signal<GoodsContract>,
 
     pub provider: Signal<Arc<Provider<Http>>>,
 }
@@ -53,6 +55,7 @@ impl Klaytn {
         let nft = NftContract::new(conf.contracts.nft, provider.clone());
         let account =
             AccountContract::new(conf.contracts.account, conf.contracts.nft, provider.clone());
+        let goods = GoodsContract::new(conf.contracts.goods, provider.clone());
 
         let srv = Self {
             shop: use_signal(move || shop),
@@ -62,6 +65,7 @@ impl Klaytn {
             experience: use_signal(move || experience),
             mission: use_signal(move || mission),
             account: use_signal(move || account),
+            goods: use_signal(move || goods),
 
             provider: use_signal(move || provider),
         };

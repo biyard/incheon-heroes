@@ -13,6 +13,19 @@ use ethers::types::U256;
 #[component]
 pub fn MyProfilePage(lang: Language) -> Element {
     let mut ctrl = Controller::new(lang)?;
+
+    let mission_histories = ctrl.get_mission_historys();
+    tracing::debug!("mission histories: {:?}", mission_histories);
+
+    let experience_histories = ctrl.get_experience_histories();
+    tracing::debug!("experience histories: {:?}", experience_histories);
+
+    let token_histories = ctrl.get_token_histories();
+    tracing::debug!("token histories: {:?}", token_histories);
+
+    let goods_info = ctrl.get_goods_info();
+    tracing::debug!("goods histories: {:?}", goods_info);
+
     let tr: MyProfileTranslate = translate(&lang);
     let tab = match ctrl.selected_tab() {
         ProfileTabs::MissionHistory => rsx! {

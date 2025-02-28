@@ -33,6 +33,7 @@ pub struct ContractConfig {
     pub sbt: &'static str,
     pub experience: &'static str,
     pub nft: &'static str,
+    pub goods: &'static str,
     pub mission: &'static str,
     pub account: &'static str,
     pub incheon_contents: &'static str,
@@ -112,6 +113,7 @@ impl Default for Config {
                     .expect("You must set CONTRACT_EXPERIENCE"),
                 nft: option_env!("CONTRACT_NFT").expect("You must set CONTRACT_NFT"),
                 mission: option_env!("CONTRACT_MISSION").expect("You must set CONTRACT_MISSION"),
+                goods: option_env!("CONTRACT_GOODS").expect("You must set CONTRACT_GOODS"),
                 incheon_contents: option_env!("CONTRACT_INCHEON_CONTENTS")
                     .expect("You must set CONTRACT_INCHEON_CONTENTS"),
             },
