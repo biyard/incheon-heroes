@@ -5,9 +5,18 @@ use crate::route::Route;
 
 use super::controller::*;
 use super::i18n::*;
+use by_components::icons;
 use dioxus::prelude::*;
 use dioxus_translate::*;
 use ethers::types::U256;
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, Default, PartialEq)]
+pub enum NftType {
+    #[default]
+    SBT,
+    Kaia,
+    Icp,
+}
 
 #[component]
 pub fn MyNftsPage(lang: Language) -> Element {
@@ -182,17 +191,17 @@ pub fn NftList(
     rsx! {
         div { class: "flex flex-col w-full gap-[40px]",
             div { class: "font-bold text-black text-[30px]", "{total_items} items" }
-            div { class: "grid grid-cols-4 gap-[20px] justify-items-center",
+            div { class: "grid grid-cols-4 max-[1200px]:grid-cols-3 max-[700px]:grid-cols-2 max-[550px]:grid-cols-1 gap-[20px] justify-items-center",
                 for nft in sbts {
-                    NftCard { lang, nft }
+                    NftCard { lang, nft, nft_type: NftType::SBT }
                 }
 
                 for nft in icps {
-                    NftCard { lang, nft }
+                    NftCard { lang, nft, nft_type: NftType::Icp }
                 }
 
                 for nft in evms {
-                    NftCard { lang, nft }
+                    NftCard { lang, nft, nft_type: NftType::Kaia }
                 }
             }
         }
@@ -200,7 +209,7 @@ pub fn NftList(
 }
 
 #[component]
-pub fn NftCard(lang: Language, nft: (u64, NftMetadata)) -> Element {
+pub fn NftCard(lang: Language, nft: (u64, NftMetadata), nft_type: NftType) -> Element {
     let id = nft.0;
     let metadata = nft.1;
     rsx! {
@@ -209,16 +218,28 @@ pub fn NftCard(lang: Language, nft: (u64, NftMetadata)) -> Element {
                 lang,
                 id: id.to_string(),
             },
-            div { class: "flex flex-col w-full max-w-[250px] max-h-[350px] rounded-[12px] shadow-lg bg-white",
+            div { class: "relative flex flex-col w-full max-w-[250px] max-h-[350px] rounded-[12px] shadow-lg bg-white",
+                div {
+                    class: format!(
+                        "flex flex-row justify-center items-center absolute top-[10px] left-[10px] w-[30px] h-[30px] {}",
+                        if nft_type == NftType::Icp { "rounded-[100px] bg-white " } else { "" },
+                    ),
+
+                    if nft_type == NftType::Icp {
+                        icons::logo::InternetIdentity { size: 25 }
+                    } else if nft_type == NftType::Kaia {
+                        icons::logo::Kaia { size: 25 }
+                    }
+                }
                 img {
-                    class: "w-full object-fill min-h-[250px]",
+                    class: "w-full object-fill min-h-[250px] rounded-t-[12px]",
                     src: "{metadata.image}",
                 }
                 div { class: "flex flex-row w-full justify-start items-start px-[10px] py-[7px] font-bold text-[16px] text-black",
                     "{metadata.name}"
                 }
                 div {
-                    class: "block w-full justify-start items-start px-[10px] py-[7px] font-normal text-[14px] text-black",
+                    class: "block w-full justify-start items-start px-[10px] py-[7px] font-normal text-[14px] text-black h-[50px]",
                     style: "display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;",
                     "{metadata.description}"
                 }
