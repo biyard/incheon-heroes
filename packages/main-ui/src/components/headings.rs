@@ -1,6 +1,5 @@
 #![allow(non_snake_case)]
 use crate::assets::*;
-use by_components::responsive::ResponsiveService;
 use dioxus::prelude::*;
 use dioxus_translate::Language;
 
@@ -14,15 +13,10 @@ pub fn Heading1(
         Language::Ko => "Pretendard",
         Language::En => "Russo One",
     };
-    let responsive: ResponsiveService = use_context();
-    let font_size = if responsive.width() > 1200.0 {
-        "56px"
-    } else {
-        "40px"
-    };
+
     rsx! {
         div {
-            class: "flex flex-row gap-[20px] text-center text-[{font_size}] font-black leading-[64px] [text-shadow:_0px_0px_12px_rgb(22_119_93_/_1.00)] justify-center items-center",
+            class: "flex flex-row gap-[20px] text-center text-[56px] max-[500px]:text-[32px] max-[1000px]:text-[40px] font-black leading-[64px] [text-shadow:_0px_0px_12px_rgb(22_119_93_/_1.00)] justify-center items-center",
             font_family,
             if with_symbol {
                 img { src: "{DIAMOND}", class: "w-[50px] h-[50px]" }
