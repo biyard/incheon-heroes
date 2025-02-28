@@ -32,6 +32,7 @@ pub fn RootLayout(lang: Language) -> Element {
         document::Meta { property: "og:title", content: "{tr.title}" }
         document::Meta { name: "description", content: "{tr.description}" }
         document::Meta { property: "og:description", content: "{tr.description}" }
+        document::Meta { property: "og:type", content: "website" }
 
         MetaSeoTemplate {
             lang,
@@ -226,7 +227,6 @@ pub fn MobileHeader(
 pub fn Header(
     #[props(default ="header".to_string())] id: String,
     #[props(default ="".to_string())] class: String,
-
     lang: Language,
 ) -> Element {
     let route: Route = use_route();
@@ -240,6 +240,25 @@ pub fn Header(
         expanded.set(false);
     };
 
+    #[cfg(feature = "web")]
+    use_effect(move || {
+        use gloo_events::EventListener;
+        use web_sys::window;
+
+        let listener = EventListener::new(
+            &window().expect("no global `window` exists"),
+            "scroll",
+            move |_| {
+                // Close expanded menu on any scroll
+                expanded.set(false);
+            },
+        );
+
+        std::mem::forget(listener);
+
+        (move || {})()
+    });
+
     rsx! {
         div { id, class,
             if expanded() {
@@ -249,13 +268,16 @@ pub fn Header(
                 Link {
                     class: "flex items-center justify-center h-[70px] z-[1] max-[400px]:hidden",
                     to: Route::HomePage { lang },
-                    img { src: "{LOGO}", class: "w-[145px] h-[50px]" }
+                    img {
+                        src: "{LOGO}",
+                        class: "w-[145px] h-[50px] object-contain",
+                    }
                 }
 
                 div { class: "w-full flex flex-col items-center justify-center px-[100px] max-[1440px]:px-[50px]",
                     div {
                         id: "menus",
-                        class: "w-full flex flex-row justify-start h-[70px] justify-between",
+                        class: "w-full flex flex-row h-[70px] justify-between",
                         ExpandableMenu {
                             expanded: expanded(),
                             onclick: move |_| {

@@ -133,7 +133,7 @@ impl Controller {
         });
     }
 
-    pub async fn handle_kaikas(&mut self) {
+    pub async fn handle_kaia(&mut self) {
         let conf = config::get();
         let provider =
             ethers::providers::Provider::<ethers::providers::Http>::try_from(conf.klaytn.endpoint)

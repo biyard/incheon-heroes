@@ -8,7 +8,7 @@ repository.workspace = true
 license.workspace = true
 
 [dependencies]
-dto = { workspace = true, features = [ "server" ] }
+dto = { workspace = true, features = ["server"] }
 serde.workspace = true
 serde_json.workspace = true
 by-axum.workspace = true
@@ -28,7 +28,7 @@ schemars = "0.8.21"
 uuid = { version = "1.11.0", features = ["v4"] }
 aws-config = "1.5.10"
 aws-sdk-s3 = "1.74.0"
-ethers = "2.0.14"
+ethers.workspace = true
 
 [features]
 default = []

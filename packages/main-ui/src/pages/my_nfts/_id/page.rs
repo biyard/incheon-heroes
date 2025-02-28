@@ -574,7 +574,9 @@ pub async fn handle_file_upload(file_engine: Arc<dyn FileEngine>, api: BackendAp
                     file_type,
                 };
 
-                let url = match api.upload_metadata(bytes.clone(), req).await {
+                let bytes = process_image(&bytes, 400, 400);
+
+                let url = match api.upload_metadata(bytes, req).await {
                     Ok(v) => Some(v),
                     Err(_) => None,
                 };
@@ -592,4 +594,18 @@ pub async fn handle_file_upload(file_engine: Arc<dyn FileEngine>, api: BackendAp
         };
     }
     result
+}
+
+pub fn process_image(input: &[u8], width: u32, height: u32) -> Vec<u8> {
+    let img = image::load_from_memory(input).expect("Failed to load image");
+
+    let resized = img.resize(width, height, image::imageops::FilterType::Lanczos3);
+    let output = resized.as_bytes();
+
+    if output.len() > 1000000000 {
+        btracing::error!("Too large file");
+        return vec![];
+    }
+
+    output.to_vec()
 }
