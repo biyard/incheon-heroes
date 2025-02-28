@@ -99,7 +99,7 @@ impl Controller {
 
         if let Some(address) = self.address() {
             if address != wallet.address {
-                tracing::error!("Address mismatch {} != {}", address, wallet.address);
+                btracing::error!("Check your password");
                 return;
             }
         }
@@ -136,7 +136,7 @@ impl Controller {
                 self.user_wallet.account_exp.restart();
             }
             Err(e) => {
-                tracing::error!("Failed to signup or login: {:?}", e);
+                btracing::error!("Failed to get user: {:?}", e);
             }
         }
 
