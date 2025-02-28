@@ -1,11 +1,11 @@
 #![allow(non_snake_case)]
-use crate::components::headings::Heading1;
-use crate::services::account_contract::AccountActivity;
-use crate::utils::time::formatted_timestamp;
-
 use super::controller::*;
 use super::i18n::*;
 use super::models::*;
+use crate::components::headings::Heading1;
+use crate::services::account_contract::AccountActivity;
+use crate::utils::time::formatted_timestamp;
+use by_components::responsive::ResponsiveService;
 use dioxus::prelude::*;
 use dioxus_translate::*;
 use ethers::types::U256;
@@ -25,6 +25,8 @@ pub fn MyProfilePage(lang: Language) -> Element {
 
     let goods_info = ctrl.get_goods_info();
     tracing::debug!("goods histories: {:?}", goods_info);
+
+    let responsive: ResponsiveService = use_context();
 
     let tr: MyProfileTranslate = translate(&lang);
     let tab = match ctrl.selected_tab() {
@@ -55,12 +57,15 @@ pub fn MyProfilePage(lang: Language) -> Element {
 
         div {
             id: "my-page",
-            class: "w-full flex flex-col gap-[40px] items-center justify-start p-[20px]",
+            class: "w-full flex flex-col gap-[40px] items-center justify-start",
+            style: if responsive.width() > 1200.0 { "padding: 20px;" } else { "" },
             Heading1 { lang, "{tr.title}" }
-            div { class: "flex flex-col w-full gap-[20px]  max-w-[1200px]",
-                div { class: "flex flex-col bg-white/60 rounded-[20px] p-[20px] w-full",
 
-                    div { class: "w-full grid grid-cols-5 rounded-[10px] border-[1px] border-gray-200 gap-[10px] text-[#636363] text-[16px]",
+            div { class: "flex flex-col w-full gap-[20px] max-w-[1200px]",
+                div {
+                    class: "flex flex-col bg-white/60 rounded-[20px] w-full",
+                    style: if responsive.width() > 1200.0 { "padding: 20px;" } else { "" },
+                    div { class: if responsive.width() > 1200.0 { "w-full grid grid-cols-5 rounded-[10px] border-[1px] border-gray-200 gap-[10px] text-[#636363] text-[16px]" } else { "w-full flex flex-col rounded-[10px] border-[1px] border-gray-200 gap-[10px] text-[#636363] text-[16px]" },
                         ProfileLine { title: "{tr.login}", "{ctrl.login_type()}" }
                         if let Some(ref address) = ctrl.user_service.evm_address() {
                             ProfileLine { title: "{tr.wallet}", "{address}" }
@@ -94,7 +99,9 @@ pub fn MyProfilePage(lang: Language) -> Element {
                         }
                     }
                 }
-                div { class: "flex flex-row w-full items-center justify-between bg-white/60 rounded-[10px] p-[15px] text-[16px] font-semibold",
+                div {
+                    class: "flex flex-row w-full items-center justify-between bg-white/60 rounded-[10px] text-[16px] font-semibold",
+                    style: if responsive.width() > 1200.0 { "padding: 15px;" } else { "" },
                     for tab in ProfileTabs::VARIANTS.iter() {
                         div {
                             class: "w-full flex flex-row items-center justify-center gap-[10px] p-[10px] cursor-pointer text-[16px] hover:text-[#4C9682]",
@@ -107,8 +114,8 @@ pub fn MyProfilePage(lang: Language) -> Element {
                 }
                 div { class: "w-full bg-white/60 rounded-[10px] p-[20px]", {tab} }
             }
-        } // end of this page
-    }
+        }
+    } // end of this page
 }
 
 #[component]
@@ -144,10 +151,10 @@ pub fn ProfileLine(
     };
 
     rsx! {
-        div { class: "w-full col-span-1 flex flex-row items-center justify-start py-[10px] px-[20px] {bottom_border}",
+        div { class: "col-span-1 flex flex-row items-center justify-start py-[10px] px-[10px] {bottom_border}",
             "{title}"
         }
-        div { class: "w-full col-span-4 flex flex-row items-center justify-start py-[10px] px-[20px] {bottom_border} text-[14px]",
+        div { class: "col-span-4 flex flex-row items-center justify-start px-[20px] {bottom_border} text-[14px]",
             {children}
         }
     }
