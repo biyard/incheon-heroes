@@ -109,28 +109,28 @@ pub fn MobileHeader(
     let tr: HeaderTranslate = translate(&lang);
     let mut popup: PopupService = use_context();
 
-    #[cfg(feature = "web")]
-    use_effect(move || {
-        use gloo_events::EventListener;
-        use web_sys::window;
+    // #[cfg(feature = "web")]
+    // use_effect(move || {
+    //     use gloo_events::EventListener;
+    //     use web_sys::window;
 
-        let current_expanded = expanded.read().clone();
-        let mut expanded_clone = expanded.clone();
+    //     let current_expanded = expanded.read().clone();
+    //     let mut expanded_clone = expanded.clone();
 
-        let listener = EventListener::new(
-            &window().expect("no global `window` exists"),
-            "scroll",
-            move |_| {
-                if current_expanded {
-                    expanded_clone.set(false);
-                }
-            },
-        );
+    //     let listener = EventListener::new(
+    //         &window().expect("no global `window` exists"),
+    //         "scroll",
+    //         move |_| {
+    //             if current_expanded {
+    //                 expanded_clone.set(false);
+    //             }
+    //         },
+    //     );
 
-        std::mem::forget(listener);
+    //     std::mem::forget(listener);
 
-        (move || {})()
-    });
+    //     (move || {})()
+    // });
 
     rsx! {
         div {..attributes,
@@ -276,28 +276,28 @@ pub fn Header(
         expanded.set(false);
     };
 
-    #[cfg(feature = "web")]
-    use_effect(move || {
-        use gloo_events::EventListener;
-        use web_sys::window;
+    // #[cfg(feature = "web")]
+    // use_effect(move || {
+    //     use gloo_events::EventListener;
+    //     use web_sys::window;
 
-        let current_expanded = expanded.read().clone();
-        let mut expanded_clone = expanded.clone();
+    //     let current_expanded = expanded.read().clone();
+    //     let mut expanded_clone = expanded.clone();
 
-        let listener = EventListener::new(
-            &window().expect("no global `window` exists"),
-            "scroll",
-            move |_| {
-                if current_expanded {
-                    expanded_clone.set(false);
-                }
-            },
-        );
+    //     let listener = EventListener::new(
+    //         &window().expect("no global `window` exists"),
+    //         "scroll",
+    //         move |_| {
+    //             if current_expanded {
+    //                 expanded_clone.set(false);
+    //             }
+    //         },
+    //     );
 
-        std::mem::forget(listener);
+    //     std::mem::forget(listener);
 
-        (move || {})()
-    });
+    //     (move || {})()
+    // });
 
     rsx! {
         div { id, class,
