@@ -178,6 +178,7 @@ pub fn ShopItemCard(
         _ => "#029F75",
     };
     let mut hover = use_signal(|| false);
+    let responsive: ResponsiveService = use_context();
 
     rsx! {
         div {..attributes,
@@ -197,12 +198,23 @@ pub fn ShopItemCard(
                             color,
                             "{name}"
                         }
-                        div { class: "px-[10px] flex flex-row justify-between items-center gap-[10px] ",
-                            p { class: "text-[#16775D] font-semibold text-[12px]",
-                                "{price} EXP"
+                        if responsive.width() > 1200.0 {
+                            div { class: "px-[10px] flex flex-row justify-between items-center gap-[10px] ",
+                                p { class: "text-[#16775D] font-semibold text-[12px]",
+                                    "{price} EXP"
+                                }
+                                p { class: "text-[#16775D] font-semibold text-[12px]",
+                                    "{tr.amount}: {remaining_quantity} {tr.unit}"
+                                }
                             }
-                            p { class: "text-[#16775D] font-semibold text-[12px]",
-                                "{tr.amount}: {remaining_quantity} {tr.unit}"
+                        } else {
+                            div { class: "px-[10px] flex flex-col gap-[10px] ",
+                                p { class: "text-[#16775D] font-semibold text-[12px]",
+                                    "{price} EXP"
+                                }
+                                p { class: "text-[#16775D] font-semibold text-[12px]",
+                                    "{tr.amount}: {remaining_quantity} {tr.unit}"
+                                }
                             }
                         }
                         div {
