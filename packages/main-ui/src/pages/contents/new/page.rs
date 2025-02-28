@@ -15,6 +15,7 @@ use dto::ContentCreateRequest;
 pub fn NewContentsPage(lang: Language) -> Element {
     let mut ctrl = Controller::new(lang)?;
     let tr: NewContentsTranslate = translate(&lang);
+    let descs: Vec<&str> = tr.description.split("\n").collect();
 
     rsx! {
         by_components::meta::MetaPage { title: "{tr.title}" }
@@ -23,11 +24,17 @@ pub fn NewContentsPage(lang: Language) -> Element {
             id: "new-contents",
             class: "w-full flex flex-col items-start gap-[10px] pb-[50px]",
             div { class: "flex flex-col items-start gap-[20px]",
-                Heading1 { lang, "{tr.title}" }
-                pre {
-                    class: "text-black text-[14px] font-normal",
-                    font_family: "Pretendard",
-                    "{tr.description}"
+                div { class: "w-full flex flex-col items-center justify-center",
+                    Heading1 { lang, "{tr.title}" }
+                }
+                div { class: "flex flex-col items-start",
+                    for desc in descs {
+                        p {
+                            class: "text-black text-[14px] font-normal",
+                            font_family: "Pretendard",
+                            "{desc}"
+                        }
+                    }
                 }
             }
             div { class: "w-full flex flex-row justify-end",
