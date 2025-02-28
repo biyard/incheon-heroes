@@ -3,13 +3,15 @@ use dioxus::prelude::*;
 use dioxus_oauth::prelude::FirebaseService;
 use dioxus_translate::Language;
 use dto::User;
+use google_wallet::drive_api::DriveApi;
+use ic_agent::Identity;
 
 use crate::{
     config,
-    models::user_wallet::UserWallet,
+    models::user_wallet::{create_evm_wallet, create_identity, UserWallet},
     pages::LoginProvider,
     route::Route,
-    services::{backend_api::BackendApi, user_service::UserService},
+    services::{backend_api::BackendApi, google_service::GoogleService, user_service::UserService},
 };
 
 #[derive(Clone, Copy, DioxusController)]
@@ -19,6 +21,7 @@ pub struct Controller {
     pub lang: Language,
     pub firebase: FirebaseService,
     pub user: UserService,
+    pub google: GoogleService,
 }
 
 impl Controller {
@@ -29,12 +32,13 @@ impl Controller {
             lang,
             firebase: use_context(),
             user: use_context(),
+            google: use_context(),
         };
 
         Ok(ctrl)
     }
 
-    pub async fn handle_google(&self) {
+    pub async fn handle_google(&mut self) {
         let cred = self
             .firebase
             .sign_in_with_popup(vec![
@@ -52,19 +56,136 @@ impl Controller {
         {
             Ok(hint) => hint,
             Err(e) => {
-                tracing::error!("Failed to get account hint: {:?}", e);
+                btracing::error!("Failed to get account hint: {:?}", e);
                 return;
             }
         };
+        let old_key = "incheon-universe-backupkey";
 
+        self.google.access_token.set(cred.access_token.clone());
+        let cli = DriveApi::new(cred.access_token);
+        let data = match cli.list_files().await {
+            Ok(v) => v,
+            Err(e) => {
+                btracing::error!("failed to get file {e}");
+                return;
+            }
+        };
+        tracing::debug!("data: {data:?}");
+
+        match data.iter().find(|x| {
+            x.name == option_env!("ENV").unwrap_or("local").to_string() || x.name == old_key
+        }) {
+            Some(v) => match cli.get_file(&v.id).await {
+                Ok(v) => {
+                    tracing::debug!("file content: {v}");
+                    let secrets: Vec<&str> = v.splitn(2, ":").collect();
+                    if secrets.len() != 2 {
+                        self.goto_login(
+                            LoginProvider::Google,
+                            hint.id,
+                            hint.private_key_hint,
+                            hint.address.unwrap_or_default(),
+                            cred.email,
+                            cred.photo_url,
+                        );
+                        return;
+                    }
+                    let address = secrets[0];
+                    let seed = secrets[1];
+                    tracing::debug!("address: {address}, seed: {seed}");
+                    if address.to_lowercase()
+                        == hint.address.clone().unwrap_or_default().to_lowercase()
+                    {
+                        let seed = hex::decode(seed).unwrap_or_default();
+                        let wallet = create_evm_wallet(&seed);
+                        if wallet.is_err() {
+                            self.goto_login(
+                                LoginProvider::Google,
+                                hint.id,
+                                hint.private_key_hint,
+                                hint.address.unwrap_or_default(),
+                                cred.email,
+                                cred.photo_url,
+                            );
+                            return;
+                        }
+                        let wallet = wallet.unwrap();
+                        tracing::debug!("Wallet: {:?}", wallet);
+
+                        let icp_wallet = create_identity(&wallet.seed);
+
+                        self.user
+                            .set_wallet(UserWallet::SocialWallet {
+                                private_key: wallet.private_key,
+                                seed: wallet.seed,
+                                checksum_address: wallet.checksum_address.clone(),
+                                principal: icp_wallet.sender().unwrap().to_text(),
+                            })
+                            .await;
+
+                        let endpoint = config::get().new_api_endpoint;
+                        match User::get_client(endpoint)
+                            .signup_or_login(
+                                wallet.checksum_address,
+                                cred.email,
+                                hint.id,
+                                cred.photo_url,
+                                dto::UserAuthProvider::Google,
+                            )
+                            .await
+                        {
+                            Ok(user) => {
+                                btracing::info!("Logged in");
+                                self.user.set_user(user);
+                            }
+                            Err(e) => {
+                                btracing::error!("Failed to get user: {:?}", e);
+                            }
+                        }
+
+                        if self.nav.can_go_back() {
+                            self.nav.go_back();
+                        } else {
+                            self.nav.replace(Route::HomePage { lang: self.lang });
+                        }
+                        return;
+                    }
+                }
+                Err(e) => {
+                    tracing::warn!("failed to get file {e}");
+                }
+            },
+            None => {}
+        };
+
+        self.goto_login(
+            LoginProvider::Google,
+            hint.id,
+            hint.private_key_hint,
+            hint.address.unwrap_or_default(),
+            cred.email,
+            cred.photo_url,
+        );
+    }
+
+    pub fn goto_login(
+        &self,
+        provider: LoginProvider,
+        id: String,
+        hint: String,
+        address: String,
+        email: String,
+        picture: String,
+    ) {
         self.nav.replace(Route::LoginPage {
             lang: self.lang,
-            provider: LoginProvider::Google,
-            id: hint.id,
-            hint: hint.private_key_hint,
-            address: hint.address.unwrap_or_default(),
-            email: cred.email,
-            picture: cred.photo_url,
+            provider,
+            id,
+            hint,
+            address,
+            email,
+            picture,
         });
     }
 

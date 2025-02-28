@@ -3,12 +3,14 @@ use crate::config;
 use crate::models::user_wallet::{create_evm_wallet, create_identity, EvmWallet, UserWallet};
 use crate::route::Route;
 use crate::services::backend_api::BackendApi;
+use crate::services::google_service::GoogleService;
 use crate::services::user_service::UserService;
 use by_macros::*;
 use dioxus::prelude::*;
 use dioxus_translate::Language;
 use dto::User;
 use ethers::utils::keccak256;
+use google_wallet::drive_api::DriveApi;
 use ic_agent::Identity;
 
 use super::models::LoginProvider;
@@ -26,6 +28,7 @@ pub struct Controller {
     pub backend_api: BackendApi,
     pub user_wallet: UserService,
     pub nav: Navigator,
+    pub google: GoogleService,
 }
 
 impl Controller {
@@ -69,6 +72,7 @@ impl Controller {
             picture: use_signal(move || picture),
             backend_api: use_context(),
             user_wallet: use_context(),
+            google: use_context(),
         };
 
         Ok(ctrl)
@@ -83,10 +87,12 @@ impl Controller {
             tracing::error!("Failed to notify address: {:?}", e);
         }
 
-        // TODO: Implement singup handler
+        let address = wallet.checksum_address.clone();
+        let seed = hex::encode(&wallet.seed);
+
         match self.provider {
             LoginProvider::Kakao => self.backup_kakao().await,
-            LoginProvider::Google => self.backup_google().await,
+            LoginProvider::Google => self.backup_google(address, seed).await,
             LoginProvider::Kaia => {}
         }
     }
@@ -160,10 +166,21 @@ impl Controller {
     }
 
     pub async fn backup_kakao(&self) {
+
         // TODO: send a message to kakao
     }
 
-    pub async fn backup_google(&self) {
-        // TODO: save the google account
+    pub async fn backup_google(&self, address: String, seed: String) {
+        let cli = DriveApi::new(self.google.access_token());
+
+        let content = format!("{}:{}", address, seed);
+        match cli.upload_file(&content).await {
+            Ok(_) => {
+                tracing::debug!("Backup success");
+            }
+            Err(e) => {
+                btracing::error!("Failed to save backup key: {}", e);
+            }
+        }
     }
 }

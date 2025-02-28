@@ -2,6 +2,7 @@ pub mod account_contract;
 pub mod backend_api;
 pub mod experience_contract;
 pub mod goods_contract;
+pub mod google_service;
 pub mod holder_contract;
 pub mod icp_canister;
 pub mod klaytn;
