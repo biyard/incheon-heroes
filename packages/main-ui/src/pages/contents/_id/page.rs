@@ -59,6 +59,7 @@ pub fn NftDescription(
     let description = content.description;
     let tr: NftDescriptionTranslate = translate(&lang);
     let mut ctrl: Controller = use_context();
+    let mut icon_color = use_signal(|| "#5B5B5B".to_string());
 
     rsx! {
         div { class: "w-full h-full grid grid-cols-2 max-[700px]:grid-cols-1 gap-[48px]",
@@ -98,9 +99,19 @@ pub fn NftDescription(
                 div { class: "h-full max-h-[200px] text-[#5B5B5B]", "{description}" }
 
                 div { class: "flex flex-row justify-start items-center gap-[10px] text-[#5B5B5B]",
+                    //opensea
+                    a {
+                        class: " hover:bg-[#0086FF] hover:text-[#ffffff] px-[10px] py-[4px] rounded-[12px] flex flex-row items-center justify-center gap-[10px]",
+                        target: "_blank",
+                        href: "{opensea_url}",
+                        onmouseover: move |_| icon_color.set("#ffffff".to_string()),
+                        onmouseout: move |_| icon_color.set("#5B5B5B".to_string()),
+                        OpenSea { size: 30, color: "{icon_color()}" }
+                        "View in OpenSea"
+                    }
                     //like
                     button {
-                        class: "flex flex-row items-center justify-center gap-[10px] hover:bg-gray-200 px-[20px] py-[10px] rounded-[12px]",
+                        class: "flex flex-row items-center justify-center gap-[10px] hover:bg-[#D4EED4] px-[10px] py-[4px] rounded-[12px]",
                         onclick: move |_| async move {
                             ctrl.handle_like().await;
                         },
@@ -108,16 +119,9 @@ pub fn NftDescription(
                         "{content.likes}"
                     }
                     //share
-                    button { class: "flex flex-row items-center justify-center gap-[10px] hover:bg-gray-200 px-[20px] py-[10px] rounded-[12px]",
+                    button { class: "flex flex-row items-center justify-center gap-[10px] hover:bg-[#D4EED4] px-[10px] py-[4px] rounded-[12px]",
                         SendIcon {}
                         "Share"
-                    }
-                    a {
-                        class: " hover:bg-gray-200 px-[20px] py-[10px] rounded-[12px] flex flex-row items-center justify-center gap-[10px]",
-                        target: "_blank",
-                        href: "{opensea_url}",
-                        OpenSea { size: 30, color: "#5B5B5B" }
-                        "View in OpenSea"
                     }
                 }
 
