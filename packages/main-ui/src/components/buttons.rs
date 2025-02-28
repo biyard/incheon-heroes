@@ -5,19 +5,30 @@ use crate::components::icons::{heart::HeartIcon, send::SendIcon};
 
 #[component]
 pub fn HoverPrimaryButton(
+    #[props(extends = GlobalAttributes)] attributes: Vec<Attribute>,
     children: Element,
-    onchangehover: EventHandler<bool>,
+    onchangehover: Option<EventHandler<bool>>,
     onclick: EventHandler<()>,
 ) -> Element {
     rsx! {
-        button {
-            class: "flex flex-row items-center justify-center gap-[10px] hover:bg-[#D4EED4] px-[10px] py-[4] rounded-[12px] text-[#5B5B5B] hover:text-[#16775D] font-semibold",
-            onmouseenter: move |_| onchangehover(true),
-            onmouseleave: move |_| onchangehover(false),
-            onclick: move |_| {
-                onclick(());
-            },
-            {children}
+        div {..attributes,
+            button {
+                class: "w-full flex flex-row items-center justify-center gap-[10px] hover:bg-[#D4EED4] px-[10px] py-[4] rounded-[12px] text-[#5B5B5B] hover:text-[#16775D] font-semibold",
+                onmouseenter: move |_| {
+                    if let Some(onchangehover) = onchangehover {
+                        onchangehover(true);
+                    }
+                },
+                onmouseleave: move |_| {
+                    if let Some(onchangehover) = onchangehover {
+                        onchangehover(false);
+                    }
+                },
+                onclick: move |_| {
+                    onclick(());
+                },
+                {children}
+            }
         }
     }
 }

@@ -43,6 +43,8 @@ impl UserController {
                 evm_address,
                 profile_url: "https://incheonheroes.world/metadata/profile.png".to_string(),
                 provider,
+                email: evm_address,
+                subject: evm_address,
                 ..Default::default()
             },
         )
