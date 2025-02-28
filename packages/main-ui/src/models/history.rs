@@ -70,3 +70,66 @@ impl TokenHistorys {
         rest_api::get(&endpoint).await
     }
 }
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AccountMissionHistorys {
+    pub status: String,
+    pub mission_infos: Vec<MissionHistory>,
+}
+
+impl AccountMissionHistorys {
+    pub async fn fetch(account_address: String) -> dto::Result<Self> {
+        let endpoint = config::get().discord_api_endpoint;
+        let endpoint = format!("{}/v1/mission/account/{}", endpoint, account_address);
+        rest_api::get(&endpoint).await
+    }
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AccountExperienceHistorys {
+    pub status: String,
+    pub experience_infos: Vec<ExperienceHistory>,
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, PartialEq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct ExperienceHistory {
+    pub key: String,
+    #[serde(default)]
+    pub event_name: String,
+    #[serde(default)]
+    pub event_name_en: String,
+    #[serde(default)]
+    pub mission_reward_date: String,
+    #[serde(default)]
+    pub experience: i32,
+    #[serde(default)]
+    pub account: String,
+    #[serde(default)]
+    pub token_id: i32,
+}
+
+impl AccountExperienceHistorys {
+    pub async fn fetch(account_address: String) -> dto::Result<Self> {
+        let endpoint = config::get().discord_api_endpoint;
+        let endpoint = format!("{}/v1/experience/userAddress/{}", endpoint, account_address);
+        rest_api::get(&endpoint).await
+    }
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AccountTokenHistorys {
+    pub status: String,
+    pub items: Vec<TokenHistory>,
+}
+
+impl AccountTokenHistorys {
+    pub async fn fetch(account_address: String) -> dto::Result<Self> {
+        let endpoint = config::get().logs_api_endpoint;
+        let endpoint = format!("{}/v2/logs/user-address/{}", endpoint, account_address);
+        rest_api::get(&endpoint).await
+    }
+}

@@ -31,6 +31,29 @@ impl<T: KaiaWallet, W: KaiaWallet> AccountContract<T, W> {
         self.contract.set_fee_payer(fee_payer);
     }
 
+    pub async fn get_account_activities(&self, sender: &str) -> Result<Vec<AccountActivity>> {
+        let sender = sender
+            .parse::<Address>()
+            .map_err(|e| Error::Klaytn(e.to_string()))?;
+
+        let items_raw: Vec<(String, String, U256, U256, U256, U256)> = self
+            .contract
+            .contract
+            .method("listAccountActivities", ())
+            .map_err(|e| Error::Klaytn(e.to_string()))?
+            .from(sender)
+            .call()
+            .await
+            .map_err(|e| Error::Klaytn(e.to_string()))?;
+
+        let mut items = vec![];
+        for item in items_raw {
+            let _ = item.try_into().map(|i| items.push(i));
+        }
+
+        Ok(items)
+    }
+
     pub async fn get_account_exp(&self, address: String) -> Result<U256> {
         let addr = address
             .parse::<Address>()
@@ -86,5 +109,34 @@ impl<T: KaiaWallet, W: KaiaWallet> AccountContract<T, W> {
             .await?;
 
         Ok(tx_hash)
+    }
+}
+
+#[derive(Debug, Clone, serde::Deserialize, serde::Serialize, Default, PartialEq)]
+pub struct AccountActivity {
+    pub key: String,
+    pub name: String,
+    pub exp: U256,
+    pub progress_date: U256,
+    pub start_date: U256,
+    pub end_date: U256,
+}
+
+impl TryFrom<(String, String, U256, U256, U256, U256)> for AccountActivity {
+    type Error = String;
+
+    fn try_from(
+        item: (String, String, U256, U256, U256, U256),
+    ) -> std::result::Result<Self, Self::Error> {
+        let item = AccountActivity {
+            key: item.0,
+            name: item.1,
+            exp: item.2,
+            progress_date: item.3,
+            start_date: item.4,
+            end_date: item.5,
+        };
+
+        Ok(item)
     }
 }

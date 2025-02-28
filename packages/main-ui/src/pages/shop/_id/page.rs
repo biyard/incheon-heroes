@@ -1,5 +1,6 @@
 #![allow(non_snake_case)]
 use crate::components::icons;
+use crate::route::Route;
 
 use super::controller::*;
 use super::i18n::*;
@@ -92,13 +93,24 @@ pub fn ShopByIdPage(id: ReadOnlySignal<String>, lang: Language) -> Element {
                         } // end of remaining
 
                         div { class: "w-full grid grid-cols-5 gap-[10px]",
-                            // FIXME: use login signal
-                            button { class: "col-span-3 w-full bg-[#24B28C] text-center py-[15px] rounded-[10px] text-white font-semibold",
-                                "{tr.btn_login}"
-                            }
-
-                            button { class: "col-span-2 w-full bg-white/40 text-center py-[15px] rounded-[10px] text-[#636363] font-semibold",
-                                "{tr.btn_like} ♡"
+                            if !ctrl.user.is_logined() {
+                                Link {
+                                    class: "col-span-5 w-full bg-[#24B28C] text-center py-[15px] rounded-[10px] text-white font-semibold",
+                                    to: Route::ConnectPage { lang },
+                                    "{tr.btn_login}"
+                                }
+                            } else {
+                                button {
+                                    class: "col-span-5 w-full bg-white/40 text-center py-[15px] text-[#636363] font-semibold rounded-[10px]  hover:bg-[#D4EED4] hover:text-[#16775D]",
+                                    onclick: move |_| async move {
+                                        ctrl.handle_like().await;
+                                    },
+                                    if ctrl.liked()? {
+                                        "{tr.already_like} ♡"
+                                    } else {
+                                        "{tr.btn_like} ♡"
+                                    }
+                                }
                             }
                         }
                     }

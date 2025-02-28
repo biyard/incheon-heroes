@@ -25,7 +25,7 @@ use crate::{
     },
 };
 
-use super::{icp_canister::IcpCanister, klaytn::Klaytn};
+use super::{account_contract::AccountActivity, icp_canister::IcpCanister, klaytn::Klaytn};
 
 const USER_WALLET_KEY: &str = "user_wallet";
 
@@ -37,6 +37,7 @@ pub struct UserService {
     wallet: Signal<UserWallet>,
     icp_wallet: Signal<Option<Arc<BasicIdentity>>>,
     pub account_exp: Resource<U256>,
+    pub account_activities: Resource<Vec<AccountActivity>>,
     pub evm_nfts: Resource<Vec<(u64, NftMetadata)>>,
     pub sbts: Resource<Vec<(u64, NftMetadata)>>,
     pub icp_nfts: Resource<Vec<(u64, NftMetadata)>>,
@@ -58,7 +59,7 @@ impl UserService {
 
     pub async fn logout(&mut self) {
         self.user.set(None);
-        LocalStorage::delete("user_wallet");
+        LocalStorage::delete(USER_WALLET_KEY);
     }
 
     pub fn init() {
@@ -176,8 +177,24 @@ impl UserService {
             match (klaytn.account)().get_account_exp(address).await {
                 Ok(exp) => exp,
                 Err(e) => {
-                    tracing::error!("Failed to get token ids: {e:?}");
+                    tracing::error!("Failed to get exp: {e:?}");
                     U256::from(0)
+                }
+            }
+        });
+
+        let account_activities = use_resource(move || async move {
+            let w = wallet();
+            let address = match w.evm_address() {
+                Some(address) => address,
+                None => return vec![],
+            };
+
+            match (klaytn.account)().get_account_activities(&address).await {
+                Ok(activities) => activities,
+                Err(e) => {
+                    tracing::error!("Failed to get activities: {e:?}");
+                    vec![]
                 }
             }
         });
@@ -191,6 +208,7 @@ impl UserService {
             sbts,
             icp_nfts,
             account_exp,
+            account_activities,
             klaytn: use_context(),
 
             total_nfts: use_signal(|| vec![]),
@@ -219,6 +237,11 @@ impl UserService {
         });
 
         use_context_provider(move || srv);
+    }
+
+    pub fn get_account_activities(&self) -> Vec<AccountActivity> {
+        let account_activites = (self.account_activities)().unwrap_or_default();
+        account_activites
     }
 
     pub fn get_account_exp(&self) -> u64 {
@@ -256,7 +279,6 @@ impl UserService {
     }
 
     pub async fn load_wallet_from_storage(&mut self) {
-        LocalStorage::delete(USER_WALLET_KEY);
         if let Ok(wallet) = LocalStorage::get::<UserWallet>(USER_WALLET_KEY) {
             tracing::debug!("Loaded wallet from storage: {wallet}");
             if let Some(seed_hex) = wallet.seed() {
@@ -315,7 +337,10 @@ impl UserService {
 #[cfg_attr(feature = "server", async_trait)]
 impl KaiaWallet for UserService {
     fn address(&self) -> ethers::types::H160 {
-        self.evm_address().unwrap_or_default().parse().unwrap()
+        self.evm_address()
+            .unwrap_or_default()
+            .parse()
+            .unwrap_or_default()
     }
 
     async fn sign_transaction(&self, tx: &KlaytnTransaction) -> dto::Result<Signature> {

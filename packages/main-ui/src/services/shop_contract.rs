@@ -25,6 +25,9 @@ impl<T: KaiaWallet, W: KaiaWallet> ShopContract<T, W> {
     }
 
     pub async fn buy_item(&self, id: U256) -> Result<String> {
+        if self.contract.wallet.is_none() {
+            return Err(Error::Klaytn("No wallet".to_string()));
+        }
         let input = self
             .contract
             .contract
@@ -41,6 +44,13 @@ impl<T: KaiaWallet, W: KaiaWallet> ShopContract<T, W> {
     }
 
     pub async fn like_item(&self, id: U256) -> Result<String> {
+        if self.contract.wallet.is_none() {
+            return Err(Error::Klaytn("No wallet".to_string()));
+        }
+        let result = self.check_like(id).await?;
+        if result {
+            return Err(Error::Klaytn("Already Liked".to_string()));
+        }
         let input = self
             .contract
             .contract
@@ -54,6 +64,50 @@ impl<T: KaiaWallet, W: KaiaWallet> ShopContract<T, W> {
             .await?;
 
         Ok(tx_hash)
+    }
+    // listLikesByAddress
+    pub async fn list_likes_by_address(&self, address: &str) -> Result<Vec<U256>> {
+        let address = address
+            .parse::<Address>()
+            .map_err(|e| Error::Klaytn(e.to_string()))?;
+        let ids = self
+            .contract
+            .contract
+            .method("listLikesByAddress", address)
+            .map_err(|e| Error::Klaytn(e.to_string()))?
+            .call()
+            .await
+            .map_err(|e| Error::Klaytn(e.to_string()))?;
+        Ok(ids)
+    }
+    pub async fn list_likers(&self, id: U256) -> Result<Vec<Address>> {
+        let result: Vec<Address> = self
+            .contract
+            .contract
+            .method("listLikersByItemId", (id,))
+            .map_err(|e| Error::Klaytn(e.to_string()))?
+            .call()
+            .await
+            .map_err(|e| Error::Klaytn(e.to_string()))?;
+        Ok(result)
+    }
+
+    pub async fn check_like(&self, id: U256) -> Result<bool> {
+        if let Some(ref wallet) = &self.contract.wallet {
+            let from = wallet.address();
+            let ret = self
+                .contract
+                .contract
+                .method("alreadyLike", (id,))
+                .map_err(|e| Error::Klaytn(e.to_string()))?
+                .from(from)
+                .call()
+                .await
+                .map_err(|e| Error::Klaytn(e.to_string()))?;
+            Ok(ret)
+        } else {
+            Err(Error::Klaytn("No wallet".to_string()))
+        }
     }
 
     pub async fn get_item(&self, id: U256) -> Result<ShopItem> {

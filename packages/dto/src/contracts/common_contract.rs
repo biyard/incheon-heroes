@@ -52,7 +52,12 @@ impl<T: KaiaWallet, W: KaiaWallet> CommonContract<T, W> {
             ParseUnits::I256(_) => return Err(Error::Klaytn("parse_units error".to_string())),
         };
         let value = U256::from(0);
-        let from = self.wallet.as_ref().unwrap().address();
+        let w = match self.wallet.as_ref() {
+            Some(w) => w,
+            None => return Err(Error::Klaytn("wallet is None".to_string())),
+        };
+
+        let from = w.address();
         let to = self.contract.address();
         let tx_type = TransactionType::FeeDelegatedSmartContractExecution;
         let nonce = self.provider.get_transaction_count(from, None).await?;
@@ -71,7 +76,7 @@ impl<T: KaiaWallet, W: KaiaWallet> CommonContract<T, W> {
         let fp = self.fee_payer.as_ref().unwrap();
         let fp_sig = fp.sign_transaction(&tx).await?;
 
-        let sig = self.wallet.as_ref().unwrap().sign_transaction(&tx).await?;
+        let sig = w.sign_transaction(&tx).await?;
         tracing::debug!("sig: {:?}", sig);
 
         let rlp = tx.to_tx_hash_rlp(sig, fp.address(), fp_sig);
