@@ -123,7 +123,21 @@ impl AccountExperienceHistorys {
 #[serde(rename_all = "camelCase")]
 pub struct AccountTokenHistorys {
     pub status: String,
-    pub items: Vec<TokenHistory>,
+    pub items: Vec<AccountTokenHistory>,
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, PartialEq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct AccountTokenHistory {
+    pub key: String,
+    #[serde(default)]
+    pub from: String,
+    #[serde(default)]
+    pub to: String,
+    #[serde(default)]
+    pub token_id: i32,
+    #[serde(default)]
+    pub transaction_hash: String,
 }
 
 impl AccountTokenHistorys {
