@@ -117,7 +117,11 @@ pub fn MyProfilePage(lang: Language) -> Element {
                         }
                     }
                 }
-                div { class: "w-full bg-white/60 rounded-[10px] p-[20px]", {tab} }
+                div {
+                    class: "w-full bg-white/60 rounded-[10px]",
+                    style: if responsive.width() > 1200.0 { "padding: 20px;" } else { "" },
+                    {tab}
+                }
             }
         }
     } // end of this page
@@ -127,9 +131,12 @@ pub fn MyProfilePage(lang: Language) -> Element {
 pub fn MissionHistoryComponent(lang: Language, histories: Vec<MissionHistory>) -> Element {
     let tr: MissionHistoryComponentTranslate = translate(&lang);
     let ctrl = MissionHistoryController::new()?;
+    let responsive: ResponsiveService = use_context();
     rsx! {
-        div { class: "flex flex-col w-full justify-start items-start bg-transparent border border-[#e0e0e0] rounded-[12px]",
-            div { class: "flex flex-row w-full h-[45px] justify-start items-start font-semibold text-[16px] text-[#636363] border-b border-b-[#e0e0e0]",
+        div {
+            class: "flex flex-col justify-start items-start bg-transparent border border-[#e0e0e0] rounded-[12px]",
+            style: if responsive.width() > 1200.0 { "width: 100%;" } else { "width: 110px; height: 100%" },
+            div { class: if responsive.width() > 1200.0 { "flex flex-row w-full h-[45px] justify-start items-start font-semibold text-[16px] text-[#636363] border-b border-b-[#e0e0e0]" } else { "flex flex-col h-full justify-start items-start font-semibold text-[14px] text-[#636363] border-b border-b-[#e0e0e0]" },
                 div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
                     "{tr.mission_name}"
                 }
@@ -192,10 +199,12 @@ pub fn MissionHistoryComponent(lang: Language, histories: Vec<MissionHistory>) -
 pub fn ExperienceHistoryComponent(lang: Language, histories: Vec<ExperienceHistory>) -> Element {
     let ctrl = ExperienceHistoryController::new()?;
     let tr: ExperienceHistoryComponentTranslate = translate(&lang);
-
+    let responsive: ResponsiveService = use_context();
     rsx! {
-        div { class: "flex flex-col w-full justify-start items-start bg-transparent border border-[#e0e0e0] rounded-[12px]",
-            div { class: "flex flex-row w-full h-[45px] justify-start items-start font-semibold text-[16px] text-[#636363] border-b border-b-[#e0e0e0]",
+        div {
+            class: "flex flex-col justify-start items-start bg-transparent border border-[#e0e0e0] rounded-[12px]",
+            style: if responsive.width() > 1200.0 { "width: 100%;" } else { "width: 110px; height: 100%" },
+            div { class: if responsive.width() > 1200.0 { "flex flex-row w-full h-[45px] justify-start items-start font-semibold text-[16px] text-[#636363] border-b border-b-[#e0e0e0]" } else { "flex flex-col h-full justify-start items-start font-semibold text-[14px] text-[#636363] border-b border-b-[#e0e0e0]" },
                 div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
                     "{tr.participation_event}"
                 }
@@ -244,10 +253,12 @@ pub fn NftTransferHistoryComponent(
     klaytn_scope: String,
 ) -> Element {
     let navigator = use_navigator();
-
+    let responsive: ResponsiveService = use_context();
     rsx! {
-        div { class: "flex flex-col w-full justify-start items-start bg-transparent border border-[#e0e0e0] rounded-[12px]",
-            div { class: "flex flex-row w-full h-[45px] justify-start items-start font-semibold text-[16px] text-[#636363] border-b border-b-[#e0e0e0]",
+        div {
+            class: "flex flex-col justify-start items-start bg-transparent border border-[#e0e0e0] rounded-[12px]",
+            style: if responsive.width() > 1200.0 { "width: 100%;" } else { "width: 110px; height: 100%" },
+            div { class: if responsive.width() > 1200.0 { "flex flex-row w-full h-[45px] justify-start items-start font-semibold text-[16px] text-[#636363] border-b border-b-[#e0e0e0]" } else { "flex flex-col h-full justify-start items-start font-semibold text-[14px] text-[#636363] border-b border-b-[#e0e0e0]" },
                 div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
                     "Event"
                 }
@@ -264,6 +275,7 @@ pub fn NftTransferHistoryComponent(
                     "Transaction"
                 }
             }
+
 
             for history in histories {
                 div { class: "flex flex-row w-full min-h-[45px] h-fit justify-start items-center font-normal text-[16px] text-[#636363] border-b border-b-[#e0e0e0]",
@@ -328,10 +340,12 @@ pub fn GoodsPurchaseHistoryComponent(lang: Language, histories: Vec<GoodsItem>) 
     let navigator = use_navigator();
     let ctrl = GoodsPurchaseHistoryController::new()?;
     let tr: GoodsPurchaseHistoryTranslate = translate(&lang);
-
+    let responsive: ResponsiveService = use_context();
     rsx! {
-        div { class: "flex flex-col w-full justify-start items-start bg-transparent border border-[#e0e0e0] rounded-[12px]",
-            div { class: "flex flex-row w-full h-[45px] justify-start items-start font-semibold text-[16px] text-[#636363] border-b border-b-[#e0e0e0]",
+        div {
+            class: "flex flex-col justify-start items-start bg-transparent border border-[#e0e0e0] rounded-[12px]",
+            style: if responsive.width() > 1200.0 { "width: 100%;" } else { "width: 110px; height: 100%" },
+            div { class: if responsive.width() > 1200.0 { "flex flex-row w-full h-[45px] justify-start items-start font-semibold text-[16px] text-[#636363] border-b border-b-[#e0e0e0]" } else { "flex flex-col h-full justify-start items-start font-semibold text-[14px] text-[#636363] border-b border-b-[#e0e0e0]" },
                 div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
                     "Event"
                 }
