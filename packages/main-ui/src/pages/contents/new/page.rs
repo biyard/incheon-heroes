@@ -124,7 +124,7 @@ pub fn SingleContent(
             }
 
             div { class: "w-full flex flex-col gap-[10px] items-start justify-start",
-                label { class: "text-[#5B5B5B] font-bold text-[14px] font-bold flex flex-row items-center",
+                label { class: "text-[#5B5B5B] font-bold text-[14px] flex flex-row items-center",
                     span { "{tr.label_thumbnail}" }
                     span { class: "text-[#FF0000]", "*" }
                 }
@@ -134,7 +134,7 @@ pub fn SingleContent(
                     p { class: "font-bold text-[14px] text-[#8d8d8d]", "{tr.label_fileupload}" }
 
                     DropZone {
-                        class: "w-full border-[1px] rounded-[14px] flex flex-col items-center justify-center  border-dashed flex flex-col gap-[16px] {bg}",
+                        class: "w-full border-[1px] rounded-[14px] flex flex-col items-center justify-center  border-dashed gap-[16px] {bg}",
                         onupload: move |(file_bytes, ext)| async move {
                             let (uri, _) = handle_upload(file_bytes, ext).await?;
                             thumbnail.set(Some(uri));
@@ -160,7 +160,7 @@ pub fn SingleContent(
             }
 
             div { class: "w-full flex flex-col gap-[10px] items-start justify-start",
-                label { class: "text-[#5B5B5B] font-bold text-[14px] font-bold flex flex-row items-center",
+                label { class: "text-[#5B5B5B] font-bold text-[14px] flex flex-row items-center",
                     span { "{tr.label_source}" }
                     span { class: "text-[#FF0000]", "*" }
                 }
@@ -181,7 +181,7 @@ pub fn SingleContent(
                         }
                     } else {
                         DropZone {
-                            class: "w-full border-[1px] rounded-[14px] flex flex-col items-center justify-center  border-dashed flex flex-col gap-[16px] {bg}",
+                            class: "w-full border-[1px] rounded-[14px] flex flex-col items-center justify-center  border-dashed gap-[16px] {bg}",
                             onupload: move |(file_bytes, ext)| async move {
                                 match handle_upload(file_bytes, ext).await {
                                     Ok(uri) => {
@@ -243,7 +243,7 @@ pub fn InputWithLabel(
     rsx! {
         div { class: "relative w-full flex flex-col gap-[10px] items-start justify-start",
 
-            label { class: "text-[#5B5B5B] font-bold text-[14px] font-bold flex flex-row items-center",
+            label { class: "text-[#5B5B5B] font-bold text-[14px] flex flex-row items-center",
                 span { "{label}" }
                 if mandatory {
                     span { class: "text-[#FF0000]", "*" }
