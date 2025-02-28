@@ -96,6 +96,8 @@ pub fn ShopPage(lang: Language) -> Element {
                         onlike: move |_| async move {
                             ctrl.handle_like(i).await;
                         },
+                        disable_like: !ctrl.user.is_logined() || ctrl.liked_items()?.contains(&item.id.as_u64()),
+                        disable_buy: !ctrl.user.is_logined() || ctrl.user.get_account_exp() < item.price.as_u64(),
                     }
                 }
             }
@@ -148,6 +150,8 @@ pub fn ShopItemCard(
     level: u8,
     onbuy: EventHandler<()>,
     onlike: EventHandler<()>,
+    disable_like: bool,
+    disable_buy: bool,
     children: Element,
 ) -> Element {
     let tr = translate::<ShopItemCardTranslate>(&lang);
@@ -188,7 +192,8 @@ pub fn ShopItemCard(
                             class: "w-full grid grid-cols-2 gap-[1px] text-white font-bold",
                             visibility: if !hover() { "hidden" },
                             button {
-                                class: "col-span-1 w-full bg-[#00C564] py-[10px]",
+                                class: "col-span-1 w-full bg-[#00C564] py-[10px] disabled:bg-gray-100 disabled:text-gray-400",
+                                disabled: disable_buy,
                                 onclick: move |evt| {
                                     evt.prevent_default();
                                     evt.stop_propagation();
@@ -197,17 +202,25 @@ pub fn ShopItemCard(
                                 "{tr.buy}"
                             }
                             button {
-                                class: "col-span-1 w-full bg-[#00C564] py-[10px] flex flex-row items-center justify-center gap-[10px]",
+                                class: "col-span-1 w-full bg-[#00C564] py-[10px] flex flex-row items-center justify-center gap-[10px] disabled:bg-gray-100 disabled:text-gray-400",
+                                disabled: disable_like,
                                 onclick: move |evt| {
                                     evt.prevent_default();
                                     evt.stop_propagation();
                                     onlike(());
                                 },
-
-                                img {
-                                    class: "w-[20px]",
-                                    src: asset!("/public/images/heart-white.png"),
+                                if !disable_like {
+                                    img {
+                                        class: "w-[20px]",
+                                        src: asset!("/public/images/heart-white.png"),
+                                    }
+                                } else {
+                                    img {
+                                        class: "w-[20px]",
+                                        src: asset!("/public/images/heart.png"),
+                                    }
                                 }
+
                                 "{tr.like}"
                             }
                         }
@@ -221,9 +234,9 @@ pub fn ShopItemCard(
                         src: asset!("/public/images/heart.png"),
                     }
                     "{likes}"
-
+                
                 }
-
+            
             }
         }
     }

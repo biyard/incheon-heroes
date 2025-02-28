@@ -3,12 +3,16 @@ use dioxus::prelude::*;
 use dioxus_translate::Language;
 use ethers::types::U256;
 
-use crate::services::{klaytn::Klaytn, shop_contract::ShopItem};
+use crate::services::{klaytn::Klaytn, shop_contract::ShopItem, user_service::UserService};
 
 #[derive(Clone, Copy, DioxusController)]
 pub struct Controller {
     pub item: Resource<ShopItem>,
     pub details: Resource<(String, String)>,
+    pub user: UserService,
+    pub klaytn: Klaytn,
+    pub liked: Resource<bool>,
+    pub id: ReadOnlySignal<String>,
 }
 
 impl Controller {
@@ -69,7 +73,25 @@ impl Controller {
             }
         })?;
 
-        let ctrl = Self { item, details };
+        let liked = use_server_future(move || {
+            let id: u64 = id().parse().unwrap_or_default();
+
+            async move {
+                (klaytn.shop)()
+                    .check_like(U256::from(id))
+                    .await
+                    .unwrap_or_default()
+            }
+        })?;
+
+        let ctrl = Self {
+            item,
+            details,
+            liked,
+            user: use_context(),
+            klaytn,
+            id,
+        };
 
         Ok(ctrl)
     }
@@ -94,6 +116,27 @@ impl Controller {
                 } else {
                     Ok("귀여운 점박이 물범들이 나타났다!</br>지구를 지키기 위해 오늘도 열심히 활동하는</br>지구 지킴이 애이니, 버미, 꼬미를 만나보세요.")
                 }
+            }
+        }
+    }
+
+    pub async fn handle_like(&self) {
+        if self.liked().unwrap_or_default() {
+            btracing::info!("Already liked");
+            return;
+        }
+        let shop = self.klaytn.shop.cloned();
+
+        let id: u64 = self.id().parse().unwrap();
+        let item_id = U256::from(id);
+        tracing::debug!("liking item: {:?}", item_id);
+
+        match shop.like_item(item_id).await {
+            Ok(v) => {
+                btracing::info!("Transaction: {v}");
+            }
+            Err(e) => {
+                btracing::error!("send transaction failed: {e}");
             }
         }
     }

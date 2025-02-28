@@ -132,6 +132,8 @@ impl Controller {
         {
             Ok(user) => {
                 self.user_wallet.set_user(user);
+                self.user_wallet.account_activities.restart();
+                self.user_wallet.account_exp.restart();
             }
             Err(e) => {
                 tracing::error!("Failed to signup or login: {:?}", e);
