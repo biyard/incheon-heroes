@@ -150,8 +150,11 @@ pub fn SingleContent(
                         } else {
                             div { class: "h-[145px] flex flex-col items-center justify-center gap-[16px]",
                                 Document {}
-                                p { class: "text-[14px] text-[#8d8d8d]",
-                                    "{tr.placeholder_fileupload}"
+                                div { class: "flex flex-col gap-[8px] items-center justify-center",
+                                    p { class: "text-[14px] text-[#8d8d8d]",
+                                        "{tr.placeholder_fileupload}"
+                                    }
+                                    p { class: "text-[12px] text-[#8d8d8d]", "{tr.note_fileupload}" }
                                 }
                             }
                         }

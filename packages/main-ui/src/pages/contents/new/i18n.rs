@@ -58,11 +58,6 @@ translate! {
         en: "Click to select a file or drag a file here",
     }
 
-    guidance_fileuploa: {
-        ko: "파일은 PNG, JPG, GIF, MP4, WEBM, MP3, WAV, GLB, GLTF 등을 지원합니다. 최대 100MB까지 업로드 가능합니다.",
-        en: "Maximum file size is 100MB. Files exceeding this limit cannot be uploaded. (PNG, JPG, GIF, MP4, WEBM, MP3, WAV, GLB, GLTF)",
-    }
-
     placeholder_description: {
         ko: "설명은 검색 태그에 도움이 됩니다. 검색 가시성을 향상시키기 위해 관련 키워드를 포함해 주세요.",
         en: "Description helps with search tags. Please include relevant keywords to improve search visibility.",
