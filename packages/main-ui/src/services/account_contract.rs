@@ -3,6 +3,8 @@ use std::sync::Arc;
 use dto::{contracts::common_contract::CommonContract, wallets::KaiaWallet, *};
 use ethers::prelude::*;
 
+use crate::utils::address;
+
 #[derive(Debug, Clone)]
 pub struct AccountContract<FeePayerWallet: KaiaWallet, UserWallet: KaiaWallet> {
     pub contract: CommonContract<FeePayerWallet, UserWallet>,
