@@ -61,7 +61,6 @@ pub fn ConnectPage(lang: Language) -> Element {
                     icons::logo::InternetIdentity { size: 35 }
                     p { "{tr.ii}" }
                 }
-            
             }
         } // end of this page
     }
