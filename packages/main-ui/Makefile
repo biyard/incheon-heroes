@@ -45,7 +45,7 @@ else
 endif
 
 setup.tool:
-	cargo install dioxus-cli --version 0.6.0
+	cargo install dioxus-cli --version 0.6.3
 	cargo install toml-cli
 	npm i -g tailwindcss
 
