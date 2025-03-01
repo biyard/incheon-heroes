@@ -131,61 +131,66 @@ pub fn MyProfilePage(lang: Language) -> Element {
 pub fn MissionHistoryComponent(lang: Language, histories: Vec<MissionHistory>) -> Element {
     let tr: MissionHistoryComponentTranslate = translate(&lang);
     let ctrl = MissionHistoryController::new()?;
-    let responsive: ResponsiveService = use_context();
+
     rsx! {
         div {
-            class: "flex flex-col justify-start items-start bg-transparent border border-[#e0e0e0] rounded-[12px]",
-            style: if responsive.width() > 1200.0 { "width: 100%;" } else { "width: 110px; height: 100%" },
-            div { class: if responsive.width() > 1200.0 { "flex flex-row w-full h-[45px] justify-start items-start font-semibold text-[16px] text-[#636363] border-b border-b-[#e0e0e0]" } else { "flex flex-col h-full justify-start items-start font-semibold text-[14px] text-[#636363] border-b border-b-[#e0e0e0]" },
-                div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
-                    "{tr.mission_name}"
-                }
-                div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
-                    "{tr.progress_date}"
-                }
-                div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
-                    "{tr.verification}"
-                }
-                div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
-                    "{tr.gained_experience}"
-                }
-            }
-            for history in histories {
-                div { class: "flex flex-row w-full min-h-[45px] justify-start items-center font-normal text-[16px] text-[#636363] border-b border-b-[#e0e0e0]",
-                    div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px] whitespace-pre-line",
-                        {
-                            ctrl.mission_name(
-                                    lang,
-                                    history.mission_name.clone(),
-                                    history.mission_name_en.clone(),
-                                )
-                                .unwrap_or_default()
-                        }
+            class: "flex flex-col justify-start items-start bg-transparent border border-[#e0e0e0] rounded-[12px] overflow-x-auto",
+            div {
+                class: "w-full min-w-[300px]",
+                // Table Header
+                div { class: "flex flex-row w-full h-[45px] justify-start items-start font-semibold text-[16px] text-[#636363] border-b border-b-[#e0e0e0]",
+                    div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
+                        "{tr.mission_name}"
                     }
-                    div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
-                        {
-                            formatted_timestamp(
-                                history.mission_start_date.parse::<i64>().unwrap_or_default(),
-                            )
-                        }
+                    div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
+                        "{tr.progress_date}"
                     }
-                    div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
-                        {
-                            if history.progress == "Inprogress" {
-                                tr.verification_in_progress
-                            } else if history.progress == "accepted" {
-                                tr.accepted
-                            } else {
-                                tr.rejected
+                    div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
+                        "{tr.verification}"
+                    }
+                    div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
+                        "{tr.gained_experience}"
+                    }
+                }
+
+                // Table Rows
+                for history in histories {
+                    div { class: "flex flex-row w-full min-h-[45px] justify-start items-center font-normal text-[16px] text-[#636363] border-b border-b-[#e0e0e0]",
+                        div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px] whitespace-pre-line",
+                            {
+                                ctrl.mission_name(
+                                        lang,
+                                        history.mission_name.clone(),
+                                        history.mission_name_en.clone(),
+                                    )
+                                    .unwrap_or_default()
                             }
                         }
-                    }
-                    div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
-                        {
-                            if history.experience <= 0 {
-                                "0 EXP".to_string()
-                            } else {
-                                format!("{} EXP", history.experience)
+                        div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
+                            {
+                                formatted_timestamp(
+                                    history.mission_start_date.parse::<i64>().unwrap_or_default(),
+                                )
+                            }
+                        }
+                        div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
+                            {
+                                if history.progress == "Inprogress" {
+                                    tr.verification_in_progress
+                                } else if history.progress == "accepted" {
+                                    tr.accepted
+                                } else {
+                                    tr.rejected
+                                }
+                            }
+                        }
+                        div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
+                            {
+                                if history.experience <= 0 {
+                                    "0 EXP".to_string()
+                                } else {
+                                    format!("{} EXP", history.experience)
+                                }
                             }
                         }
                     }
@@ -199,46 +204,50 @@ pub fn MissionHistoryComponent(lang: Language, histories: Vec<MissionHistory>) -
 pub fn ExperienceHistoryComponent(lang: Language, histories: Vec<ExperienceHistory>) -> Element {
     let ctrl = ExperienceHistoryController::new()?;
     let tr: ExperienceHistoryComponentTranslate = translate(&lang);
-    let responsive: ResponsiveService = use_context();
+
     rsx! {
         div {
-            class: "flex flex-col justify-start items-start bg-transparent border border-[#e0e0e0] rounded-[12px]",
-            style: if responsive.width() > 1200.0 { "width: 100%;" } else { "width: 110px; height: 100%" },
-            div { class: if responsive.width() > 1200.0 { "flex flex-row w-full h-[45px] justify-start items-start font-semibold text-[16px] text-[#636363] border-b border-b-[#e0e0e0]" } else { "flex flex-col h-full justify-start items-start font-semibold text-[14px] text-[#636363] border-b border-b-[#e0e0e0]" },
-                div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
-                    "{tr.participation_event}"
+            class: "flex flex-col justify-start items-start bg-transparent border border-[#e0e0e0] rounded-[12px] overflow-x-auto",
+            div {
+                class: "w-full min-w-[300px]",
+                // Table Header
+                div { class: "flex flex-row w-full h-[45px] justify-start items-start font-semibold text-[16px] text-[#636363] border-b border-b-[#e0e0e0]",
+                    div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
+                        "{tr.participation_event}"
+                    }
+                    div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
+                        "{tr.acquired_nft}"
+                    }
+                    div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
+                        "{tr.progress_date}"
+                    }
+                    div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
+                        "{tr.gained_experience}"
+                    }
                 }
-                div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
-                    "{tr.acquired_nft}"
-                }
-                div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
-                    "{tr.progress_date}"
-                }
-                div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
-                    "{tr.gained_experience}"
-                }
-            }
 
-            for history in histories {
-                div { class: "flex flex-row w-full min-h-[45px] h-fit justify-start items-center font-normal text-[16px] text-[#636363] border-b border-b-[#e0e0e0]",
-                    div { class: "flex flex-1 h-full justify-start items-center px-[20px] py-[10px] whitespace-pre-line gap-[10px]",
-                        {
-                            ctrl.event_name(lang, history.event_name, history.event_name_en)
-                                .unwrap_or_default()
+                // Table Rows
+                for history in histories {
+                    div { class: "flex flex-row w-full min-h-[45px] justify-start items-center font-normal text-[16px] text-[#636363] border-b border-b-[#e0e0e0]",
+                        div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px] whitespace-pre-line gap-[10px]",
+                            {
+                                ctrl.event_name(lang, history.event_name, history.event_name_en)
+                                    .unwrap_or_default()
+                            }
                         }
-                    }
-                    div { class: "flex flex-1 h-full justify-start items-center px-[20px] py-[10px]",
-                        "#{history.token_id}"
-                    }
-                    div { class: "flex flex-1 h-full justify-start items-center px-[20px]",
-                        {
-                            formatted_timestamp(
-                                history.mission_reward_date.parse::<i64>().unwrap_or_default(),
-                            )
+                        div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
+                            "#{history.token_id}"
                         }
-                    }
-                    div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
-                        "{history.experience} EXP"
+                        div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
+                            {
+                                formatted_timestamp(
+                                    history.mission_reward_date.parse::<i64>().unwrap_or_default(),
+                                )
+                            }
+                        }
+                        div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
+                            "{history.experience} EXP"
+                        }
                     }
                 }
             }
@@ -253,80 +262,83 @@ pub fn NftTransferHistoryComponent(
     klaytn_scope: String,
 ) -> Element {
     let navigator = use_navigator();
-    let responsive: ResponsiveService = use_context();
+
     rsx! {
         div {
-            class: "flex flex-col justify-start items-start bg-transparent border border-[#e0e0e0] rounded-[12px]",
-            style: if responsive.width() > 1200.0 { "width: 100%;" } else { "width: 110px; height: 100%" },
-            div { class: if responsive.width() > 1200.0 { "flex flex-row w-full h-[45px] justify-start items-start font-semibold text-[16px] text-[#636363] border-b border-b-[#e0e0e0]" } else { "flex flex-col h-full justify-start items-start font-semibold text-[14px] text-[#636363] border-b border-b-[#e0e0e0]" },
-                div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
-                    "Event"
+            class: "flex flex-col justify-start items-start bg-transparent border border-[#e0e0e0] rounded-[12px] overflow-x-auto",
+            div {
+                class: "w-full min-w-[300px]",
+                // Table Header
+                div { class: "flex flex-row w-full h-[45px] justify-start items-start font-semibold text-[16px] text-[#636363] border-b border-b-[#e0e0e0]",
+                    div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
+                        "Event"
+                    }
+                    div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
+                        "NFT"
+                    }
+                    div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
+                        "From"
+                    }
+                    div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
+                        "To"
+                    }
+                    div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
+                        "Transaction"
+                    }
                 }
-                div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
-                    "NFT"
-                }
-                div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
-                    "From"
-                }
-                div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
-                    "To"
-                }
-                div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
-                    "Transaction"
-                }
-            }
 
-
-            for history in histories {
-                div { class: "flex flex-row w-full min-h-[45px] h-fit justify-start items-center font-normal text-[16px] text-[#636363] border-b border-b-[#e0e0e0]",
-                    div { class: "flex flex-1 h-full justify-start items-center px-[20px] py-[10px] whitespace-pre-line gap-[10px]",
-                        {
-                            if history.from == ZERO_ADDRESS {
-                                rsx! {
-                                    Mint {}
-                                    div { "Mint" }
-                                }
-                            } else {
-                                rsx! {
-                                    Transfer {}
-                                    div { "Transfer" }
+                // Table Rows
+                for history in histories {
+                    div { class: "flex flex-row w-full min-h-[45px] justify-start items-center font-normal text-[16px] text-[#636363] border-b border-b-[#e0e0e0]",
+                        div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px] whitespace-pre-line gap-[10px]",
+                            {
+                                if history.from == ZERO_ADDRESS {
+                                    rsx! {
+                                        Mint {}
+                                        div { "Mint" }
+                                    }
+                                } else {
+                                    rsx! {
+                                        Transfer {}
+                                        div { "Transfer" }
+                                    }
                                 }
                             }
                         }
-                    }
-                    div { class: "flex flex-1 h-full justify-start items-center px-[20px] py-[10px]",
-                        "#{history.token_id}"
-                    }
-                    div { class: "flex flex-1 h-full justify-start items-center px-[20px]",
-                        {
-                            if history.from == ZERO_ADDRESS {
-                                "NullAddress".to_string()
-                            } else {
-                                parse_address(history.from.clone())
-                            }
+                        div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
+                            "#{history.token_id}"
                         }
-                    }
-                    div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
-                        {
-                            if history.to == ZERO_ADDRESS {
-                                "NullAddress".to_string()
-                            } else {
-                                parse_address(history.to.clone())
-                            }
-                        }
-                    }
-                    div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
-                        div {
-                            class: "flex flex-row w-fit h-fit cursor-pointer",
-                            onclick: {
-                                let history = history.clone();
-                                let klaytn_scope_endpoint = klaytn_scope.clone();
-                                move |_| {
-                                    navigator
-                                        .push(format!("{}/{}", klaytn_scope_endpoint, history.transaction_hash));
+                        div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
+                            {
+                                if history.from == ZERO_ADDRESS {
+                                    "NullAddress".to_string()
+                                } else {
+                                    parse_address(history.from.clone())
                                 }
-                            },
-                            LinkIcon {}
+                            }
+                        }
+                        div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
+                            {
+                                if history.to == ZERO_ADDRESS {
+                                    "NullAddress".to_string()
+                                } else {
+                                    parse_address(history.to.clone())
+                                }
+                            }
+                        }
+                        div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
+                            div {
+                                class: "flex flex-row w-fit h-fit cursor-pointer",
+                                onclick: {
+                                    let history = history.clone();
+                                    let klaytn_scope_endpoint = klaytn_scope.clone();
+                                    move |_| {
+                                        navigator
+                                            .push(format!("{}/{}", klaytn_scope_endpoint, history.transaction_hash));
+                                    }
+                                },
+                                LinkIcon {}
+                            }
                         }
                     }
                 }
@@ -340,47 +352,52 @@ pub fn GoodsPurchaseHistoryComponent(lang: Language, histories: Vec<GoodsItem>) 
     let navigator = use_navigator();
     let ctrl = GoodsPurchaseHistoryController::new()?;
     let tr: GoodsPurchaseHistoryTranslate = translate(&lang);
-    let responsive: ResponsiveService = use_context();
+
     rsx! {
         div {
-            class: "flex flex-col justify-start items-start bg-transparent border border-[#e0e0e0] rounded-[12px]",
-            style: if responsive.width() > 1200.0 { "width: 100%;" } else { "width: 110px; height: 100%" },
-            div { class: if responsive.width() > 1200.0 { "flex flex-row w-full h-[45px] justify-start items-start font-semibold text-[16px] text-[#636363] border-b border-b-[#e0e0e0]" } else { "flex flex-col h-full justify-start items-start font-semibold text-[14px] text-[#636363] border-b border-b-[#e0e0e0]" },
-                div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
-                    "Event"
-                }
-                div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
-                    "{tr.purchase_date}"
-                }
-                div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
-                    "{tr.goods_name}"
-                }
-                div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px]",
-                    "{tr.directed_information}"
-                }
-            }
-            for goods in histories {
-                div { class: "flex flex-row w-full min-h-[45px] h-fit justify-start items-center font-normal text-[16px] text-[#636363] border-b border-b-[#e0e0e0]",
-                    div { class: "flex flex-1 h-full justify-start items-center px-[20px] py-[10px] whitespace-pre-line gap-[10px]",
-                        "{tr.purchase_product}"
+            class: "flex flex-col justify-start items-start bg-transparent border border-[#e0e0e0] rounded-[12px] overflow-x-auto",
+            div {
+                class: "w-full min-w-[300px]",
+                // Table Header
+                div { class: "flex flex-row w-full h-[45px] justify-start items-start font-semibold text-[16px] text-[#636363] border-b border-b-[#e0e0e0]",
+                    div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
+                        "Event"
                     }
-                    div { class: "flex flex-1 h-full justify-start items-center px-[20px] py-[10px]",
-                        {formatted_timestamp(goods.buy_date.as_u64() as i64)}
+                    div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
+                        "{tr.purchase_date}"
                     }
-                    div { class: "flex flex-1 h-full justify-start items-center px-[20px] gap-[5px]",
-                        div { {ctrl.goods_name(lang, goods.name_ko, goods.name_en).unwrap_or_default()} }
+                    div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
+                        "{tr.goods_name}"
                     }
-                    div { class: "flex flex-1 justify-start items-center px-[20px] py-[10px] gap-[10px]",
-                        div { "{tr.enter_shipping_address}" }
-                        div {
-                            class: "flex flex-row w-fit h-fit cursor-pointer",
-                            onclick: {
-                                move |_| {
-                                    let shipping_form_url = SHIPPING_FORM_URL;
-                                    navigator.push(shipping_form_url);
-                                }
-                            },
-                            LinkIcon {}
+                    div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
+                        "{tr.directed_information}"
+                    }
+                }
+
+                // Table Rows
+                for goods in histories {
+                    div { class: "flex flex-row w-full min-h-[45px] justify-start items-center font-normal text-[16px] text-[#636363] border-b border-b-[#e0e0e0]",
+                        div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px] whitespace-pre-line gap-[10px]",
+                            "{tr.purchase_product}"
+                        }
+                        div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
+                            {formatted_timestamp(goods.buy_date.as_u64() as i64)}
+                        }
+                        div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px] gap-[5px]",
+                            div { {ctrl.goods_name(lang, goods.name_ko, goods.name_en).unwrap_or_default()} }
+                        }
+                        div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px] gap-[10px]",
+                            div { "{tr.enter_shipping_address}" }
+                            div {
+                                class: "flex flex-row w-fit h-fit cursor-pointer",
+                                onclick: {
+                                    move |_| {
+                                        let shipping_form_url = SHIPPING_FORM_URL;
+                                        navigator.push(shipping_form_url);
+                                    }
+                                },
+                                LinkIcon {}
+                            }
                         }
                     }
                 }

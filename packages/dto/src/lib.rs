@@ -5,6 +5,7 @@ pub mod content_likes;
 pub mod contracts;
 pub mod dao;
 pub mod error;
+pub mod events;
 pub mod feepayer;
 pub mod nft;
 pub mod user;
