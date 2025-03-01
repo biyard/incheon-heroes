@@ -118,7 +118,7 @@ pub fn MintingPopup(lang: Language, id: ReadOnlySignal<i64>) -> Element {
                             "{tr.complete_text}"
                         }
                         button {
-                            class: "flex justify-center items-center rounded-[12px] w-full max-w-[440px] h-[50px] font-normal text-[18px] bg-[#24B28C] hover:bg-[#1E9E7A] text-white", // Use max-width for responsiveness
+                            class: "flex justify-center items-center rounded-[12px] w-full h-[50px] font-normal text-[18px] bg-[#24B28C] hover:bg-[#1E9E7A] text-white", // Use max-width for responsiveness
                             onclick: move |_event| {
                                 popup.close();
                             },
