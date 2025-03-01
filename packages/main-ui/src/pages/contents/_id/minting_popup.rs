@@ -20,13 +20,13 @@ pub fn MintingPopup(lang: Language, id: ReadOnlySignal<i64>) -> Element {
     let mut popup: PopupService = use_context();
 
     rsx! {
-        div { class: "carousel w-[480px]",
+        div { class: "carousel w-full max-w-[480px] mx-auto", 
 
             div { class: "carousel-item relative w-full", id: "slide1",
                 div {
-                    class: "flex flex-col justify-start items-center gap-[30px]",
+                    class: "flex flex-col justify-start items-center gap-[30px] p-4",
                     style: "background-color: #ffffff; ",
-                    p { class: "text-[24px] text-[#191919] font-bold leading-[45px]",
+                    p { class: "text-[24px] text-[#191919] font-bold leading-[45px] text-center", 
                         "{tr.title}"
                     }
 
@@ -88,12 +88,11 @@ pub fn MintingPopup(lang: Language, id: ReadOnlySignal<i64>) -> Element {
                 }
             } // notice
 
-
             div { class: "carousel-item relative w-full", id: "slide2",
                 div {
-                    class: "w-full flex flex-col justify-start items-center gap-[30px]",
+                    class: "w-full flex flex-col justify-start items-center gap-[30px] p-4", 
                     style: "background-color: #ffffff; ",
-                    p { class: "text-[24px] text-[#191919] font-bold leading-[45px]",
+                    p { class: "text-[24px] text-[#191919] font-bold leading-[45px] text-center", 
                         "{tr.title}"
                     }
                     div { class: "flex flex-col justify-center items-center gap-[20px] text-[#5B5B5B]",
@@ -111,7 +110,7 @@ pub fn MintingPopup(lang: Language, id: ReadOnlySignal<i64>) -> Element {
             }
 
             div { class: "carousel-item relative w-full", id: "slide3",
-                div { class: "w-full flex flex-col justify-between items-center gap-[20px] pt-[40px]",
+                div { class: "w-full flex flex-col justify-between items-center gap-[20px] pt-[40px] p-4",
                     CompleteIcon { size: 120 }
                     div { class: "flex flex-col w-full items-center justify-center gap-[20px] text-[#5B5B5B]",
 
@@ -119,7 +118,7 @@ pub fn MintingPopup(lang: Language, id: ReadOnlySignal<i64>) -> Element {
                             "{tr.complete_text}"
                         }
                         button {
-                            class: "flex justify-center items-center rounded-[12px] w-[440px] h-[50px] font-normal text-[18px] bg-[#24B28C] hover:bg-[#1E9E7A] text-white",
+                            class: "flex justify-center items-center rounded-[12px] w-full max-w-[440px] h-[50px] font-normal text-[18px] bg-[#24B28C] hover:bg-[#1E9E7A] text-white", // Use max-width for responsiveness
                             onclick: move |_event| {
                                 popup.close();
                             },
