@@ -6,7 +6,7 @@ use alloy::json_abi::{Event, JsonAbi};
 use alloy::primitives::{keccak256, Address};
 use alloy::providers::{Provider, ProviderBuilder, WsConnect};
 use alloy::rpc::types::{BlockTransactionsKind, Filter, Log};
-use dto::events::EventRepository;
+use dto::events::{EventRepository, UserNftTransferRepository};
 use sqlx::Postgres;
 use tracing::subscriber::set_global_default;
 
@@ -22,8 +22,14 @@ use tokio::sync::broadcast;
 async fn migration(pool: &sqlx::Pool<sqlx::Postgres>) -> Result<()> {
     tracing::info!("Running migration");
     let event = dto::events::Event::get_repository(pool.clone());
+    let user_nft_trasfer = dto::events::UserNftTransfer::get_repository(pool.clone());
+
     event.create_this_table().await?;
+    user_nft_trasfer.create_this_table().await?;
+
     event.create_table().await?;
+    user_nft_trasfer.create_table().await?;
+
     tracing::info!("Migration done");
     Ok(())
 }
@@ -52,16 +58,19 @@ async fn main() -> Result<()> {
     let (last_block_number, last_tx_hash) = match dto::events::Event::query_builder()
         .order_by_sort_key_desc()
         .query()
-        .fetch_one(&pool)
+        .map(|row| {
+            let v: dto::events::Event = row.into();
+            (v.block_number as u64, v.tx_hash)
+        })
+        .fetch_optional(&pool)
         .await
     {
-        Ok(v) => {
-            let last: dto::events::Event = v.into();
-
-            (
-                BlockNumberOrTag::Number(last.block_number as u64),
-                last.tx_hash,
-            )
+        Ok(row) => {
+            if let Some(last) = row {
+                (BlockNumberOrTag::Number(last.0 as u64), last.1.clone())
+            } else {
+                (BlockNumberOrTag::Earliest, "".to_string())
+            }
         }
         Err(e) => {
             tracing::error!("Error in get last block number: {:?}", e);
@@ -113,7 +122,12 @@ async fn main() -> Result<()> {
             match parse_log(provider.clone(), &log, init_block_time, &event_map).await {
                 Ok(event_logs) => {
                     for event_log in event_logs {
-                        let _ = insert_db(pool.clone(), event_log).await;
+                        match insert_db(pool.clone(), event_log).await {
+                            Ok(_) => {}
+                            Err(e) => {
+                                tracing::error!("Error in insert_db: {:?}", e);
+                            }
+                        }
                     }
                 }
                 Err(e) => {
@@ -133,24 +147,47 @@ async fn main() -> Result<()> {
     Ok(())
 }
 async fn insert_db(pool: sqlx::Pool<Postgres>, log: EventLog) -> Result<()> {
-    let repo = EventRepository::new(pool);
-    let sort_key =
-        dto::events::Event::generate_sort_key(log.timestamp, log.tx_index, log.log_index);
+    let event_repo = EventRepository::new(pool.clone());
+    let user_trasnfer_repo = UserNftTransferRepository::new(pool.clone());
+    let mut tx: sqlx::Transaction<'_, sqlx::Postgres> = pool.begin().await?;
+    let user = User::query_builder()
+        .evm_address_equals(log.to_address.clone())
+        .query()
+        .map(|r| Into::<User>::into(r))
+        .fetch_optional(&pool)
+        .await?;
 
     //FIXME: Check event is duplicated
-    repo.insert(
-        log.from_address,
-        log.to_address,
-        log.tx_hash,
-        sort_key as i64,
-        log.timestamp as i64,
-        log.tx_index as i64,
-        log.log_index as i64,
-        log.block_number as i64,
-        log.operator,
-        log.token_id as i64,
-    )
-    .await?;
+
+    let event = match event_repo
+        .insert_with_tx(
+            &mut *tx,
+            log.from_address,
+            log.to_address,
+            log.tx_hash,
+            log.sort_key as i64,
+            log.timestamp as i64,
+            log.tx_index as i64,
+            log.log_index as i64,
+            log.block_number as i64,
+            log.operator,
+            log.token_id as i64,
+        )
+        .await?
+    {
+        Some(v) => v,
+        None => {
+            tracing::error!("Failed to insert event log");
+            return Err(Error::Unknown("Failed to insert event log".to_string()));
+        }
+    };
+    if let Some(user) = user {
+        let _ = user_trasnfer_repo
+            .insert_with_tx(&mut *tx, user.id, event.id, log.amount as i64)
+            .await?;
+    }
+
+    tx.commit().await?;
 
     Ok(())
 }

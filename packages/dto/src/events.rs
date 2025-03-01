@@ -1,3 +1,4 @@
+#![allow(unused)]
 #[cfg(feature = "server")]
 use by_axum::aide;
 use by_macros::api_model;
@@ -39,6 +40,20 @@ pub struct Event {
 
     #[api_model(summary, action = create)]
     pub token_id: i64,
+}
+
+#[api_model(base = "/", table = user_nft_transfer)]
+pub struct UserNftTransfer {
+    #[api_model(summary, primary_key)]
+    pub id: i64,
+    #[api_model(summary, auto = [insert])]
+    pub created_at: i64,
+    #[api_model(many_to_one = users)]
+    pub user_id: i64,
+    #[api_model(many_to_one = events)]
+    pub event_id: i64,
+    #[api_model(summary, action = create)]
+    pub amount: i64,
 }
 
 impl Event {
