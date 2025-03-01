@@ -30,7 +30,6 @@ async fn migration(pool: &sqlx::Pool<sqlx::Postgres>) -> Result<()> {
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    // let app = by_axum::new();
     let conf = config::get();
 
     let pool = if let DatabaseConfig::Postgres { url, pool_size } = conf.database {
@@ -50,30 +49,54 @@ async fn main() -> Result<()> {
 
     let _ = set_global_default(sub);
 
-    tracing::debug!("config: {:?}", conf);
-    let contract_address = conf.contracts.incheon_contents.parse::<Address>().unwrap();
+    let (last_block_number, last_tx_hash) = match dto::events::Event::query_builder()
+        .order_by_sort_key_desc()
+        .query()
+        .fetch_one(&pool)
+        .await
+    {
+        Ok(v) => {
+            let last: dto::events::Event = v.into();
 
+            (
+                BlockNumberOrTag::Number(last.block_number as u64),
+                last.tx_hash,
+            )
+        }
+        Err(e) => {
+            tracing::error!("Error in get last block number: {:?}", e);
+            (BlockNumberOrTag::Earliest, "".to_string())
+        }
+    };
+
+    let contract_address = conf.contracts.incheon_contents.parse::<Address>().unwrap();
     let url = Url::parse(&conf.klaytn.endpoint).unwrap();
     let provider = ProviderBuilder::new().on_http(url);
 
+    // Get Contract Creation Timestamp
     let init_block_time = get_contract_init_timestamp(provider.clone(), contract_address).await?;
     let event_map: HashMap<String, (String, Event)> = get_event_signature().await?;
 
-    // FIXME: The starting block number must be fetched from the database, not 0.
-    // let logs = get_prev_event_logs(
-    //     provider.clone(),
-    //     contract_address,
-    //     BlockNumberOrTag::Number(0),
-    //     BlockNumberOrTag::Latest,
-    // )
-    // .await?;
+    // Fetch logs from the last block stored in the db to the latest block
+    let logs = get_prev_event_logs(
+        provider.clone(),
+        contract_address,
+        last_block_number,
+        BlockNumberOrTag::Latest,
+    )
+    .await?;
 
-    // for log in logs {
-    //     let event_logs = parse_log(provider.clone(), &log, init_block_time, &event_map).await?;
-    //     for event_log in event_logs {
-    //         let _ = insert_db(pool.clone(), event_log).await?;
-    //     }
-    // }
+    for log in logs {
+        if let Some(tx_hash) = log.transaction_hash {
+            if tx_hash.to_string() == last_tx_hash {
+                continue;
+            }
+        }
+        let event_logs = parse_log(provider.clone(), &log, init_block_time, &event_map).await?;
+        for event_log in event_logs {
+            let _ = insert_db(pool.clone(), event_log).await?;
+        }
+    }
 
     let (tx, mut rx) = broadcast::channel::<Log>(100);
     tokio::spawn(async move {
@@ -251,7 +274,12 @@ where
                                 .unwrap()
                                 .to_string(),
                             to_address: decoded_event.indexed[2].as_address().unwrap().to_string(),
-                            timestamp: block_timestamp - init_timestamp,
+                            timestamp: block_timestamp,
+                            sort_key: dto::events::Event::generate_sort_key(
+                                block_timestamp - init_timestamp,
+                                log.transaction_index.unwrap(),
+                                log.log_index.unwrap(),
+                            ),
                             tx_index: log.transaction_index.unwrap(),
                             log_index: log.log_index.unwrap(),
                             tx_hash: log.transaction_hash.unwrap().to_string(),
@@ -312,7 +340,12 @@ where
                                 operator: operator.clone(),
                                 from_address: from_address.clone(),
                                 to_address: to_address.clone(),
-                                timestamp: block_timestamp - init_timestamp,
+                                timestamp: block_timestamp,
+                                sort_key: dto::events::Event::generate_sort_key(
+                                    block_timestamp - init_timestamp,
+                                    log.transaction_index.unwrap(),
+                                    log.log_index.unwrap(),
+                                ),
                                 tx_index: log.transaction_index.unwrap(),
                                 log_index: log.log_index.unwrap(),
                                 tx_hash: log.transaction_hash.unwrap().to_string(),
@@ -335,27 +368,44 @@ where
 }
 async fn realtime_event_listener(tx: broadcast::Sender<Log>) -> Result<()> {
     let conf = config::get();
-
-    let endpoint = format!("wss://{}/ws", conf.klaytn.endpoint);
+    let endpoint = conf.klaytn.endpoint.replacen("https", "wss", 1);
+    let endpoint = format!("{}/ws", endpoint);
+    tracing::debug!("Connecting to: {}", endpoint);
     let ws = WsConnect::new(endpoint);
-    let provider = ProviderBuilder::new().on_ws(ws).await;
+    let provider = match ProviderBuilder::new().on_ws(ws).await {
+        Ok(provider) => provider,
+        Err(e) => {
+            tracing::error!("Failed to connect to WebSocket: {:?}", e);
+            return Err(Error::Klaytn(e.to_string()));
+        }
+    };
+    tracing::info!("WebSocket connection established");
+    //NOTE: An error occurred in "alloy_transport_ws".
+    //Error Msg(WS connection error err=IO error: peer closed connection without sending TLS close_notify: https://docs.rs/rustls/latest/rustls/manual/_03_howto/index.html#unexpected-eof)
     let contract_address = conf.contracts.incheon_contents.parse::<Address>().unwrap();
     let filter = Filter::new().address(contract_address);
+    let sub = match provider.subscribe_logs(&filter).await {
+        Ok(sub) => sub,
+        Err(e) => {
+            tracing::error!("Failed to subscribe to logs: {:?}", e);
+            return Err(Error::Klaytn(e.to_string()));
+        }
+    };
+    tracing::info!("Subscribed to logs");
 
-    if let Ok(provider) = provider {
-        let sub = provider
-            .subscribe_logs(&filter)
-            .await
-            .map_err(|e| Error::Klaytn(e.to_string()))?;
-        let mut stream = sub.into_stream();
-        while let Some(log) = stream.next().await {
-            tracing::debug!("Received log LISTENER: {:?}", log);
-            let _ = tx.send(log);
+    let mut stream = sub.into_stream();
+    while let Some(log) = stream.next().await {
+        match tx.send(log) {
+            Ok(v) => {
+                tracing::debug!("Sent log to receiver: {:?}", v);
+            }
+            Err(e) => {
+                tracing::error!("Failed to send log to receiver: {:?}", e);
+            }
         }
     }
     Ok(())
 }
-
 async fn get_prev_event_logs<P>(
     provider: P,
     contract_address: Address,
@@ -389,4 +439,5 @@ pub struct EventLog {
     pub block_number: u64,
     pub token_id: u64,
     pub amount: u64,
+    pub sort_key: u64,
 }
