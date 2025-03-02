@@ -3,11 +3,10 @@ pub mod contents;
 use std::collections::HashMap;
 
 use by_axum::{
-    aide::{self, axum::IntoApiResponse},
+    aide::{self},
     auth::{self, Authorization},
     axum::{
         extract::{Path, Query, State},
-        response::Response,
         routing::{get, post},
         Extension, Json,
     },
