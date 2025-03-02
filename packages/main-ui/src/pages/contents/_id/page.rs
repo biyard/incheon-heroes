@@ -121,6 +121,7 @@ pub fn NftDescription(
                     //share
                     ShareButton {
                         onclick: move |_| async move {
+                            btracing::info!("Share button clicked!");
                             ctrl.handle_share().await;
                         },
                     }
