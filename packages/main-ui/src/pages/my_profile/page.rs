@@ -70,7 +70,7 @@ pub fn MyProfilePage(lang: Language) -> Element {
                 div {
                     class: "flex flex-col bg-white/60 rounded-[20px] w-full",
                     style: if responsive.width() > 1200.0 { "padding: 20px;" } else { "" },
-                    div { class: if responsive.width() > 1200.0 { "w-full grid grid-cols-5 rounded-[10px] border-[1px] border-gray-200 gap-[10px] text-[#636363] text-[16px]" } else { "w-full flex flex-col rounded-[10px] border-[1px] border-gray-200 gap-[10px] text-[#636363] text-[16px]" },
+                    div { class: if responsive.width() > 1200.0 { "w-full grid grid-cols-5 rounded-[10px] border-[1px] border-gray-200 text-[#636363] text-[16px]" } else { "w-full flex flex-col rounded-[10px] border-[1px] border-gray-200 gap-[10px] text-[#636363] text-[16px]" },
                         ProfileLine { title: "{tr.login}", "{ctrl.login_type()}" }
                         if let Some(ref address) = ctrl.user_service.evm_address() {
                             ProfileLine { title: "{tr.wallet}", "{address}" }
@@ -133,63 +133,65 @@ pub fn MissionHistoryComponent(lang: Language, histories: Vec<MissionHistory>) -
     let ctrl = MissionHistoryController::new()?;
 
     rsx! {
-        div {
-            class: "flex flex-col justify-start items-start bg-transparent border border-[#e0e0e0] rounded-[12px] overflow-x-auto",
-            div {
-                class: "w-full min-w-[300px]",
+        div { class: "flex flex-col justify-start items-start bg-transparent border border-[#e0e0e0] rounded-[12px] overflow-x-auto",
+            div { class: "w-full min-w-[300px] table",
                 // Table Header
-                div { class: "flex flex-row w-full h-[45px] justify-start items-start font-semibold text-[16px] text-[#636363] border-b border-b-[#e0e0e0]",
-                    div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
-                        "{tr.mission_name}"
-                    }
-                    div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
-                        "{tr.progress_date}"
-                    }
-                    div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
-                        "{tr.verification}"
-                    }
-                    div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
-                        "{tr.gained_experience}"
+                div { class: "table-header-group border-b border-b-[#e0e0e0]",
+                    div { class: "table-row font-semibold text-[16px] text-[#636363]",
+                        div { class: "table-cell px-[10px] py-[10px] min-w-[150px] border-b border-b-[#e0e0e0]",
+                            "{tr.mission_name}"
+                        }
+                        div { class: "table-cell px-[10px] py-[10px] min-w-[150px] border-b border-b-[#e0e0e0]",
+                            "{tr.progress_date}"
+                        }
+                        div { class: "table-cell px-[10px] py-[10px] min-w-[150px] border-b border-b-[#e0e0e0]",
+                            "{tr.verification}"
+                        }
+                        div { class: "table-cell px-[10px] py-[10px] min-w-[150px] border-b border-b-[#e0e0e0]",
+                            "{tr.gained_experience}"
+                        }
                     }
                 }
 
                 // Table Rows
-                for history in histories {
-                    div { class: "flex flex-row w-full min-h-[45px] justify-start items-center font-normal text-[16px] text-[#636363] border-b border-b-[#e0e0e0]",
-                        div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px] whitespace-pre-line",
-                            {
-                                ctrl.mission_name(
-                                        lang,
-                                        history.mission_name.clone(),
-                                        history.mission_name_en.clone(),
-                                    )
-                                    .unwrap_or_default()
-                            }
-                        }
-                        div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
-                            {
-                                formatted_timestamp(
-                                    history.mission_start_date.parse::<i64>().unwrap_or_default(),
-                                )
-                            }
-                        }
-                        div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
-                            {
-                                if history.progress == "Inprogress" {
-                                    tr.verification_in_progress
-                                } else if history.progress == "accepted" {
-                                    tr.accepted
-                                } else {
-                                    tr.rejected
+                div { class: "table-row-group",
+                    for history in histories {
+                        div { class: "table-row text-[16px] text-[#636363]",
+                            div { class: "table-cell px-[10px] py-[10px] min-w-[150px] border-b border-b-[#e0e0e0] whitespace-pre-line",
+                                {
+                                    ctrl.mission_name(
+                                            lang,
+                                            history.mission_name.clone(),
+                                            history.mission_name_en.clone(),
+                                        )
+                                        .unwrap_or_default()
                                 }
                             }
-                        }
-                        div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
-                            {
-                                if history.experience <= 0 {
-                                    "0 EXP".to_string()
-                                } else {
-                                    format!("{} EXP", history.experience)
+                            div { class: "table-cell px-[10px] py-[10px] min-w-[150px] border-b border-b-[#e0e0e0]",
+                                {
+                                    formatted_timestamp(
+                                        history.mission_start_date.parse::<i64>().unwrap_or_default(),
+                                    )
+                                }
+                            }
+                            div { class: "table-cell px-[10px] py-[10px] min-w-[150px] border-b border-b-[#e0e0e0]",
+                                {
+                                    if history.progress == "Inprogress" {
+                                        tr.verification_in_progress
+                                    } else if history.progress == "accepted" {
+                                        tr.accepted
+                                    } else {
+                                        tr.rejected
+                                    }
+                                }
+                            }
+                            div { class: "table-cell px-[10px] py-[10px] min-w-[150px] border-b border-b-[#e0e0e0]",
+                                {
+                                    if history.experience <= 0 {
+                                        "0 EXP".to_string()
+                                    } else {
+                                        format!("{} EXP", history.experience)
+                                    }
                                 }
                             }
                         }
@@ -206,47 +208,49 @@ pub fn ExperienceHistoryComponent(lang: Language, histories: Vec<ExperienceHisto
     let tr: ExperienceHistoryComponentTranslate = translate(&lang);
 
     rsx! {
-        div {
-            class: "flex flex-col justify-start items-start bg-transparent border border-[#e0e0e0] rounded-[12px] overflow-x-auto",
-            div {
-                class: "w-full min-w-[300px]",
+        div { class: "flex flex-col justify-start items-start bg-transparent border border-[#e0e0e0] rounded-[12px] overflow-x-auto",
+            div { class: "w-full min-w-[300px] table",
                 // Table Header
-                div { class: "flex flex-row w-full h-[45px] justify-start items-start font-semibold text-[16px] text-[#636363] border-b border-b-[#e0e0e0]",
-                    div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
-                        "{tr.participation_event}"
-                    }
-                    div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
-                        "{tr.acquired_nft}"
-                    }
-                    div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
-                        "{tr.progress_date}"
-                    }
-                    div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
-                        "{tr.gained_experience}"
+                div { class: "table-header-group border-b border-b-[#e0e0e0]",
+                    div { class: "table-row font-semibold text-[16px] text-[#636363]",
+                        div { class: "table-cell px-[10px] py-[10px] min-w-[150px] border-b border-b-[#e0e0e0]",
+                            "{tr.participation_event}"
+                        }
+                        div { class: "table-cell px-[10px] py-[10px] min-w-[150px] border-b border-b-[#e0e0e0]",
+                            "{tr.acquired_nft}"
+                        }
+                        div { class: "table-cell px-[10px] py-[10px] min-w-[150px] border-b border-b-[#e0e0e0]",
+                            "{tr.progress_date}"
+                        }
+                        div { class: "table-cell px-[10px] py-[10px] min-w-[150px] border-b border-b-[#e0e0e0]",
+                            "{tr.gained_experience}"
+                        }
                     }
                 }
 
                 // Table Rows
-                for history in histories {
-                    div { class: "flex flex-row w-full min-h-[45px] justify-start items-center font-normal text-[16px] text-[#636363] border-b border-b-[#e0e0e0]",
-                        div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px] whitespace-pre-line gap-[10px]",
-                            {
-                                ctrl.event_name(lang, history.event_name, history.event_name_en)
-                                    .unwrap_or_default()
+                div { class: "table-row-group",
+                    for history in histories {
+                        div { class: "table-row text-[16px] text-[#636363]",
+                            div { class: "table-cell px-[10px] py-[10px] min-w-[150px] border-b border-b-[#e0e0e0] whitespace-pre-line",
+                                {
+                                    ctrl.event_name(lang, history.event_name, history.event_name_en)
+                                        .unwrap_or_default()
+                                }
                             }
-                        }
-                        div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
-                            "#{history.token_id}"
-                        }
-                        div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
-                            {
-                                formatted_timestamp(
-                                    history.mission_reward_date.parse::<i64>().unwrap_or_default(),
-                                )
+                            div { class: "table-cell px-[10px] py-[10px] min-w-[150px] border-b border-b-[#e0e0e0]",
+                                "#{history.token_id}"
                             }
-                        }
-                        div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
-                            "{history.experience} EXP"
+                            div { class: "table-cell px-[10px] py-[10px] min-w-[150px] border-b border-b-[#e0e0e0]",
+                                {
+                                    formatted_timestamp(
+                                        history.mission_reward_date.parse::<i64>().unwrap_or_default(),
+                                    )
+                                }
+                            }
+                            div { class: "table-cell px-[10px] py-[10px] min-w-[150px] border-b border-b-[#e0e0e0]",
+                                "{history.experience} EXP"
+                            }
                         }
                     }
                 }
@@ -264,80 +268,82 @@ pub fn NftTransferHistoryComponent(
     let navigator = use_navigator();
 
     rsx! {
-        div {
-            class: "flex flex-col justify-start items-start bg-transparent border border-[#e0e0e0] rounded-[12px] overflow-x-auto",
-            div {
-                class: "w-full min-w-[300px]",
+        div { class: "flex flex-col justify-start items-start bg-transparent border border-[#e0e0e0] rounded-[12px] overflow-x-auto",
+            div { class: "w-full min-w-[300px] table",
                 // Table Header
-                div { class: "flex flex-row w-full h-[45px] justify-start items-start font-semibold text-[16px] text-[#636363] border-b border-b-[#e0e0e0]",
-                    div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
-                        "Event"
-                    }
-                    div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
-                        "NFT"
-                    }
-                    div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
-                        "From"
-                    }
-                    div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
-                        "To"
-                    }
-                    div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
-                        "Transaction"
+                div { class: "table-header-group border-b border-b-[#e0e0e0]",
+                    div { class: "table-row font-semibold text-[16px] text-[#636363]",
+                        div { class: "table-cell px-[10px] py-[10px] min-w-[150px] border-b border-b-[#e0e0e0]",
+                            "Event"
+                        }
+                        div { class: "table-cell px-[10px] py-[10px] min-w-[150px] border-b border-b-[#e0e0e0]",
+                            "NFT"
+                        }
+                        div { class: "table-cell px-[10px] py-[10px] min-w-[150px] border-b border-b-[#e0e0e0]",
+                            "From"
+                        }
+                        div { class: "table-cell px-[10px] py-[10px] min-w-[150px] border-b border-b-[#e0e0e0]",
+                            "To"
+                        }
+                        div { class: "table-cell px-[10px] py-[10px] min-w-[150px] border-b border-b-[#e0e0e0]",
+                            "Transaction"
+                        }
                     }
                 }
 
                 // Table Rows
-                for history in histories {
-                    div { class: "flex flex-row w-full min-h-[45px] justify-start items-center font-normal text-[16px] text-[#636363] border-b border-b-[#e0e0e0]",
-                        div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px] whitespace-pre-line gap-[10px]",
-                            {
-                                if history.from == ZERO_ADDRESS {
-                                    rsx! {
-                                        Mint {}
-                                        div { "Mint" }
-                                    }
-                                } else {
-                                    rsx! {
-                                        Transfer {}
-                                        div { "Transfer" }
+                div { class: "table-row-group",
+                    for history in histories {
+                        div { class: "table-row text-[16px] text-[#636363]",
+                            div { class: "table-cell px-[10px] py-[10px] min-w-[150px] border-b border-b-[#e0e0e0] whitespace-pre-line",
+                                {
+                                    if history.from == ZERO_ADDRESS {
+                                        rsx! {
+                                            Mint {}
+                                            div { "Mint" }
+                                        }
+                                    } else {
+                                        rsx! {
+                                            Transfer {}
+                                            div { "Transfer" }
+                                        }
                                     }
                                 }
                             }
-                        }
-                        div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
-                            "#{history.token_id}"
-                        }
-                        div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
-                            {
-                                if history.from == ZERO_ADDRESS {
-                                    "NullAddress".to_string()
-                                } else {
-                                    parse_address(history.from.clone())
-                                }
+                            div { class: "table-cell px-[10px] py-[10px] min-w-[150px] border-b border-b-[#e0e0e0]",
+                                "#{history.token_id}"
                             }
-                        }
-                        div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
-                            {
-                                if history.to == ZERO_ADDRESS {
-                                    "NullAddress".to_string()
-                                } else {
-                                    parse_address(history.to.clone())
-                                }
-                            }
-                        }
-                        div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
-                            div {
-                                class: "flex flex-row w-fit h-fit cursor-pointer",
-                                onclick: {
-                                    let history = history.clone();
-                                    let klaytn_scope_endpoint = klaytn_scope.clone();
-                                    move |_| {
-                                        navigator
-                                            .push(format!("{}/{}", klaytn_scope_endpoint, history.transaction_hash));
+                            div { class: "table-cell px-[10px] py-[10px] min-w-[150px] border-b border-b-[#e0e0e0]",
+                                {
+                                    if history.from == ZERO_ADDRESS {
+                                        "NullAddress".to_string()
+                                    } else {
+                                        parse_address(history.from.clone())
                                     }
-                                },
-                                LinkIcon {}
+                                }
+                            }
+                            div { class: "table-cell px-[10px] py-[10px] min-w-[150px] border-b border-b-[#e0e0e0]",
+                                {
+                                    if history.to == ZERO_ADDRESS {
+                                        "NullAddress".to_string()
+                                    } else {
+                                        parse_address(history.to.clone())
+                                    }
+                                }
+                            }
+                            div { class: "table-cell px-[10px] py-[10px] min-w-[150px] border-b border-b-[#e0e0e0]",
+                                div {
+                                    class: "flex flex-row w-fit h-fit cursor-pointer",
+                                    onclick: {
+                                        let history = history.clone();
+                                        let klaytn_scope_endpoint = klaytn_scope.clone();
+                                        move |_| {
+                                            navigator
+                                                .push(format!("{}/{}", klaytn_scope_endpoint, history.transaction_hash));
+                                        }
+                                    },
+                                    LinkIcon {}
+                                }
                             }
                         }
                     }
@@ -354,49 +360,53 @@ pub fn GoodsPurchaseHistoryComponent(lang: Language, histories: Vec<GoodsItem>) 
     let tr: GoodsPurchaseHistoryTranslate = translate(&lang);
 
     rsx! {
-        div {
-            class: "flex flex-col justify-start items-start bg-transparent border border-[#e0e0e0] rounded-[12px] overflow-x-auto",
-            div {
-                class: "w-full min-w-[300px]",
+        div { class: "flex flex-col justify-start items-start bg-transparent border border-[#e0e0e0] rounded-[12px] overflow-x-auto",
+            div { class: "w-full min-w-[300px] table",
                 // Table Header
-                div { class: "flex flex-row w-full h-[45px] justify-start items-start font-semibold text-[16px] text-[#636363] border-b border-b-[#e0e0e0]",
-                    div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
-                        "Event"
-                    }
-                    div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
-                        "{tr.purchase_date}"
-                    }
-                    div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
-                        "{tr.goods_name}"
-                    }
-                    div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
-                        "{tr.directed_information}"
+                div { class: "table-header-group border-b border-b-[#e0e0e0]",
+                    div { class: "table-row font-semibold text-[16px] text-[#636363]",
+                        div { class: "table-cell px-[10px] py-[10px] min-w-[150px] border-b border-b-[#e0e0e0]",
+                            "Event"
+                        }
+                        div { class: "table-cell px-[10px] py-[10px] min-w-[150px] border-b border-b-[#e0e0e0]",
+                            "{tr.purchase_date}"
+                        }
+                        div { class: "table-cell px-[10px] py-[10px] min-w-[150px] border-b border-b-[#e0e0e0]",
+                            "{tr.goods_name}"
+                        }
+                        div { class: "table-cell px-[10px] py-[10px] min-w-[150px] border-b border-b-[#e0e0e0]",
+                            "{tr.directed_information}"
+                        }
                     }
                 }
 
                 // Table Rows
-                for goods in histories {
-                    div { class: "flex flex-row w-full min-h-[45px] justify-start items-center font-normal text-[16px] text-[#636363] border-b border-b-[#e0e0e0]",
-                        div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px] whitespace-pre-line gap-[10px]",
-                            "{tr.purchase_product}"
-                        }
-                        div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px]",
-                            {formatted_timestamp(goods.buy_date.as_u64() as i64)}
-                        }
-                        div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px] gap-[5px]",
-                            div { {ctrl.goods_name(lang, goods.name_ko, goods.name_en).unwrap_or_default()} }
-                        }
-                        div { class: "flex flex-1 justify-start items-center px-[10px] py-[10px] min-w-[150px] gap-[10px]",
-                            div { "{tr.enter_shipping_address}" }
-                            div {
-                                class: "flex flex-row w-fit h-fit cursor-pointer",
-                                onclick: {
-                                    move |_| {
-                                        let shipping_form_url = SHIPPING_FORM_URL;
-                                        navigator.push(shipping_form_url);
-                                    }
-                                },
-                                LinkIcon {}
+                div { class: "table-row-group",
+                    for goods in histories {
+                        div { class: "table-row text-[16px] text-[#636363]",
+                            div { class: "table-cell px-[10px] py-[10px] min-w-[150px] border-b border-b-[#e0e0e0] whitespace-pre-line gap-[10px]",
+                                "{tr.purchase_product}"
+                            }
+                            div { class: "table-cell px-[10px] py-[10px] min-w-[150px] border-b border-b-[#e0e0e0]",
+                                {formatted_timestamp(goods.buy_date.as_u64() as i64)}
+                            }
+                            div { class: "table-cell px-[10px] py-[10px] min-w-[150px] gap-[5px] border-b border-b-[#e0e0e0]",
+                                div {
+                                    {ctrl.goods_name(lang, goods.name_ko, goods.name_en).unwrap_or_default()}
+                                }
+                            }
+                            div { class: "table-cell px-[10px] py-[10px] min-w-[150px] gap-[10px] border-b border-b-[#e0e0e0]",
+                                div { "{tr.enter_shipping_address}" }
+                                div {
+                                    class: "flex flex-row w-fit h-fit cursor-pointer",
+                                    onclick: {
+                                        move |_| {
+                                            let shipping_form_url = SHIPPING_FORM_URL;
+                                            navigator.push(shipping_form_url);
+                                        }
+                                    },
+                                    LinkIcon {}
+                                }
                             }
                         }
                     }
@@ -422,7 +432,7 @@ pub fn ProfileLine(
         div { class: "col-span-1 flex flex-row items-center justify-start py-[10px] px-[10px] {bottom_border}",
             "{title}"
         }
-        div { class: "col-span-4 flex flex-row items-center justify-start px-[20px] {bottom_border} text-[14px]",
+        div { class: "break-all col-span-4 flex flex-row items-center justify-start px-[20px] {bottom_border} text-[14px]",
             {children}
         }
     }
