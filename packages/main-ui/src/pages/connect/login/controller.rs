@@ -8,7 +8,7 @@ use crate::services::user_service::UserService;
 use by_macros::*;
 use dioxus::prelude::*;
 use dioxus_translate::Language;
-use dto::User;
+use dto::{User, UserResponse};
 use ethers::utils::keccak256;
 use google_wallet::drive_api::DriveApi;
 use ic_agent::Identity;
@@ -112,23 +112,10 @@ impl Controller {
 
         let icp_wallet = create_identity(&wallet.seed);
 
-        if self.address().is_none() {
-            self.signup_handler(&wallet).await;
-        }
-
-        self.user_wallet
-            .set_wallet(UserWallet::SocialWallet {
-                private_key: wallet.private_key,
-                seed: wallet.seed,
-                checksum_address: wallet.checksum_address.clone(),
-                principal: icp_wallet.sender().unwrap().to_text(),
-            })
-            .await;
-
         let endpoint = config::get().new_api_endpoint;
         match User::get_client(endpoint)
             .signup_or_login(
-                wallet.checksum_address,
+                wallet.checksum_address.clone(),
                 self.email(),
                 self.id(),
                 self.picture(),
@@ -136,10 +123,23 @@ impl Controller {
             )
             .await
         {
-            Ok(user) => {
+            Ok(UserResponse { user, action }) => {
                 self.user_wallet.set_user(user);
                 self.user_wallet.account_activities.restart();
                 self.user_wallet.account_exp.restart();
+
+                if action == dto::UserResponseType::SignUp {
+                    self.signup_handler(&wallet).await;
+                }
+
+                self.user_wallet
+                    .set_wallet(UserWallet::SocialWallet {
+                        private_key: wallet.private_key,
+                        seed: wallet.seed,
+                        checksum_address: wallet.checksum_address,
+                        principal: icp_wallet.sender().unwrap().to_text(),
+                    })
+                    .await;
             }
             Err(e) => {
                 btracing::error!("Failed to get user: {:?}", e);

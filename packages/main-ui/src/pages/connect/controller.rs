@@ -2,7 +2,7 @@ use by_macros::*;
 use dioxus::prelude::*;
 use dioxus_oauth::prelude::FirebaseService;
 use dioxus_translate::Language;
-use dto::User;
+use dto::{User, UserResponse};
 use google_wallet::drive_api::DriveApi;
 use ic_agent::Identity;
 
@@ -135,7 +135,7 @@ impl Controller {
                             )
                             .await
                         {
-                            Ok(user) => {
+                            Ok(UserResponse { user, .. }) => {
                                 btracing::info!("Logged in");
                                 self.user.set_user(user);
                             }
