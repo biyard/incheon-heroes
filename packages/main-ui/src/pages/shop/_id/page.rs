@@ -33,9 +33,9 @@ pub fn ShopByIdPage(id: ReadOnlySignal<String>, lang: Language) -> Element {
         div { id: "shop-by-id", class: "w-full flex flex-col items-center",
             div { class: "w-full max-w-[900px] flex flex-col gap-[20px] items-center",
 
-                div { class: "w-full flex flex-row gap-[40px] justify-center",
+                div { class: "w-full flex flex-row max-[700px]:flex-col gap-[40px] justify-center",
 
-                    div { class: "relative w-[400px] rounded-[10px] overflow-hidden bg-white/40",
+                    div { class: "relative w-[400px] max-[700px]:w-full rounded-[10px] overflow-hidden bg-white/40",
                         img {
                             class: "w-full h-full object-cover",
                             src: "{item.image}",

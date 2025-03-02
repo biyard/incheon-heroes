@@ -47,16 +47,28 @@ pub fn ShopPage(lang: Language) -> Element {
                 img { class: "w-full h-[450px] object-cover", src: "{img}" }
                 if responsive.width() > 1200.0 {
                     div { class: "absolute bottom-0 left-0  w-full bg-black bg-opacity-50 p-[20px] flex flex-row justify-between items-center",
-                        p { class: "text-white text-[25px] font-bold", "{title}" }
+                        p {
+                            class: "text-white text-[25px] font-bold",
+                            style: "max-width: calc(100% - 50px); white-space: pre-wrap; overflow-wrap: break-word;",
+                            "{title}"
+                        }
                         p { class: "text-white",
-                            pre { class: "text-white text-[12px]", "{desc}" }
+                            pre { class: "max-w-full overflow-auto whitespace-pre-wrap text-white text-[12px]",
+                                "{desc}"
+                            }
                         }
                     }
                 } else {
                     div { class: "absolute bottom-0 left-0  w-full bg-black bg-opacity-50 p-[20px] flex flex-col gap-[10px]",
-                        p { class: "text-white text-[25px] font-bold", "{title}" }
+                        p {
+                            class: "text-white text-[25px] font-bold",
+                            style: "max-width: calc(100% - 50px); white-space: pre-wrap; overflow-wrap: break-word;",
+                            "{title}"
+                        }
                         p { class: "text-white",
-                            pre { class: "text-white text-[12px]", "{desc}" }
+                            pre { class: "max-w-full overflow-auto whitespace-pre-wrap text-white text-[12px]",
+                                "{desc}"
+                            }
                         }
                     }
                 }
@@ -71,9 +83,9 @@ pub fn ShopPage(lang: Language) -> Element {
             id: "shop",
             class: "flex flex-col gap-[50px] items-center justify-center w-full",
             Heading1 { lang, "{tr.title}" }
-            div { class: "flex flex-col gap-[10px] text-center font-bold text-[16px]",
+            div { class: "break-all flex flex-col gap-[10px] text-center font-bold text-[16px] max-[500px]:text-[10px]",
                 pre { "{tr.desc}" }
-                p { class: "text-[12px] font-semibold", "{tr.sub_desc}" }
+                p { class: "text-[12px] max-[500px]:text-[8px] font-semibold", "{tr.sub_desc}" }
             }
             HorizontalSlide {
                 lang,
@@ -86,7 +98,7 @@ pub fn ShopPage(lang: Language) -> Element {
                 stacks,
             }
 
-            div { class: "grid grid-cols-4 p-[20px] gap-[20px] justify-start items-start bg-white/60",
+            div { class: "grid grid-cols-4 max-[1000px]:grid-cols-3 max-[850px]:grid-cols-2 max-[500px]:grid-cols-1 p-[20px] gap-[20px] justify-start items-start bg-white/60",
                 for (i , item) in ctrl.items()?.iter().enumerate() {
                     ShopItemCard {
                         likes: item.likes.as_u64(),
