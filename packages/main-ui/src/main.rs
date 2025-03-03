@@ -13,6 +13,7 @@ use by_components::theme::{CardColorTheme, ColorTheme, TextColorTheme};
 use dioxus::prelude::*;
 use dioxus_popup::PopupService;
 use services::google_service::GoogleService;
+use services::kakao_service::KakaoService;
 use services::{
     backend_api::BackendApi, icp_canister::IcpCanister, klaytn::Klaytn, user_service::UserService,
 };
@@ -48,6 +49,7 @@ fn app() -> Element {
     UserService::init();
     PopupService::init();
     GoogleService::init();
+    KakaoService::init();
 
     rsx! {
         btracing::ToastTracing {}

@@ -25,7 +25,7 @@ pub fn Heading1(
                 }
             }
 
-            div { {children} }
+            h1 { {children} }
 
             if with_symbol {
                 img {

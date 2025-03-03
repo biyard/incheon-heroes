@@ -24,7 +24,7 @@ pub fn HomePage(lang: Language) -> Element {
         div { id: "home-page", class: "flex flex-col items-center gap-[45px]",
             VideoSection {}
 
-            Heading1 { lang, with_symbol: false, "INCHEON HEROES" }
+            Heading1 { lang, with_symbol: false, "{tr.title}" }
             p { class: "text-[16px] font-bold text-center", "{tr.main_text}" }
             if !user.is_logined() {
                 LoginButton { lang }

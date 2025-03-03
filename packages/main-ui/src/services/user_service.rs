@@ -21,7 +21,7 @@ use crate::{
     config,
     models::{
         nft_metadata::NftMetadata,
-        user_wallet::{create_identity, UserWallet},
+        user_wallet::{create_evm_wallet, create_identity, UserWallet},
     },
 };
 
@@ -298,6 +298,48 @@ impl UserService {
                 }
             }
         }
+    }
+
+    pub async fn restore_from_seed(&mut self, id: &str, seed: &str) -> dto::Result<()> {
+        tracing::debug!("Restore from seed: {seed}");
+        let seed = hex::decode(seed.trim_start_matches("0x")).map_err(|e| {
+            btracing::error!("Failed to decode seed: {e}");
+            dto::Error::InvalidSeed
+        })?;
+
+        tracing::debug!("Seed: {seed:?}");
+        let wallet = match create_evm_wallet(&seed) {
+            Ok(wallet) => wallet,
+            Err(e) => {
+                btracing::error!("Failed to create wallet: {e}");
+                return Err(dto::Error::InvalidSeed);
+            }
+        };
+        let icp_wallet = create_identity(&wallet.seed);
+
+        let endpoint = config::get().new_api_endpoint;
+        match User::get_client(endpoint)
+            .get_user_by_address(wallet.checksum_address.clone())
+            .await
+        {
+            Ok(user) if &user.subject == &id => {
+                self.user.set(Some(user));
+                self.set_wallet(UserWallet::SocialWallet {
+                    private_key: wallet.private_key,
+                    seed: wallet.seed,
+                    checksum_address: wallet.checksum_address,
+                    principal: icp_wallet.sender().unwrap().to_text(),
+                })
+                .await;
+
+                return Ok(());
+            }
+            _ => {
+                btracing::error!("Incorrect address");
+            }
+        }
+
+        Err(dto::Error::InvalidSeed)
     }
 
     pub fn set_user(&mut self, user: User) {

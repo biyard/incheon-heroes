@@ -55,6 +55,15 @@ pub enum Error {
 
     #[error("MisUsed: {0}")]
     MisUsed(String),
+
+    #[error("Failed to send kakao backup message")]
+    KakaoSendMessageException,
+
+    #[error("Failed to parse data")]
+    ParsingError,
+
+    #[error("Invalid seed")]
+    InvalidSeed,
 }
 
 impl From<reqwest::Error> for Error {
