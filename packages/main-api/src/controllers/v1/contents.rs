@@ -181,6 +181,19 @@ impl ContentController {
         };
 
         let mut tx = self.pool.begin().await?;
+        let already_minted = sqlx::query_scalar::<_, bool>(
+            "SELECT EXISTS(SELECT 1 FROM content_downloads WHERE user_id = $1 AND content_id = $2)",
+        )
+        .bind(user_id)
+        .bind(content_id)
+        .fetch_optional(&mut *tx)
+        .await?;
+
+        if already_minted {
+            return Err(Error::ValidationError(
+                "Content already minted by this user".to_string(),
+            ));
+        }
 
         self.content_download_repo
             .insert_with_tx(&mut *tx, user_id, content_id)
