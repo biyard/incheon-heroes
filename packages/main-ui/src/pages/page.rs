@@ -24,7 +24,7 @@ pub fn HomePage(lang: Language) -> Element {
         div { id: "home-page", class: "flex flex-col items-center gap-[45px]",
             VideoSection {}
 
-            Heading1 { lang, with_symbol: false, "INCHEON HEROES" }
+            Heading1 { lang, with_symbol: false, "{tr.title}" }
             p { class: "text-[16px] font-bold text-center", "{tr.main_text}" }
             if !user.is_logined() {
                 LoginButton { lang }
@@ -47,7 +47,7 @@ pub fn LeaderBoard(
         div { class: "flex flex-col items-center gap-[30px]",
             Heading1 { lang, "{tr.title}" }
 
-            div { class: "w-full flex flex-col items-end gap-[5px] px-[20px] py-[10px] rounded-[12px] bg-[#FAFAFA]/40",
+            div { class: "max-[600px]:max-w-[500px] max-[500px]:max-w-[400px] max-[400px]:max-w-[350px] flex flex-col items-end gap-[5px] px-[20px] py-[10px] rounded-[12px] bg-[#FAFAFA]/40",
                 if let Some(ref data) = ctrl.leaderboard.value()() {
                     div { class: "text-[10px] font-semibold", "Last updated at: {data.updated_at()}" }
 
@@ -71,7 +71,7 @@ pub fn RankingBoards(
     tracing::debug!("RankingBoards: {:?}", data);
 
     rsx! {
-        div { class: "w-full flex flex-col items-end gap-[5px] px-[20px] py-[10px] rounded-[12px]",
+        div { class: "flex flex-col w-full justify-start items-end gap-[5px] px-[20px] py-[10px] rounded-[12px] overflow-x-auto",
             select {
                 class: "bg-[#FAFAFA]/60 my-[5px] text-center py-[10px] px-[10px] flex items-center justify-center rounded-[10px] text-[#636363] font-semibold",
                 onchange: move |event| {
@@ -112,32 +112,34 @@ pub fn LevelBoard(data: Vec<LeaderboardItemLevel>, lang: Language) -> Element {
     let headers = vec![tr.no, tr.nft_id, tr.level, tr.character, tr.address];
 
     rsx! {
-        div { class: "w-full flex-col flex gap-[5px] text-[10px] font-semibold",
-            div { class: "bg-white/50 rounded-[10px] grid grid-cols-10 h-[40px]",
-                for (i , h) in headers.iter().enumerate() {
-                    div { class: "{grids[i]} flex items-center justify-center py-auto text-[15px] font-semibold text-[#636363]",
-                        "{h}"
+        div { class: "flex-col flex justify-start items-start w-full gap-[5px] text-[10px] font-semibold overflow-x-auto",
+            div { class: "w-full min-w-[500px]",
+                div { class: "bg-white/50 rounded-[10px] grid grid-cols-10 h-[40px]",
+                    for (i , h) in headers.iter().enumerate() {
+                        div { class: "{grids[i]} flex items-center justify-center py-auto text-[15px] font-semibold text-[#636363]",
+                            "{h}"
+                        }
                     }
                 }
-            }
 
-            div { class: "rounded-[10px] border-[1px] border-[#E4E7E5] text-[#636363] text-[14px] font-medium",
-                for (i , h) in data.iter().enumerate() {
-                    div { class: if i < data.len() - 1 { "grid grid-cols-10 h-[40px] border-b-[1px]" } else { "grid grid-cols-10 h-[40px]" },
-                        div { class: "{grids[0]} flex items-center justify-center py-auto",
-                            Rank { i }
-                        }
-                        div { class: "{grids[1]} flex items-center justify-center py-auto",
-                            "#{h.nft_num}"
-                        }
-                        div { class: "{grids[2]} flex items-center justify-center py-auto",
-                            "{h.level}"
-                        }
-                        div { class: "{grids[3]} flex items-center justify-center py-auto",
-                            "{h.character}"
-                        }
-                        div { class: "{grids[4]} flex items-center justify-center py-auto",
-                            "{truncate_addr(&h.account_address)}"
+                div { class: "rounded-[10px] border-[1px] border-[#E4E7E5] text-[#636363] text-[14px] font-medium",
+                    for (i , h) in data.iter().enumerate() {
+                        div { class: if i < data.len() - 1 { "grid grid-cols-10 h-[40px] border-b-[1px]" } else { "grid grid-cols-10 h-[40px]" },
+                            div { class: "{grids[0]} flex items-center justify-center py-auto",
+                                Rank { i }
+                            }
+                            div { class: "{grids[1]} flex items-center justify-center py-auto",
+                                "#{h.nft_num}"
+                            }
+                            div { class: "{grids[2]} flex items-center justify-center py-auto",
+                                "{h.level}"
+                            }
+                            div { class: "{grids[3]} flex items-center justify-center py-auto",
+                                "{h.character}"
+                            }
+                            div { class: "{grids[4]} flex items-center justify-center py-auto",
+                                "{truncate_addr(&h.account_address)}"
+                            }
                         }
                     }
                 }
@@ -175,32 +177,34 @@ pub fn ExperienceBoard(data: Vec<LeaderboardItemExperience>, lang: Language) -> 
     let headers = vec![tr.no, tr.nft_id, tr.exp, tr.character, tr.address];
 
     rsx! {
-        div { class: "w-full flex-col flex gap-[5px] text-[10px] font-semibold",
-            div { class: "bg-white/50 rounded-[10px] grid grid-cols-10 h-[40px]",
-                for (i , h) in headers.iter().enumerate() {
-                    div { class: "{grids[i]} flex items-center justify-center py-auto text-[15px] font-semibold text-[#636363]",
-                        "{h}"
+        div { class: "flex-col flex justify-start items-start w-full gap-[5px] text-[10px] font-semibold",
+            div { class: "w-full min-w-[500px]",
+                div { class: "bg-white/50 rounded-[10px] grid grid-cols-10 h-[40px]",
+                    for (i , h) in headers.iter().enumerate() {
+                        div { class: "{grids[i]} flex items-center justify-center py-auto text-[15px] font-semibold text-[#636363]",
+                            "{h}"
+                        }
                     }
                 }
-            }
 
-            div { class: "rounded-[10px] border-[1px] border-[#E4E7E5] text-[#636363] text-[14px] font-medium",
-                for (i , h) in data.iter().enumerate() {
-                    div { class: if i < data.len() - 1 { "grid grid-cols-10 h-[40px] border-b-[1px]" } else { "grid grid-cols-10 h-[40px]" },
-                        div { class: "{grids[0]} flex items-center justify-center py-auto",
-                            Rank { i }
-                        }
-                        div { class: "{grids[1]} flex items-center justify-center py-auto",
-                            "#{h.nft_num}"
-                        }
-                        div { class: "{grids[2]} flex items-center justify-center py-auto",
-                            "{h.experience}"
-                        }
-                        div { class: "{grids[3]} flex items-center justify-center py-auto",
-                            "{h.character}"
-                        }
-                        div { class: "{grids[4]} flex items-center justify-center py-auto",
-                            "{truncate_addr(&h.account_address)}"
+                div { class: "rounded-[10px] border-[1px] border-[#E4E7E5] text-[#636363] text-[14px] font-medium",
+                    for (i , h) in data.iter().enumerate() {
+                        div { class: if i < data.len() - 1 { "grid grid-cols-10 h-[40px] border-b-[1px]" } else { "grid grid-cols-10 h-[40px]" },
+                            div { class: "{grids[0]} flex items-center justify-center py-auto",
+                                Rank { i }
+                            }
+                            div { class: "{grids[1]} flex items-center justify-center py-auto",
+                                "#{h.nft_num}"
+                            }
+                            div { class: "{grids[2]} flex items-center justify-center py-auto",
+                                "{h.experience}"
+                            }
+                            div { class: "{grids[3]} flex items-center justify-center py-auto",
+                                "{h.character}"
+                            }
+                            div { class: "{grids[4]} flex items-center justify-center py-auto",
+                                "{truncate_addr(&h.account_address)}"
+                            }
                         }
                     }
                 }
@@ -216,26 +220,28 @@ pub fn DailyMissionBoard(data: Vec<LeaderboardItemDailyMission>, lang: Language)
     let headers = vec![tr.no, tr.missions, tr.address];
 
     rsx! {
-        div { class: "w-full flex-col flex gap-[5px] text-[10px] font-semibold",
-            div { class: "bg-white/50 rounded-[10px] grid grid-cols-10 h-[40px]",
-                for (i , h) in headers.iter().enumerate() {
-                    div { class: "{grids[i]} flex items-center justify-center py-auto text-[15px] font-semibold text-[#636363]",
-                        "{h}"
+        div { class: "flex-col flex justify-start items-start w-full gap-[5px] text-[10px] font-semibold",
+            div { class: "w-full min-w-[500px]",
+                div { class: "bg-white/50 rounded-[10px] grid grid-cols-10 h-[40px]",
+                    for (i , h) in headers.iter().enumerate() {
+                        div { class: "{grids[i]} flex items-center justify-center py-auto text-[15px] font-semibold text-[#636363]",
+                            "{h}"
+                        }
                     }
                 }
-            }
 
-            div { class: "rounded-[10px] border-[1px] border-[#E4E7E5] text-[#636363] text-[14px] font-medium",
-                for (i , h) in data.iter().enumerate() {
-                    div { class: if i < data.len() - 1 { "grid grid-cols-10 h-[40px] border-b-[1px]" } else { "grid grid-cols-10 h-[40px]" },
-                        div { class: "{grids[0]} flex items-center justify-center py-auto",
-                            Rank { i }
-                        }
-                        div { class: "{grids[1]} flex items-center justify-center py-auto",
-                            "{h.daily_count}"
-                        }
-                        div { class: "{grids[2]} flex items-center justify-center py-auto",
-                            "{truncate_addr(&h.account_address)}"
+                div { class: "rounded-[10px] border-[1px] border-[#E4E7E5] text-[#636363] text-[14px] font-medium",
+                    for (i , h) in data.iter().enumerate() {
+                        div { class: if i < data.len() - 1 { "grid grid-cols-10 h-[40px] border-b-[1px]" } else { "grid grid-cols-10 h-[40px]" },
+                            div { class: "{grids[0]} flex items-center justify-center py-auto",
+                                Rank { i }
+                            }
+                            div { class: "{grids[1]} flex items-center justify-center py-auto",
+                                "{h.daily_count}"
+                            }
+                            div { class: "{grids[2]} flex items-center justify-center py-auto",
+                                "{truncate_addr(&h.account_address)}"
+                            }
                         }
                     }
                 }
@@ -251,26 +257,28 @@ pub fn VotingBoard(data: Vec<LeaderboardItemVoting>, lang: Language) -> Element 
     let headers = vec![tr.no, tr.votes, tr.address];
 
     rsx! {
-        div { class: "w-full flex-col flex gap-[5px] text-[10px] font-semibold",
-            div { class: "bg-white/50 rounded-[10px] grid grid-cols-10 h-[40px]",
-                for (i , h) in headers.iter().enumerate() {
-                    div { class: "{grids[i]} flex items-center justify-center py-auto text-[15px] font-semibold text-[#636363]",
-                        "{h}"
+        div { class: "flex-col flex justify-start items-start w-full gap-[5px] text-[10px] font-semibold",
+            div { class: "w-full min-w-[500px]",
+                div { class: "bg-white/50 rounded-[10px] grid grid-cols-10 h-[40px]",
+                    for (i , h) in headers.iter().enumerate() {
+                        div { class: "{grids[i]} flex items-center justify-center py-auto text-[15px] font-semibold text-[#636363]",
+                            "{h}"
+                        }
                     }
                 }
-            }
 
-            div { class: "rounded-[10px] border-[1px] border-[#E4E7E5] text-[#636363] text-[14px] font-medium",
-                for (i , h) in data.iter().enumerate() {
-                    div { class: if i < data.len() - 1 { "grid grid-cols-10 h-[40px] border-b-[1px]" } else { "grid grid-cols-10 h-[40px]" },
-                        div { class: "{grids[0]} flex items-center justify-center py-auto",
-                            Rank { i }
-                        }
-                        div { class: "{grids[1]} flex items-center justify-center py-auto",
-                            "{h.voting_count}"
-                        }
-                        div { class: "{grids[2]} flex items-center justify-center py-auto",
-                            "{truncate_addr(&h.account_address)}"
+                div { class: "rounded-[10px] border-[1px] border-[#E4E7E5] text-[#636363] text-[14px] font-medium",
+                    for (i , h) in data.iter().enumerate() {
+                        div { class: if i < data.len() - 1 { "grid grid-cols-10 h-[40px] border-b-[1px]" } else { "grid grid-cols-10 h-[40px]" },
+                            div { class: "{grids[0]} flex items-center justify-center py-auto",
+                                Rank { i }
+                            }
+                            div { class: "{grids[1]} flex items-center justify-center py-auto",
+                                "{h.voting_count}"
+                            }
+                            div { class: "{grids[2]} flex items-center justify-center py-auto",
+                                "{truncate_addr(&h.account_address)}"
+                            }
                         }
                     }
                 }

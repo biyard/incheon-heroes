@@ -7,7 +7,7 @@ use validator::Validate;
 use crate::ContentSummary;
 
 #[derive(Validate)]
-#[api_model(base = "/v1/users", table = users)]
+#[api_model(base = "/v1/users", table = users, response = [signup_or_login(UserResponse)])]
 pub struct User {
     #[api_model(summary, primary_key)]
     pub id: i64,
@@ -28,6 +28,22 @@ pub struct User {
     pub profile_url: String,
     #[api_model(action = [signup_or_login, register_or_login], type = INTEGER)]
     pub provider: UserAuthProvider,
+}
+
+#[derive(Debug, Clone, PartialEq, Default, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "server", derive(schemars::JsonSchema, aide::OperationIo))]
+pub struct UserResponse {
+    #[serde(flatten)]
+    pub user: User,
+    pub action: UserResponseType,
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, ApiModel, Default)]
+#[cfg_attr(feature = "server", derive(schemars::JsonSchema, aide::OperationIo))]
+pub enum UserResponseType {
+    #[default]
+    SignUp = 1,
+    Login = 2,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, ApiModel, Default)]

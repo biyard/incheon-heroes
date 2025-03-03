@@ -31,7 +31,7 @@ pub fn ContentsByIdPage(id: ReadOnlySignal<i64>, lang: Language) -> Element {
             }
 
             div { class: "flex flex-col gap-[10px] w-full",
-                p { class: "text-[16px] font-bold leading-[55.8px]",
+                p { class: "break-all text-[16px] font-bold leading-[55.8px]",
                     {
                         format!(
                             "{} {} {}",
@@ -88,7 +88,7 @@ pub fn NftDescription(
                                     class: "w-[25px] h-[25px] bg-[#d9d9d9] rounded-full",
                                     src: "{user.profile_url}",
                                 }
-                                div { class: "font-semibold text-[#16775D] text-[15px]",
+                                div { class: "break-all font-semibold text-[#16775D] text-[15px]",
                                     "{user.evm_address}"
                                 }
                             }
@@ -121,6 +121,7 @@ pub fn NftDescription(
                     //share
                     ShareButton {
                         onclick: move |_| async move {
+                            btracing::info!("Share button clicked!");
                             ctrl.handle_share().await;
                         },
                     }

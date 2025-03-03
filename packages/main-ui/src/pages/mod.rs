@@ -12,6 +12,7 @@ pub mod my_nfts;
 pub mod my_profile;
 pub mod notices;
 mod page;
+pub mod restore;
 pub mod shop;
 pub mod stories;
 
@@ -27,5 +28,6 @@ pub use faq::*;
 pub use my_nfts::*;
 pub use my_profile::*;
 pub use notices::*;
+pub use restore::*;
 pub use shop::*;
 pub use stories::*;

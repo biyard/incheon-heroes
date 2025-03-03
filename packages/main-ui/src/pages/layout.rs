@@ -39,7 +39,7 @@ pub fn RootLayout(lang: Language) -> Element {
             logo_url: "{logo}",
             title: "Incheon Heroes",
             canonical: "https://incheonheroes.world",
-            keywords: "Incheon, Heroes, 인천, 히어로즈, 유니버스",
+            keywords: "incheonheroes, 인천히어로즈",
             url: "{path}",
         }
 

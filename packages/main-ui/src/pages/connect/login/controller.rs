@@ -4,11 +4,12 @@ use crate::models::user_wallet::{create_evm_wallet, create_identity, EvmWallet, 
 use crate::route::Route;
 use crate::services::backend_api::BackendApi;
 use crate::services::google_service::GoogleService;
+use crate::services::kakao_service::KakaoService;
 use crate::services::user_service::UserService;
 use by_macros::*;
 use dioxus::prelude::*;
 use dioxus_translate::Language;
-use dto::User;
+use dto::{User, UserResponse};
 use ethers::utils::keccak256;
 use google_wallet::drive_api::DriveApi;
 use ic_agent::Identity;
@@ -29,6 +30,7 @@ pub struct Controller {
     pub user_wallet: UserService,
     pub nav: Navigator,
     pub google: GoogleService,
+    pub kakao: KakaoService,
 }
 
 impl Controller {
@@ -53,11 +55,12 @@ impl Controller {
                 nav.replace(Route::ConnectPage { lang });
             }
         });
+        let nav = use_navigator();
 
         let ctrl = Self {
             lang,
+            nav,
             provider,
-            nav: use_navigator(),
             id: use_signal(move || id),
             hint: use_signal(move || hint),
             address: use_signal(move || {
@@ -73,7 +76,20 @@ impl Controller {
             backend_api: use_context(),
             user_wallet: use_context(),
             google: use_context(),
+            kakao: use_context(),
         };
+
+        use_effect(move || {
+            let logged_in = match provider {
+                LoginProvider::Google => ctrl.google.logged_in(),
+                LoginProvider::Kakao => ctrl.kakao.logged_in(),
+                LoginProvider::Kaia => true,
+            };
+
+            if !logged_in {
+                nav.replace(Route::ConnectPage { lang });
+            }
+        });
 
         Ok(ctrl)
     }
@@ -88,10 +104,10 @@ impl Controller {
         }
 
         let address = wallet.checksum_address.clone();
-        let seed = hex::encode(&wallet.seed);
+        let seed = wallet.seed.clone();
 
         match self.provider {
-            LoginProvider::Kakao => self.backup_kakao().await,
+            LoginProvider::Kakao => self.backup_kakao(seed).await,
             LoginProvider::Google => self.backup_google(address, seed).await,
             LoginProvider::Kaia => {}
         }
@@ -112,23 +128,10 @@ impl Controller {
 
         let icp_wallet = create_identity(&wallet.seed);
 
-        if self.address().is_none() {
-            self.signup_handler(&wallet).await;
-        }
-
-        self.user_wallet
-            .set_wallet(UserWallet::SocialWallet {
-                private_key: wallet.private_key,
-                seed: wallet.seed,
-                checksum_address: wallet.checksum_address.clone(),
-                principal: icp_wallet.sender().unwrap().to_text(),
-            })
-            .await;
-
         let endpoint = config::get().new_api_endpoint;
         match User::get_client(endpoint)
             .signup_or_login(
-                wallet.checksum_address,
+                wallet.checksum_address.clone(),
                 self.email(),
                 self.id(),
                 self.picture(),
@@ -136,10 +139,28 @@ impl Controller {
             )
             .await
         {
-            Ok(user) => {
+            Ok(UserResponse { user, action }) => {
                 self.user_wallet.set_user(user);
                 self.user_wallet.account_activities.restart();
                 self.user_wallet.account_exp.restart();
+
+                let _ = action;
+
+                // NOTE: Usually, google login does not be inflowed this.
+                //       Inflowing google login in here indicates google drive storage is not available or crashed.
+                if action == dto::UserResponseType::SignUp || self.provider == LoginProvider::Google
+                {
+                    self.signup_handler(&wallet).await;
+                }
+
+                self.user_wallet
+                    .set_wallet(UserWallet::SocialWallet {
+                        private_key: wallet.private_key,
+                        seed: wallet.seed,
+                        checksum_address: wallet.checksum_address,
+                        principal: icp_wallet.sender().unwrap().to_text(),
+                    })
+                    .await;
             }
             Err(e) => {
                 btracing::error!("Failed to get user: {:?}", e);
@@ -165,9 +186,10 @@ impl Controller {
         keccak256(input)
     }
 
-    pub async fn backup_kakao(&self) {
-
-        // TODO: send a message to kakao
+    pub async fn backup_kakao(&self, seed: String) {
+        if let Err(e) = self.kakao.send_message(&self.id(), &seed).await {
+            btracing::error!("Failed to send message: {:?}", e)
+        }
     }
 
     pub async fn backup_google(&self, address: String, seed: String) {

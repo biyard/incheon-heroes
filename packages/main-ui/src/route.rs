@@ -52,6 +52,9 @@ pub enum Route {
     #[route("/my-profile")]
     MyProfilePage { lang: Language },
 
+    #[route("/restore/kakao?:id&:seed")]
+    KakaoRestorePage { lang: Language, id: String, seed: String },
+
     #[route("/contents")]
     ContentsPage { lang: Language },
     #[route("/contents/new")]
@@ -82,6 +85,11 @@ impl Route {
 
     pub fn switch_lang(self) -> Self {
         match self {
+            Route::KakaoRestorePage { lang, id, seed } => Route::KakaoRestorePage {
+                lang: lang.switch(),
+                id,
+                seed,
+            },
             Route::ContentsByIdPage { id, lang } => Route::ContentsByIdPage {
                 id,
                 lang: lang.switch(),

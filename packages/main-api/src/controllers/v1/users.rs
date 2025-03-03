@@ -3,7 +3,7 @@ pub mod contents;
 use std::collections::HashMap;
 
 use by_axum::{
-    aide,
+    aide::{self},
     auth::{self, Authorization},
     axum::{
         extract::{Path, Query, State},
@@ -36,7 +36,7 @@ impl UserController {
             evm_address,
             provider,
         }: UserRegisterOrLoginRequest,
-    ) -> Result<JsonWithHeaders<User>> {
+    ) -> Result<JsonWithHeaders<UserResponse>> {
         self.signup_or_login(
             auth,
             UserSignupOrLoginRequest {
@@ -61,7 +61,9 @@ impl UserController {
             profile_url,
             provider,
         }: UserSignupOrLoginRequest,
-    ) -> Result<JsonWithHeaders<User>> {
+    ) -> Result<JsonWithHeaders<UserResponse>> {
+        let mut action = UserResponseType::SignUp;
+
         let user = match self
             .repo
             .insert(evm_address.clone(), email, subject, profile_url, provider)
@@ -69,6 +71,7 @@ impl UserController {
         {
             Ok(user) => user,
             Err(_) => {
+                action = UserResponseType::Login;
                 User::query_builder()
                     .evm_address_equals(evm_address)
                     .query()
@@ -90,7 +93,7 @@ impl UserController {
             Error::JwtGenerationFailed
         })?;
 
-        Ok(JsonWithHeaders::new(user).with_bearer_token(&jwt))
+        Ok(JsonWithHeaders::new(UserResponse { user, action }).with_bearer_token(&jwt))
     }
 
     async fn get_user_by_address(
@@ -142,7 +145,7 @@ impl UserController {
         State(ctrl): State<UserController>,
         Extension(_auth): Extension<Option<Authorization>>,
         Json(body): Json<UserAction>,
-    ) -> Result<JsonWithHeaders<User>> {
+    ) -> Result<JsonWithHeaders<UserResponse>> {
         tracing::debug!("act_user {:?}", body);
         match body {
             UserAction::SignupOrLogin(req) => ctrl.signup_or_login(_auth, req).await,

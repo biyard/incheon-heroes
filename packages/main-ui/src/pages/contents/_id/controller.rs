@@ -59,7 +59,7 @@ impl Controller {
     }
 
     pub async fn handle_share(&self) {
-        let _ = wasm_bindgen_futures::JsFuture::from(
+        let result = wasm_bindgen_futures::JsFuture::from(
             web_sys::window()
                 .unwrap()
                 .navigator()
@@ -68,7 +68,14 @@ impl Controller {
         )
         .await;
 
-        btracing::info!("Copied sharing URL");
+        match result {
+            Ok(_) => {
+                btracing::info!("Copied sharing URL: {}", self.path());
+            }
+            Err(e) => {
+                btracing::error!("Failed to copy sharing URL: {:?}", e);
+            }
+        }
     }
 
     pub fn opensea_url(&self) -> String {
