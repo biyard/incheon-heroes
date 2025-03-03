@@ -33,7 +33,7 @@ impl BackendApi {
 
     pub async fn notify_address(&self, id: &str, address: &str) -> Result<()> {
         rest_api::post(
-            &format!("{}/v1/auth/notify", self.endpoint),
+            &format!("{}/v1/auth/address", self.endpoint),
             &serde_json::json!({ "id": id, "address": address }),
         )
         .await

@@ -5,6 +5,7 @@ pub mod goods_contract;
 pub mod google_service;
 pub mod holder_contract;
 pub mod icp_canister;
+pub mod kakao_service;
 pub mod klaytn;
 pub mod mission_contract;
 pub mod nft_contract;

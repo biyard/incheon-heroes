@@ -2,16 +2,18 @@ use by_macros::*;
 use dioxus::prelude::*;
 use dioxus_oauth::prelude::FirebaseService;
 use dioxus_translate::Language;
-use dto::{User, UserResponse};
+use dto::User;
 use google_wallet::drive_api::DriveApi;
-use ic_agent::Identity;
 
 use crate::{
     config,
-    models::user_wallet::{create_evm_wallet, create_identity, UserWallet},
+    models::user_wallet::UserWallet,
     pages::LoginProvider,
     route::Route,
-    services::{backend_api::BackendApi, google_service::GoogleService, user_service::UserService},
+    services::{
+        backend_api::BackendApi, google_service::GoogleService, kakao_service::KakaoService,
+        user_service::UserService,
+    },
 };
 
 #[derive(Clone, Copy, DioxusController)]
@@ -22,6 +24,7 @@ pub struct Controller {
     pub firebase: FirebaseService,
     pub user: UserService,
     pub google: GoogleService,
+    pub kakao: KakaoService,
 }
 
 impl Controller {
@@ -33,6 +36,7 @@ impl Controller {
             firebase: use_context(),
             user: use_context(),
             google: use_context(),
+            kakao: use_context(),
         };
 
         Ok(ctrl)
@@ -97,59 +101,16 @@ impl Controller {
                     if address.to_lowercase()
                         == hint.address.clone().unwrap_or_default().to_lowercase()
                     {
-                        let seed = hex::decode(seed).unwrap_or_default();
-                        let wallet = create_evm_wallet(&seed);
-                        if wallet.is_err() {
-                            self.goto_login(
-                                LoginProvider::Google,
-                                hint.id,
-                                hint.private_key_hint,
-                                hint.address.unwrap_or_default(),
-                                cred.email,
-                                cred.photo_url,
-                            );
+                        if let Err(e) = self.user.restore_from_seed(&hint.id, &seed).await {
+                            btracing::error!("Failed to restore from seed: {:?}", e);
+                        } else {
+                            if self.nav.can_go_back() {
+                                self.nav.go_back();
+                            } else {
+                                self.nav.replace(Route::HomePage { lang: self.lang });
+                            }
                             return;
                         }
-                        let wallet = wallet.unwrap();
-                        tracing::debug!("Wallet: {:?}", wallet);
-
-                        let icp_wallet = create_identity(&wallet.seed);
-
-                        self.user
-                            .set_wallet(UserWallet::SocialWallet {
-                                private_key: wallet.private_key,
-                                seed: wallet.seed,
-                                checksum_address: wallet.checksum_address.clone(),
-                                principal: icp_wallet.sender().unwrap().to_text(),
-                            })
-                            .await;
-
-                        let endpoint = config::get().new_api_endpoint;
-                        match User::get_client(endpoint)
-                            .signup_or_login(
-                                wallet.checksum_address,
-                                cred.email,
-                                hint.id,
-                                cred.photo_url,
-                                dto::UserAuthProvider::Google,
-                            )
-                            .await
-                        {
-                            Ok(UserResponse { user, .. }) => {
-                                btracing::info!("Logged in");
-                                self.user.set_user(user);
-                            }
-                            Err(e) => {
-                                btracing::error!("Failed to get user: {:?}", e);
-                            }
-                        }
-
-                        if self.nav.can_go_back() {
-                            self.nav.go_back();
-                        } else {
-                            self.nav.replace(Route::HomePage { lang: self.lang });
-                        }
-                        return;
                     }
                 }
                 Err(e) => {
@@ -189,7 +150,7 @@ impl Controller {
         });
     }
 
-    pub async fn handle_kakao(&self) {
+    pub async fn handle_kakao(&mut self) {
         let conf = &config::get().kakao;
 
         let client = dioxus_oauth::prelude::OAuthClient::new(
@@ -242,6 +203,8 @@ impl Controller {
         };
 
         tracing::debug!("Account hint: {:?}", hint);
+
+        self.kakao.access_token.set(token_response.access_token);
 
         self.nav.replace(Route::LoginPage {
             lang: self.lang,

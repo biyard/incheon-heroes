@@ -14,4 +14,8 @@ impl GoogleService {
         };
         use_context_provider(move || srv);
     }
+
+    pub fn logged_in(&self) -> bool {
+        !self.access_token().is_empty()
+    }
 }
