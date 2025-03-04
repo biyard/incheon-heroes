@@ -92,7 +92,7 @@ fn app() -> Element {
             rel: "stylesheet",
         }
         document::Script { src: "https://cdn.tailwindcss.com" }
-        Responsive { Router::<Route> {} }
+        Responsive { mobile_first: false, desktop: 1200.1, Router::<Route> {} }
     }
 }
 
