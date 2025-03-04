@@ -44,8 +44,8 @@ translate! {
     },
 
     placeholder_source: {
-        ko: "원본 파일(SVG, AI 등)을 업로드하세요",
-        en: "Upload the source file like SVG, AI, etc.",
+        ko: "원본 파일(SVG, AI 등)을 업로드하세요.\n\n원본 파일이 제공되지 않을 경우, 썸네일 이미지가 원본 파일로 자동 대체됩니다. 다만, 썸네일 이미지는 해상도 및 품질이 제한될 수 있으므로, 원본 파일을 추가로 제공하는 것을 권장합니다.",
+        en: "Upload the source file like SVG, AI, etc.\n\nIf the original file is not provided, the thumbnail image will automatically be used as the original file. However, since the thumbnail image may have limitations in resolution and quality, it is recommended to additionally provide the original file.",
     },
 
     placeholder_title: {
@@ -82,9 +82,4 @@ translate! {
         ko: "취소",
         en: "Cancel",
     },
-
-    info_source_upload: {
-        ko: "원본 파일이 제공되지 않을 경우, 썸네일 이미지가 원본 파일로 자동 대체됩니다. 다만, 썸네일 이미지는 해상도 및 품질이 제한될 수 있으므로, 원본 파일을 추가로 제공하는 것을 권장합니다.",
-        en: "If the original file is not provided, the thumbnail image will automatically be used as the original file. However, since the thumbnail image may have limitations in resolution and quality, it is recommended to additionally provide the original file.",
-    }
 }

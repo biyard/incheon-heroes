@@ -212,10 +212,6 @@ pub fn SingleContent(
                         }
                     }
                 }
-
-                p { class: "text-[12px] text-[#8d8d8d]",
-                    "{tr.info_source_upload}"
-                }
             }
 
             InputWithLabel {
