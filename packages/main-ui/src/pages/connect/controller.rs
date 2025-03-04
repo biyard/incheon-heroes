@@ -4,7 +4,6 @@ use dioxus_oauth::prelude::FirebaseService;
 use dioxus_translate::Language;
 use dto::User;
 use google_wallet::drive_api::DriveApi;
-use wasm_bindgen::JsValue;
 
 use crate::{
     config,
@@ -47,7 +46,7 @@ impl Controller {
         let cred = self
             .firebase
             .sign_in_with_popup(vec![
-                "https://www.googleapis.com/auth/drive.appdata".to_string(),
+                "https://www.googleapis.com/auth/drive.appdata".to_string()
             ])
             .await;
 
@@ -251,24 +250,6 @@ impl Controller {
             }
         };
 
-        // Listen for account changes
-        let user_service = self.user.clone();
-        let callback = wasm_bindgen::prelude::Closure::wrap(Box::new(move |accounts: JsValue| {
-            let accounts: Vec<String> =
-                serde_wasm_bindgen::from_value(accounts).unwrap_or_default();
-            if let Some(new_address) = accounts.get(0) {
-                spawn(async move {
-                    user_service
-                        .handle_account_change(new_address.clone())
-                        .await;
-                });
-            }
-        }) as Box<dyn FnMut(JsValue)>);
-
-        let k = dto::wallets::kaikas_browser::klaytn().unwrap();
-        k.on("accountsChanged", callback.as_ref().unchecked_ref());
-        callback.forget();
-
         if self.nav.can_go_back() {
             self.nav.go_back();
         } else {
@@ -276,5 +257,6 @@ impl Controller {
             self.nav.replace(Route::HomePage { lang: self.lang });
         }
     }
+
     pub async fn handle_internet_identity(&self) {}
 }

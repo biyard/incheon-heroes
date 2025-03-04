@@ -59,15 +59,6 @@ impl KaikasWallet {
 
         tracing::debug!("selected address: {address}");
 
-         // Listen for account changes
-         let k_clone = k.clone();
-         let callback = Closure::wrap(Box::new(move |accounts: JsValue| {
-             let accounts: Vec<String> = serde_wasm_bindgen::from_value(accounts).unwrap_or_default();
-             if let Some(new_address) = accounts.get(0) {
-                 tracing::debug!("Account changed to: {new_address}");
-             }
-         }) as Box<dyn FnMut(JsValue)>);
-
         Ok(Self {
             address,
             chain_id: chain_id.as_u64(),

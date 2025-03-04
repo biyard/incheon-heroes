@@ -327,33 +327,6 @@ impl UserService {
     pub fn icp_address(&self) -> Option<String> {
         self.wallet().principal()
     }
-
-    pub async fn handle_account_change(&mut self, new_address: String) {
-        // Update the wallet with the new address
-        let wallet = match self.wallet() {
-            UserWallet::KaiaWallet(mut wallet) => {
-                wallet.address = new_address.clone();
-                UserWallet::KaiaWallet(wallet)
-            }
-            _ => return,
-        };
-
-        self.set_wallet(wallet).await;
-
-        // Re-fetch user data with the new address
-        let endpoint = config::get().new_api_endpoint;
-        match User::get_client(endpoint)
-            .get_user_by_address(new_address)
-            .await
-        {
-            Ok(user) => {
-                self.user.set(Some(user));
-            }
-            Err(e) => {
-                tracing::error!("Failed to get user by address: {e}");
-            }
-        }
-    }
 }
 
 #[cfg_attr(not(feature = "server"), async_trait(?Send))]
