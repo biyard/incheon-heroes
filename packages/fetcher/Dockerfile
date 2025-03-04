@@ -1,9 +1,9 @@
-FROM alpine
+FROM ubuntu
 
 RUN apt-get update && apt-get install -y libssl-dev ca-certificates && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /usr/src/app
-COPY ./fetcher ./bootstrap
+COPY --from=builder packages/fetcher/target/release/fetcher ./bootstrap
 
 EXPOSE 3000
 

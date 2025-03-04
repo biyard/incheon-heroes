@@ -35,4 +35,5 @@ docker.login:
 	aws ecr get-login-password --region $(REGION) | docker login --username AWS --password-stdin $(AWS_ACCOUNT_ID).dkr.ecr.$(REGION).amazonaws.com
 
 docker.build:
-	docker build -t $(ECR_NAME):$(COMMIT) --no-cache -f Dockerfile $(PWD)/target/release
+	# docker run -it --rm --name $(SERVICE) -v $(PWD)/../..:/app -w /app/packages/$(SERVICE) rust:slim-bullseye sh -c '$(BUILD_ENV) cargo build --release'
+	docker build -t $(ECR_NAME):$(COMMIT) --build-arg 'BUILD_ENV=$(BUILD_ENV)' --no-cache -f Dockerfile $(WORKSPACE_ROOT)
