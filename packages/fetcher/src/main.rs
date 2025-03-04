@@ -3,7 +3,6 @@ pub mod incheon_contents_etl;
 
 use incheon_contents_etl::incheon_contents_etl;
 use tokio::net::TcpListener;
-use tracing::subscriber::set_global_default;
 
 use by_types::DatabaseConfig;
 use dto::*;
@@ -26,6 +25,7 @@ async fn migration(pool: &sqlx::Pool<sqlx::Postgres>) -> Result<()> {
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    let app = by_axum::new();
     let conf = config::get();
 
     let pool = if let DatabaseConfig::Postgres { url, pool_size } = conf.database {
@@ -39,17 +39,14 @@ async fn main() -> Result<()> {
 
     migration(&pool).await?;
 
-    let sub = tracing_subscriber::FmtSubscriber::builder()
-        .with_max_level(config::log_level())
-        .finish();
-
-    let _ = set_global_default(sub);
-
     tokio::spawn(async move {
-        let _ = incheon_contents_etl(&pool).await;
+        tracing::info!("Starting fetcher");
+        match incheon_contents_etl(&pool).await {
+            Ok(_) => tracing::info!("Fetcher done"),
+            Err(e) => tracing::error!("Fetcher failed: {:?}", e),
+        };
     });
 
-    let app = by_axum::new();
     let listener = TcpListener::bind("0.0.0.0:3000").await.unwrap();
 
     let _ = by_axum::serve(listener, app).await;

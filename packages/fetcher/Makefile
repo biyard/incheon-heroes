@@ -26,7 +26,7 @@ run:
 build: bin.build docker.login docker.build docker.push
 
 bin.build:
-	$(BUILD_ENV) cargo build --release -p fetcher
+	$(BUILD_ENV) cargo build --release
 
 docker.build:
 	docker build -t $(ECR_NAME):$(COMMIT) -f Dockerfile $(PWD)/target/release
