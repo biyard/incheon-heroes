@@ -68,8 +68,8 @@ translate! {
     },
 
     contents: {
-        ko: "CONTENTS",
-        en: "CONTENTS",
+        ko: "GALLERY",
+        en: "GALLERY",
     },
 }
 

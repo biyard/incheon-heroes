@@ -168,7 +168,7 @@ jobs:
           make deploy
 
   fetcher:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
         with:
@@ -212,16 +212,12 @@ jobs:
           DATABASE_TYPE: postgres
           DATABASE_URL: ${{ secrets.DEV_DATABASE_URL }}
 
-          KLAYTN_FEEPAYER_KEY: ${{ secrets.DEV_KLAYTN_FEEPAYER_KEY }}
-          KLAYTN_FEEPAYER_ADDR: ${{ secrets.DEV_KLAYTN_FEEPAYER_ADDR }}
-          KLAYTN_OWNER_KEY: ${{ secrets.DEV_KLAYTN_FEEPAYER_KEY }}
-          KLAYTN_OWNER_ADDR: ${{ secrets.DEV_KLAYTN_FEEPAYER_KEY_ADDR }}
           KLAYTN_ENDPOINT: https://public-en-kairos.node.kaia.io
           CONTRACT_INCHEON_CONTENTS: "0x54a01cd46b7f585584Fe4a3F7dafC25EE1fac0c9"
+          REPO_NAME: incheonheroes/fetcher
 
           ENABLE_S3: false
           ENABLE_FARGATE: true
-          ENABLE_DYNAMO: false
           ENABLE_LAMBDA: false
         run: |
           npm i -g aws-cdk
