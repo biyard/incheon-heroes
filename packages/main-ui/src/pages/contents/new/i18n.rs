@@ -44,8 +44,8 @@ translate! {
     },
 
     placeholder_source: {
-        ko: "원본 파일(SVG, AI 등)을 업로드하세요",
-        en: "Upload the source file like SVG, AI, etc.",
+        ko: "원본 파일(SVG, AI 등)을 업로드하세요.\n\n원본 파일이 제공되지 않을 경우, 썸네일 이미지가 원본 파일로 자동 대체됩니다. 다만, 썸네일 이미지는 해상도 및 품질이 제한될 수 있으므로, 원본 파일을 추가로 제공하는 것을 권장합니다.",
+        en: "Upload the source file like SVG, AI, etc.\n\nIf the original file is not provided, the thumbnail image will automatically be used as the original file. However, since the thumbnail image may have limitations in resolution and quality, it is recommended to additionally provide the original file.",
     },
 
     placeholder_title: {
@@ -81,5 +81,28 @@ translate! {
     btn_cancel: {
         ko: "취소",
         en: "Cancel",
+    },
+}
+
+translate! {
+    ConsentPopupTranslate;
+
+    title: {
+        ko: "NFT 민팅 및 사용권 동의",
+        en: "NFT Minting and Usage Agreement",
+    },
+
+    minting_consent: {
+        ko: "인천히어로즈에서 NFT로 민팅된 모든 이미지는 오픈소스로 제공되며, 저작권 및 사용 권한이 공개되어 전 세계 누구나 제한 없이 자유롭게 활용, 수정, 배포할 수 있음을 확인하며 이에 동의합니다.",
+        en: "All images minted as NFTs by Incheon Heroes are provided as open source, with copyright and usage rights publicly disclosed, allowing anyone worldwide to freely use, modify, and distribute them without restrictions. I acknowledge and agree to these terms",
+    },
+
+    accept: {
+        ko: "동의 및 NFT 생성",
+        en: "Agree and Create NFT",
+    },
+    decline: {
+        ko: "거부하기",
+        en: "Decline",
     },
 }

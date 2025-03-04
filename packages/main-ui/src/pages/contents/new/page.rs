@@ -55,8 +55,7 @@ pub fn NewContentsPage(lang: Language) -> Element {
 
             div { class: "fixed bottom-0 left-0 w-full h-[110px] bg-white z-[10] flex flex-row items-center justify-center",
                 div { class: "w-full max-w-[1440px] flex flex-row justify-between items-center max-[1440px]:px-[20px]",
-                    div {
-                    }
+                    div {}
 
                     div { class: "flex flex-row items-center gap-[20px] text-white font-bold text-[16px]",
                         button {
@@ -67,7 +66,9 @@ pub fn NewContentsPage(lang: Language) -> Element {
                         button {
                             class: "bg-[#24B28C] h-[50px] py-[15px] px-[24px] hover:bg-[#34a39d] rounded-[12px]",
                             onclick: move |_| async move {
-                                let _ = ctrl.handle_submit().await;
+                                if let Err(e) = ctrl.handle_submit().await {
+                                    btracing::error!("{}", e.translate(& lang));
+                                }
                             },
                             "{tr.btn_submit_nft}"
                         }
@@ -151,7 +152,7 @@ pub fn SingleContent(
                         onchange: move |hover| dropping.set(hover),
                         if let Some(image) = thumbnail() {
                             img {
-                                class: "w-full max-w-[200px] object-cover rounded-[12px]",
+                                class: "w-full object-cover rounded-[12px]",
                                 src: image,
                             }
                         } else {
@@ -172,7 +173,6 @@ pub fn SingleContent(
             div { class: "w-full flex flex-col gap-[10px] items-start justify-start",
                 label { class: "text-[#5B5B5B] font-bold text-[14px] flex flex-row items-center",
                     span { "{tr.label_source}" }
-                    span { class: "text-[#FF0000]", "*" }
                 }
 
                 div { class: "w-full p-[16px] flex flex-col items-start justify-start rounded-[12px] border-[1px] border-[#dfdfdf] text-[#979797] font-normal text-[15px] bg-transparent gap-[16px]",

@@ -131,6 +131,12 @@ pub enum Error {
         en = "NFT creators can not mint their own NFT"
     )]
     CannotMintedByCreator,
+
+    #[translate(
+        ko = "민팅된 NFT에 대한 사용권에 동의해야합니다.",
+        en = "You must agree to the terms of use for the minted NFT."
+    )]
+    MustAgreeToTerms,
 }
 
 impl std::error::Error for Error {}
