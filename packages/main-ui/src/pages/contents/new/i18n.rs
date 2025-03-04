@@ -83,3 +83,26 @@ translate! {
         en: "Cancel",
     },
 }
+
+translate! {
+    ConsentPopupTranslate;
+
+    title: {
+        ko: "NFT 민팅 및 사용권 동의",
+        en: "NFT Minting and Usage Agreement",
+    },
+
+    minting_consent: {
+        ko: "인천히어로즈에서 NFT로 민팅된 모든 이미지는 오픈소스로 제공되며, 저작권 및 사용 권한이 공개되어 전 세계 누구나 제한 없이 자유롭게 활용, 수정, 배포할 수 있음을 확인하며 이에 동의합니다.",
+        en: "All images minted as NFTs by Incheon Heroes are provided as open source, with copyright and usage rights publicly disclosed, allowing anyone worldwide to freely use, modify, and distribute them without restrictions. I acknowledge and agree to these terms",
+    },
+
+    accept: {
+        ko: "동의 및 NFT 생성",
+        en: "Agree and Create NFT",
+    },
+    decline: {
+        ko: "거부하기",
+        en: "Decline",
+    },
+}

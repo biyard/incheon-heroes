@@ -1,11 +1,15 @@
 use by_macros::*;
 use dioxus::{CapturedError, prelude::*};
+use dioxus_popup::PopupService;
 use dioxus_translate::Language;
-use dto::{AssetPresignedUris, Content, ContentCreateRequest};
+use dto::{AssetPresignedUris, ContentCreateRequest};
 use reqwest::header::{CONTENT_TYPE, HeaderMap, HeaderValue};
 use validator::Validate;
 
-use crate::{config, route::Route, services::user_service::UserService};
+use crate::{
+    config, pages::new::consent_popup::ConsentPopup, route::Route,
+    services::user_service::UserService,
+};
 
 #[derive(Clone, Copy, DioxusController)]
 pub struct Controller {
@@ -13,6 +17,7 @@ pub struct Controller {
     pub contents: Signal<Vec<ContentCreateRequest>>,
     pub user_service: UserService,
     pub nav: Navigator,
+    pub popup: PopupService,
 }
 
 impl Controller {
@@ -22,6 +27,7 @@ impl Controller {
             nav: use_navigator(),
             user_service: use_context(),
             contents: use_signal(|| vec![ContentCreateRequest::default()]),
+            popup: use_context(),
         };
 
         Ok(ctrl)
@@ -53,21 +59,18 @@ impl Controller {
         }
     }
 
-    pub async fn handle_submit(&self) -> std::result::Result<(), CapturedError> {
+    pub async fn handle_submit(&mut self) -> dto::Result<()> {
         for content in self.contents() {
             content.validate()?;
         }
 
-        let endpoint = config::get().new_api_endpoint;
-        if let Err(e) = Content::get_client(endpoint)
-            .create_bulk(self.contents())
-            .await
-        {
-            tracing::error!("Failed to create content: {:?}", e);
-            return Ok(());
-        }
-
-        self.nav.replace(Route::ContentsPage { lang: self.lang });
+        self.popup.open(rsx! {
+            ConsentPopup {
+                class: "w-full max-w-[400px]",
+                lang: self.lang,
+                contents: self.contents(),
+            }
+        });
 
         Ok(())
     }
