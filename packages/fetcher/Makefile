@@ -28,11 +28,11 @@ build: bin.build docker.login docker.build docker.push
 bin.build:
 	$(BUILD_ENV) cargo build --release
 
-docker.build:
-	docker build -t $(ECR_NAME):$(COMMIT) -f Dockerfile $(PWD)/target/release
-
 docker.push:
 	docker push $(ECR_NAME):$(COMMIT)
 
 docker.login:
 	aws ecr get-login-password --region $(REGION) | docker login --username AWS --password-stdin $(AWS_ACCOUNT_ID).dkr.ecr.$(REGION).amazonaws.com
+
+docker.build:
+	docker build -t $(ECR_NAME):$(COMMIT) --no-cache -f Dockerfile $(PWD)/target/release

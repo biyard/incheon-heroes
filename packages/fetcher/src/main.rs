@@ -41,10 +41,12 @@ async fn main() -> Result<()> {
 
     tokio::spawn(async move {
         tracing::info!("Starting fetcher");
-        match incheon_contents_etl(&pool).await {
-            Ok(_) => tracing::info!("Fetcher done"),
-            Err(e) => tracing::error!("Fetcher failed: {:?}", e),
-        };
+        loop {
+            match incheon_contents_etl(&pool).await {
+                Ok(_) => tracing::info!("Fetcher done"),
+                Err(e) => tracing::error!("Fetcher failed: {:?}", e),
+            };
+        }
     });
 
     let listener = TcpListener::bind("0.0.0.0:3000").await.unwrap();
