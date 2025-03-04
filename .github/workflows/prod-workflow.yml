@@ -211,12 +211,9 @@ jobs:
           DATABASE_TYPE: postgres
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
-          KLAYTN_FEEPAYER_KEY: ${{ secrets.PROD_KLAYTN_FEEPAYER_KEY }}
-          KLAYTN_FEEPAYER_ADDR: ${{ secrets.PROD_KLAYTN_FEEPAYER_ADDR }}
-          KLAYTN_OWNER_KEY: ${{ secrets.PROD_KLAYTN_OWNER_KEY }}
-          KLAYTN_OWNER_ADDR: ${{ secrets.PROD_KLAYTN_OWNER_KEY_ADDR }}
           KLAYTN_ENDPOINT: https://public-en.node.kaia.io
           CONTRACT_INCHEON_CONTENTS: "0x345F050DdcdBdEA04Cd34E8456f48160d6b1de83"
+          REPO_NAME: incheonheroes/fetcher
 
           ENABLE_S3: false
           ENABLE_FARGATE: true

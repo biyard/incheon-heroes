@@ -16,10 +16,6 @@ pub struct ContractConfig {
 #[derive(Debug)]
 pub struct KlaytnConfig {
     pub endpoint: &'static str,
-    pub owner_key: &'static str,
-    pub owner_address: &'static str,
-    pub feepayer_key: &'static str,
-    pub feepayer_address: &'static str,
 }
 
 impl Default for Config {
@@ -28,13 +24,6 @@ impl Default for Config {
             env: option_env!("ENV").expect("You must set ENV"),
             klaytn: KlaytnConfig {
                 endpoint: option_env!("KLAYTN_ENDPOINT").expect("You must set KLAYTN_ENDPOINT"),
-                owner_key: option_env!("KLAYTN_OWNER_KEY").expect("You must set KLAYTN_OWNER_KEY"),
-                owner_address: option_env!("KLAYTN_OWNER_ADDR")
-                    .expect("You must set KLAYTN_OWNER_ADDRESS"),
-                feepayer_key: option_env!("KLAYTN_FEEPAYER_KEY")
-                    .expect("You must set KLAYTN_FEEPAYER_KEY"),
-                feepayer_address: option_env!("KLAYTN_FEEPAYER_ADDR")
-                    .expect("You must set KLAYTN_FEEPAYER_ADDRESS"),
             },
             contracts: ContractConfig {
                 incheon_contents: option_env!("CONTRACT_INCHEON_CONTENTS")
