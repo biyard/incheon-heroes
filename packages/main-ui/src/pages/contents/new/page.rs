@@ -172,7 +172,6 @@ pub fn SingleContent(
             div { class: "w-full flex flex-col gap-[10px] items-start justify-start",
                 label { class: "text-[#5B5B5B] font-bold text-[14px] flex flex-row items-center",
                     span { "{tr.label_source}" }
-                    span { class: "text-[#FF0000]", "*" }
                 }
 
                 div { class: "w-full p-[16px] flex flex-col items-start justify-start rounded-[12px] border-[1px] border-[#dfdfdf] text-[#979797] font-normal text-[15px] bg-transparent gap-[16px]",
