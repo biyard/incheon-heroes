@@ -20,6 +20,7 @@ pub fn MintingPopup(lang: Language, id: ReadOnlySignal<i64>) -> Element {
     let mut checked = use_signal(|| false);
     let mut popup: PopupService = use_context();
     let mut failed = use_signal(|| false);
+    let mut errors = use_signal(|| "".to_string());
 
     rsx! {
         div { class: "carousel w-full max-w-[480px] mx-auto",
@@ -69,7 +70,7 @@ pub fn MintingPopup(lang: Language, id: ReadOnlySignal<i64>) -> Element {
                                 spawn(async move {
                                     let endpoint = config::get().new_api_endpoint;
                                     if let Err(e) = Content::get_client(endpoint).mint(id).await {
-                                        tracing::error!("mint failed: {:?}", e);
+                                        errors.set(e.translate(&lang).to_string());
                                         failed.set(true);
                                     }
                                     gloo_timers::future::TimeoutFuture::new(500).await;
@@ -121,7 +122,7 @@ pub fn MintingPopup(lang: Language, id: ReadOnlySignal<i64>) -> Element {
                         }
                         p { class: "w-full text-center text-[15px] tracking-wide text-[#5B5B5B] font-bold",
                             if failed() {
-                                "{tr.failed_text}"
+                                "{errors}"
                             } else {
                                 "{tr.complete_text}"
                             }

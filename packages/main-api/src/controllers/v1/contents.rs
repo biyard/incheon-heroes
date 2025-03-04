@@ -5,9 +5,9 @@ use by_axum::aide;
 use by_axum::{
     auth::Authorization,
     axum::{
+        Extension, Json,
         extract::{Path, Query, State},
         routing::{get, post},
-        Extension, Json,
     },
 };
 use by_types::{AwsConfig, QueryResponse};
@@ -191,9 +191,7 @@ impl ContentController {
         .await?;
 
         if let Some(true) = already_minted {
-            return Err(Error::ValidationError(
-                "Content already minted by this user".to_string(),
-            ));
+            return Err(Error::AlreadyMinted);
         }
 
         self.content_download_repo
@@ -207,7 +205,20 @@ impl ContentController {
             .fetch_optional(&mut *tx)
             .await?;
 
+        let user = User::query_builder()
+            .id_equals(content.clone().unwrap_or_default().creator_id)
+            .query()
+            .map(User::from)
+            .fetch_optional(&mut *tx)
+            .await?;
+
         tx.commit().await?;
+
+        if let Some(user) = &user {
+            if &user.evm_address != &evm_address {
+                return Err(Error::CannotMintedByCreator);
+            }
+        }
 
         let content = content.ok_or(Error::NotFoundContent)?;
         if let Err(e) = self
@@ -311,7 +322,7 @@ impl ContentController {
         let repo = Content::get_repository(pool.clone());
         let content_download_repo = ContentDownload::get_repository(pool.clone());
         use aws_config::BehaviorVersion;
-        use aws_config::{defaults, Region};
+        use aws_config::{Region, defaults};
         use aws_sdk_s3::config::Credentials;
 
         let config = defaults(BehaviorVersion::latest())
