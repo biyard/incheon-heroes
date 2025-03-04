@@ -30,7 +30,7 @@ bin.build:
 	$(BUILD_ENV) cargo build --release -p fetcher
 
 docker.build:
-	docker build -t $(REPO_NAME):$(COMMIT) -f Dockerfile $(WORKSPACE_ROOT)/target/release
+	docker build -t $(REPO_NAME):$(COMMIT) -f Dockerfile $(PWD)/target/release
 
 docker.push:
 	docker push $(REPO_NAME):$(COMMIT)
