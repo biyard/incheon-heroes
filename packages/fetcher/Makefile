@@ -1,6 +1,7 @@
 PROJECT ?= incheonheroes
 SERVICE ?= fetcher
 ENV ?= dev
+AWS_ACCOUNT_ID ?= $(shell aws sts get-caller-identity --query "Account" --output text)
 
 WORKSPACE_ROOT ?= $(PWD)/../..
 COMMIT ?= $(shell git rev-parse --short HEAD)
