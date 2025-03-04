@@ -26,6 +26,7 @@ pub fn ShopByIdPage(id: ReadOnlySignal<String>, lang: Language) -> Element {
         Language::En => &item.name_en.split_once(" ").unwrap().1,
     };
     let desc = ctrl.description(lang)?;
+    let detail = ctrl.detail(lang)?;
     let remaining_quantity = item.remaining.as_u64();
 
     rsx! {
@@ -131,7 +132,7 @@ pub fn ShopByIdPage(id: ReadOnlySignal<String>, lang: Language) -> Element {
                 div {
                     id: "shop_item_details",
                     class: "w-full bg-white/40 rounded-[10px] px-[50px] p-[40px] text-center",
-                    dangerous_inner_html: "{ctrl.details()?.1}",
+                    dangerous_inner_html: "{detail}",
                 }
             } // end of container
 
