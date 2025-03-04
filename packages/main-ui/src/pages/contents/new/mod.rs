@@ -1,3 +1,4 @@
+mod consent_popup;
 mod controller;
 mod i18n;
 mod page;

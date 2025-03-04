@@ -55,8 +55,7 @@ pub fn NewContentsPage(lang: Language) -> Element {
 
             div { class: "fixed bottom-0 left-0 w-full h-[110px] bg-white z-[10] flex flex-row items-center justify-center",
                 div { class: "w-full max-w-[1440px] flex flex-row justify-between items-center max-[1440px]:px-[20px]",
-                    div {
-                    }
+                    div {}
 
                     div { class: "flex flex-row items-center gap-[20px] text-white font-bold text-[16px]",
                         button {
@@ -67,7 +66,9 @@ pub fn NewContentsPage(lang: Language) -> Element {
                         button {
                             class: "bg-[#24B28C] h-[50px] py-[15px] px-[24px] hover:bg-[#34a39d] rounded-[12px]",
                             onclick: move |_| async move {
-                                let _ = ctrl.handle_submit().await;
+                                if let Err(e) = ctrl.handle_submit().await {
+                                    btracing::error!("{}", e.translate(& lang));
+                                }
                             },
                             "{tr.btn_submit_nft}"
                         }
