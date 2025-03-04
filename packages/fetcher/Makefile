@@ -23,7 +23,7 @@ BUILD_ENV ?= ENV=$(ENV) RUST_LOG=$(RUST_LOG) VERSION=$(VERSION) COMMIT=$(COMMIT)
 run:
 	$(BUILD_ENV) cargo watch -x run -w src
 
-build: bin.build docker.login docker.build docker.push
+build: docker.login docker.build docker.push
 
 bin.build:
 	$(BUILD_ENV) cargo build --release
@@ -35,5 +35,5 @@ docker.login:
 	aws ecr get-login-password --region $(REGION) | docker login --username AWS --password-stdin $(AWS_ACCOUNT_ID).dkr.ecr.$(REGION).amazonaws.com
 
 docker.build:
-	# docker run -it --rm --name $(SERVICE) -v $(PWD)/../..:/app -w /app/packages/$(SERVICE) rust:slim-bullseye sh -c 'apt update && apt install -y libssl-dev ca-certificates && rm -rf /var/lib/apt/lists/* && $(BUILD_ENV) cargo build --release'
+	docker run -it --rm --name $(SERVICE) -v $(PWD)/../..:/app -w /app/packages/$(SERVICE) rust:slim-bookworm sh -c 'apt-get update && apt-get install -y libssl-dev pkg-config ca-certificates && $(BUILD_ENV) cargo build --release'
 	docker build -t $(ECR_NAME):$(COMMIT) --no-cache -f Dockerfile $(PWD)/target/release
