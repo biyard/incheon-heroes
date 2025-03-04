@@ -17,7 +17,6 @@ use futures_util::stream::StreamExt;
 use reqwest::Url;
 use sqlx::postgres::PgPoolOptions;
 use std::collections::HashMap;
-use tokio::io::AsyncReadExt;
 use tokio::sync::broadcast;
 
 async fn migration(pool: &sqlx::Pool<sqlx::Postgres>) -> Result<()> {
@@ -193,17 +192,10 @@ async fn insert_db(pool: sqlx::Pool<Postgres>, log: EventLog) -> Result<()> {
 }
 /// Extracts function and event signatures from a JSON ABI
 async fn get_event_signature() -> Result<HashMap<String, (String, Event)>> {
-    let mut file = tokio::fs::File::open("../main-api/src/abi/incheon-contents.json")
-        .await
-        .map_err(|e| Error::Klaytn(format!("Failed to open ABI file: {}", e)))?;
-
-    let mut abi_json = String::new();
-    file.read_to_string(&mut abi_json)
-        .await
-        .map_err(|e| Error::Klaytn(format!("Failed to read ABI file: {}", e)))?;
-
-    let json_abi: JsonAbi = serde_json::from_str(&abi_json)
-        .map_err(|e| Error::Klaytn(format!("Failed to parse ABI: {}", e)))?;
+    let json_abi: JsonAbi = serde_json::from_str(&include_str!(
+        "../../main-api/src/abi/incheon-contents.json"
+    ))
+    .map_err(|e| Error::Klaytn(format!("Failed to parse ABI: {}", e)))?;
 
     let mut event_map = HashMap::new();
 
