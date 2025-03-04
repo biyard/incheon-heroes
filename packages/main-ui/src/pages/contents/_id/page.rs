@@ -11,6 +11,7 @@ use by_components::icons::logo::OpenSea;
 use dioxus::prelude::*;
 use dioxus_translate::*;
 use dto::Content;
+use dto::ContentSummary;
 use dto::UserContents;
 
 #[component]
@@ -41,7 +42,11 @@ pub fn ContentsByIdPage(id: ReadOnlySignal<i64>, lang: Language) -> Element {
                         )
                     }
                 }
-                ColGridCards { lang, contents: user.contents.clone() }
+                ColGridCards {
+                    lang,
+                    contents: user.contents.clone().into_iter().map(Into::into).collect::<Vec<ContentSummary>>(),
+
+                }
             }
         }
     } // end of this page
