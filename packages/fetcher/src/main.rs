@@ -3,11 +3,12 @@ pub mod config;
 use alloy::dyn_abi::EventExt;
 use alloy::eips::BlockNumberOrTag;
 use alloy::json_abi::{Event, JsonAbi};
-use alloy::primitives::{keccak256, Address};
+use alloy::primitives::{Address, keccak256};
 use alloy::providers::{Provider, ProviderBuilder, WsConnect};
 use alloy::rpc::types::{BlockTransactionsKind, Filter, Log};
 use dto::events::{EventRepository, UserNftTransferRepository};
 use sqlx::Postgres;
+use tokio::net::TcpListener;
 use tracing::subscriber::set_global_default;
 
 use by_types::DatabaseConfig;
@@ -138,11 +139,10 @@ async fn main() -> Result<()> {
         }
     });
 
-    // Wait for a termination signal
-    tokio::signal::ctrl_c()
-        .await
-        .map_err(|e| Error::Unknown(e.to_string()))?;
-    tracing::info!("Shutting down gracefully");
+    let app = by_axum::new();
+    let listener = TcpListener::bind("0.0.0.0:3000").await.unwrap();
+
+    let _ = by_axum::serve(listener, app).await;
 
     Ok(())
 }
