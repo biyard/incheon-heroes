@@ -31,6 +31,9 @@ pub struct Controller {
     pub token_histories: Resource<Vec<AccountTokenHistory>>,
     pub goods_info: Resource<Vec<GoodsItem>>,
 
+    pub account_exp: Resource<u64>,
+    pub account_activities: Resource<Vec<AccountActivity>>,
+
     klaytn_scope_endpoint: Signal<String>,
 }
 
@@ -54,6 +57,38 @@ impl Controller {
                 }
             }
         })?;
+
+        let account_exp = use_resource(move || async move {
+            let w = user_service.wallet();
+            let address = match w.evm_address() {
+                Some(address) => address,
+                None => return 0,
+            };
+
+            match (klaytn.account)().get_account_exp(address).await {
+                Ok(exp) => exp.as_u64(),
+                Err(e) => {
+                    tracing::error!("Failed to get exp: {e:?}");
+                    0
+                }
+            }
+        });
+
+        let account_activities = use_resource(move || async move {
+            let w = user_service.wallet();
+            let address = match w.evm_address() {
+                Some(address) => address,
+                None => return vec![],
+            };
+
+            match (klaytn.account)().get_account_activities(&address).await {
+                Ok(activities) => activities,
+                Err(e) => {
+                    tracing::error!("Failed to get activities: {e:?}");
+                    vec![]
+                }
+            }
+        });
 
         let experience_histories = use_server_future(move || {
             let account = user_service.evm_address().unwrap_or_default();
@@ -102,6 +137,8 @@ impl Controller {
             popup_service: use_signal(|| popup_service),
             mission_histories,
             experience_histories,
+            account_exp,
+            account_activities,
             token_histories,
             goods_info,
 
@@ -154,16 +191,15 @@ impl Controller {
         self.user_service.wallet().translate(&self.lang)
     }
 
-    pub async fn claim_exp(&self) {
-        let mut user: UserService = use_context();
+    pub async fn claim_exp(&mut self) {
         let klaytn: Klaytn = use_context();
         let account = klaytn.account.cloned();
 
         match account.claim_account_exp().await {
             Ok(_) => {
                 btracing::debug!("success to claim account exp");
-                user.account_exp.restart();
-                user.account_activities.restart();
+                self.account_exp.restart();
+                self.account_activities.restart();
             }
             Err(e) => {
                 btracing::error!("claim exp failed: {:?}", e);
@@ -173,7 +209,7 @@ impl Controller {
 
     pub fn open_claim_modal(&self, lang: Language, account_activities: Vec<AccountActivity>) {
         let mut popup_service = (self.popup_service)();
-        let ctrl = self.clone();
+        let mut ctrl = self.clone();
 
         popup_service
             .open(rsx! {

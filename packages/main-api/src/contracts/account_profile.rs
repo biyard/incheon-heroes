@@ -43,6 +43,8 @@ impl AccountProfileContract {
 
         let key = format!("{}-{}", msg, completed_at);
 
+        tracing::debug!("key: {}", key);
+
         let activity = Activity {
             key,
             mission_info: msg,

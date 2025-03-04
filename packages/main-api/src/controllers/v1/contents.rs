@@ -194,10 +194,6 @@ impl ContentController {
             return Err(Error::AlreadyMinted);
         }
 
-        self.content_download_repo
-            .insert_with_tx(&mut *tx, user_id, content_id)
-            .await?;
-
         let content = Content::query_builder(user_id)
             .id_equals(content_id)
             .query()
@@ -205,20 +201,27 @@ impl ContentController {
             .fetch_optional(&mut *tx)
             .await?;
 
-        let user = User::query_builder()
+        let creator = User::query_builder()
             .id_equals(content.clone().unwrap_or_default().creator_id)
             .query()
             .map(User::from)
             .fetch_optional(&mut *tx)
             .await?;
 
-        tx.commit().await?;
+        tracing::debug!("creator: {:?}", creator);
+        tracing::debug!("requestor: {:?}", evm_address);
 
-        if let Some(user) = &user {
-            if &user.evm_address != &evm_address {
+        if let Some(user) = &creator {
+            if &user.evm_address.to_lowercase() == &evm_address.to_lowercase() {
                 return Err(Error::CannotMintedByCreator);
             }
         }
+
+        self.content_download_repo
+            .insert_with_tx(&mut *tx, user_id, content_id)
+            .await?;
+
+        tx.commit().await?;
 
         let content = content.ok_or(Error::NotFoundContent)?;
         if let Err(e) = self
@@ -229,9 +232,18 @@ impl ContentController {
             tracing::error!("some error on klaytn call {e}");
         }
 
-        self.account_profile
-            .add_account_activity(evm_address, "Content Minted".to_string(), 300, 0)
-            .await?;
+        if let Some(creator) = creator {
+            tracing::debug!("reward to {:?}", creator.evm_address);
+            let now = chrono::Utc::now().timestamp();
+            self.account_profile
+                .add_account_activity(
+                    creator.evm_address,
+                    "Content Minted".to_string(),
+                    300,
+                    now as u64,
+                )
+                .await?;
+        }
 
         Ok(Json(content))
     }

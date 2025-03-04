@@ -49,13 +49,9 @@ pub fn MyProfilePage(lang: Language) -> Element {
         },
     };
 
-    let account_exp = ctrl
-        .user_service
-        .account_exp()
-        .unwrap_or(U256::from(0))
-        .as_u64();
+    let account_exp = ctrl.account_exp()?;
 
-    let account_activities = ctrl.user_service.account_activities().unwrap_or(vec![]);
+    let account_activities = ctrl.account_activities()?;
 
     rsx! {
         by_components::meta::MetaPage { title: "{tr.title}" }
