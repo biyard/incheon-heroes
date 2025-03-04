@@ -3,7 +3,7 @@ FROM ubuntu
 RUN apt-get update && apt-get install -y libssl-dev ca-certificates && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /usr/src/app
-COPY --from=builder packages/fetcher/target/release/fetcher ./bootstrap
+COPY ./fetcher ./bootstrap
 
 EXPOSE 3000
 
