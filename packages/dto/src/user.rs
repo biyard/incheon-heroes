@@ -1,7 +1,7 @@
 #![allow(unused_variables)]
 #[cfg(feature = "server")]
 use by_axum::aide;
-use by_macros::{api_model, ApiModel};
+use by_macros::{ApiModel, api_model};
 use validator::Validate;
 
 use crate::ContentSummary;
@@ -68,5 +68,28 @@ pub struct UserContents {
     pub evm_address: String,
 
     #[api_model(one_to_many = contents, foreign_key = creator_id, type = JSONB)]
-    pub contents: Vec<ContentSummary>,
+    pub contents: Vec<UserContent>,
+}
+
+#[api_model(table = contents)]
+pub struct UserContent {
+    pub id: i64,
+    pub created_at: i64,
+    pub updated_at: i64,
+
+    pub thumbnail_image: String,
+    pub source: String,
+}
+
+impl Into<ContentSummary> for UserContent {
+    fn into(self) -> ContentSummary {
+        ContentSummary {
+            id: self.id,
+            created_at: self.created_at,
+            updated_at: self.updated_at,
+            thumbnail_image: self.thumbnail_image,
+            source: self.source,
+            ..Default::default()
+        }
+    }
 }

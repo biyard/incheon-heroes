@@ -33,6 +33,11 @@ translate! {
         en: "Like",
     },
 
+    buy_now: {
+        ko: "Buy now",
+        en: "Buy now"
+    }
+
     already_like: {
         ko: "이미 좋아요를 했습니다.",
         en: "You already liked it.",

@@ -8,7 +8,7 @@ use crate::services::{klaytn::Klaytn, shop_contract::ShopItem, user_service::Use
 #[derive(Clone, Copy, DioxusController)]
 pub struct Controller {
     pub item: Resource<ShopItem>,
-    pub details: Resource<(String, String)>,
+    pub details: Resource<(String, String, String)>,
     pub user: UserService,
     pub klaytn: Klaytn,
     pub liked: Resource<bool>,
@@ -17,7 +17,7 @@ pub struct Controller {
 
 impl Controller {
     pub fn new(
-        lang: Language,
+        _lang: Language,
         id: ReadOnlySignal<String>,
     ) -> std::result::Result<Self, RenderError> {
         let klaytn: Klaytn = use_context();
@@ -35,20 +35,28 @@ impl Controller {
         let details = use_server_future(move || {
             let id = id();
             async move {
-                let res = reqwest::get(format!(
+                let res_ko = reqwest::get(format!(
                     "https://metadata.biyard.co/incheon-heroes/html/shop-items/{}/{}.html",
-                    match lang {
-                        Language::Ko => "ko",
-                        Language::En => "en",
-                    },
-                    id
+                    "ko", id
                 ))
                 .await
                 .unwrap()
                 .text()
                 .await
                 .unwrap();
-                let (head, body) = res.split_once("</head>").unwrap();
+
+                let res_en = reqwest::get(format!(
+                    "https://metadata.biyard.co/incheon-heroes/html/shop-items/{}/{}.html",
+                    "en", id
+                ))
+                .await
+                .unwrap()
+                .text()
+                .await
+                .unwrap();
+
+                let (head, body_ko) = res_ko.split_once("</head>").unwrap();
+                let (_, body_en) = res_en.split_once("</head>").unwrap();
 
                 let css = head
                     .split_once("<style type='text/css'>")
@@ -67,7 +75,11 @@ impl Controller {
 
                 (
                     css.to_string(),
-                    body.replacen("line-height: 200%", "line-height: 1000%", 1)
+                    body_ko
+                        .replacen("line-height: 200%", "line-height: 1000%", 1)
+                        .to_string(),
+                    body_en
+                        .replacen("line-height: 200%", "line-height: 1000%", 1)
                         .to_string(),
                 )
             }
@@ -96,6 +108,13 @@ impl Controller {
         Ok(ctrl)
     }
 
+    pub fn detail(&self, lang: Language) -> Result<String, RenderError> {
+        match lang {
+            Language::En => Ok(self.details()?.2),
+            Language::Ko => Ok(self.details()?.1),
+        }
+    }
+
     pub fn description(&self, lang: Language) -> Result<&'static str, RenderError> {
         let name = match lang {
             Language::En => &self.item()?.name_en,
@@ -116,6 +135,23 @@ impl Controller {
                 } else {
                     Ok("귀여운 점박이 물범들이 나타났다!</br>지구를 지키기 위해 오늘도 열심히 활동하는</br>지구 지킴이 애이니, 버미, 꼬미를 만나보세요.")
                 }
+            }
+        }
+    }
+
+    pub async fn handle_buy(&self) {
+        let shop = self.klaytn.shop.cloned();
+
+        let id: u64 = self.id().parse().unwrap();
+        let item_id = U256::from(id);
+        tracing::debug!("buy item: {:?}", item_id);
+
+        match shop.buy_item(item_id).await {
+            Ok(v) => {
+                btracing::info!("Transaction: {v}");
+            }
+            Err(e) => {
+                btracing::error!("send transaction failed: {e}");
             }
         }
     }
