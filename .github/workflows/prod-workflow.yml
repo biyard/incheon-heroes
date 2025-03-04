@@ -159,6 +159,7 @@ jobs:
           KLAYTN_OWNER_ADDR: ${{ secrets.PROD_KLAYTN_OWNER_KEY_ADDR }}
           KLAYTN_ENDPOINT: https://public-en.node.kaia.io
           CONTRACT_INCHEON_CONTENTS: "0x345F050DdcdBdEA04Cd34E8456f48160d6b1de83"
+          CONTRACT_ACCOUNT_PROFILE: "0xe394EbAF9987ecFB952778E10B0255Daa9133b28"
 
           ENABLE_S3: false
           ENABLE_LAMBDA: true

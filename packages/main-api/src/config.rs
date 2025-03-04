@@ -14,6 +14,7 @@ pub struct Config {
 #[derive(Debug)]
 pub struct ContractConfig {
     pub incheon_contents: &'static str,
+    pub account_profile: &'static str,
 }
 
 #[derive(Debug)]
@@ -47,6 +48,7 @@ impl Default for Config {
             },
             contracts: ContractConfig {
                 incheon_contents: option_env!("CONTRACT_INCHEON_CONTENTS").expect("You must set CONTRACT_INCHEON_CONTENTS"),
+                account_profile: option_env!("CONTRACT_ACCOUNT_PROFILE").expect("You must set CONTRACT_ACCOUNT_PROFILE"),
             },
             aws: AwsConfig::default(),
             database: DatabaseConfig::default(),

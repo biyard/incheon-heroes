@@ -1,3 +1,4 @@
+pub mod contracts;
 pub mod controllers;
 
 use std::sync::Arc;

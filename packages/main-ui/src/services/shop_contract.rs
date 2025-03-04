@@ -93,7 +93,7 @@ impl<T: KaiaWallet, W: KaiaWallet> ShopContract<T, W> {
     }
 
     pub async fn check_like(&self, id: U256) -> Result<bool> {
-        if let Some(ref wallet) = &self.contract.wallet {
+        if let Some(wallet) = &self.contract.wallet {
             let from = wallet.address();
             let ret = self
                 .contract
