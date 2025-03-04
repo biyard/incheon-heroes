@@ -52,6 +52,11 @@ translate! {
         ko: "NFT가 성공적으로 민팅되었습니다!",
         en: "NFT has been minted successfully!",
     }
+
+    failed_text : {
+        ko: "이미 해당 NFT를 민팅하였습니다.",
+        en: "You have already minted this NFT.",
+    }
 }
 translate! {
     NftDescriptionTranslate;

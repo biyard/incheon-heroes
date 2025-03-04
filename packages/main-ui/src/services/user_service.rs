@@ -6,26 +6,26 @@ use by_macros::DioxusController;
 use dioxus::prelude::*;
 use dioxus_oauth::prelude::FirebaseService;
 use dto::{
-    contracts::klaytn_transaction::KlaytnTransaction,
-    wallets::{wallet::KaiaLocalWallet, KaiaWallet},
     User,
+    contracts::klaytn_transaction::KlaytnTransaction,
+    wallets::{KaiaWallet, wallet::KaiaLocalWallet},
 };
 use ethers::{
     providers::{Http, Provider},
-    types::{Signature, U256},
+    types::Signature,
 };
 use gloo_storage::{LocalStorage, Storage};
-use ic_agent::{identity::BasicIdentity, Identity};
+use ic_agent::{Identity, identity::BasicIdentity};
 
 use crate::{
     config,
     models::{
         nft_metadata::NftMetadata,
-        user_wallet::{create_evm_wallet, create_identity, UserWallet},
+        user_wallet::{UserWallet, create_evm_wallet, create_identity},
     },
 };
 
-use super::{account_contract::AccountActivity, icp_canister::IcpCanister, klaytn::Klaytn};
+use super::{icp_canister::IcpCanister, klaytn::Klaytn};
 
 const USER_WALLET_KEY: &str = "user_wallet";
 
@@ -36,8 +36,6 @@ unsafe impl Send for UserService {}
 pub struct UserService {
     wallet: Signal<UserWallet>,
     icp_wallet: Signal<Option<Arc<BasicIdentity>>>,
-    pub account_exp: Resource<U256>,
-    pub account_activities: Resource<Vec<AccountActivity>>,
     pub evm_nfts: Resource<Vec<(u64, NftMetadata)>>,
     pub sbts: Resource<Vec<(u64, NftMetadata)>>,
     pub icp_nfts: Resource<Vec<(u64, NftMetadata)>>,
@@ -167,38 +165,6 @@ impl UserService {
             }
         });
 
-        let account_exp = use_resource(move || async move {
-            let w = wallet();
-            let address = match w.evm_address() {
-                Some(address) => address,
-                None => return U256::from(0),
-            };
-
-            match (klaytn.account)().get_account_exp(address).await {
-                Ok(exp) => exp,
-                Err(e) => {
-                    tracing::error!("Failed to get exp: {e:?}");
-                    U256::from(0)
-                }
-            }
-        });
-
-        let account_activities = use_resource(move || async move {
-            let w = wallet();
-            let address = match w.evm_address() {
-                Some(address) => address,
-                None => return vec![],
-            };
-
-            match (klaytn.account)().get_account_activities(&address).await {
-                Ok(activities) => activities,
-                Err(e) => {
-                    tracing::error!("Failed to get activities: {e:?}");
-                    vec![]
-                }
-            }
-        });
-
         let mut srv = Self {
             user: use_signal(|| None),
             wallet,
@@ -207,8 +173,6 @@ impl UserService {
             evm_nfts,
             sbts,
             icp_nfts,
-            account_exp,
-            account_activities,
             klaytn: use_context(),
 
             total_nfts: use_signal(|| vec![]),
@@ -237,16 +201,6 @@ impl UserService {
         });
 
         use_context_provider(move || srv);
-    }
-
-    pub fn get_account_activities(&self) -> Vec<AccountActivity> {
-        let account_activites = (self.account_activities)().unwrap_or_default();
-        account_activites
-    }
-
-    pub fn get_account_exp(&self) -> u64 {
-        let account_exp = (self.account_exp)().unwrap_or_default();
-        account_exp.as_u64()
     }
 
     pub fn get_total_nfts(&self) -> Vec<u64> {

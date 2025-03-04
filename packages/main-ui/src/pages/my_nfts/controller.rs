@@ -1,3 +1,4 @@
+use by_macros::DioxusController;
 use dioxus::prelude::*;
 use dioxus_popup::PopupService;
 use dioxus_translate::Language;
@@ -8,18 +9,38 @@ use crate::{
     services::{klaytn::Klaytn, user_service::UserService},
 };
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, DioxusController)]
 pub struct Controller {
     pub user_service: UserService,
+    pub account_exp: Resource<u64>,
     popup_service: Signal<PopupService>,
 }
 
 impl Controller {
     pub fn new(lang: Language) -> std::result::Result<Self, RenderError> {
         let popup_service: PopupService = use_context();
+        let user_service: UserService = use_context();
+        let klaytn: Klaytn = use_context();
+
+        let account_exp = use_resource(move || async move {
+            let w = user_service.wallet();
+            let address = match w.evm_address() {
+                Some(address) => address,
+                None => return 0,
+            };
+
+            match (klaytn.account)().get_account_exp(address).await {
+                Ok(exp) => exp.as_u64(),
+                Err(e) => {
+                    tracing::error!("Failed to get exp: {e:?}");
+                    0
+                }
+            }
+        });
 
         let ctrl = Self {
-            user_service: use_context(),
+            user_service,
+            account_exp,
             popup_service: use_signal(|| popup_service),
         };
 
@@ -35,14 +56,12 @@ impl Controller {
     }
 
     pub async fn distribute_exp(&self, id: u64, exp: u64) {
-        let mut user: UserService = use_context();
         let klaytn: Klaytn = use_context();
         let account = klaytn.account.cloned();
 
         match account.distribute_account_exp(id as i64, exp as i64).await {
             Ok(_) => {
                 btracing::debug!("success to distribute account exp");
-                user.account_exp.restart();
             }
             Err(e) => {
                 btracing::error!("distribute exp failed: {:?}", e);

@@ -1,8 +1,8 @@
 use by_macros::*;
-use dioxus::{prelude::*, CapturedError};
+use dioxus::{CapturedError, prelude::*};
 use dioxus_translate::Language;
 use dto::{AssetPresignedUris, Content, ContentCreateRequest};
-use reqwest::header::{HeaderMap, HeaderValue, CONTENT_TYPE};
+use reqwest::header::{CONTENT_TYPE, HeaderMap, HeaderValue};
 use validator::Validate;
 
 use crate::{config, route::Route, services::user_service::UserService};
@@ -78,16 +78,10 @@ pub async fn handle_upload(
     ext: String,
 ) -> std::result::Result<(String, String), CapturedError> {
     let cli = AssetPresignedUris::get_client(config::get().new_api_endpoint);
-    let res = match cli
+    let res = cli
         .get_presigned_uris(1, dto::FileType::from_str(&ext).unwrap_or_default())
         .await
-    {
-        Ok(res) => res,
-        Err(e) => {
-            tracing::error!("Failed to get presigned uris: {:?}", e);
-            return Err(e.into());
-        }
-    };
+        .context("Failed to get presigned uri")?;
 
     let presigned_uri = res.presigned_uris.first().context("No presigned uri")?;
     let uri = res.uris.first().context("No uri")?;

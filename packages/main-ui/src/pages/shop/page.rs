@@ -119,7 +119,8 @@ pub fn ShopPage(lang: Language) -> Element {
                             ctrl.handle_like(i).await;
                         },
                         disable_like: !ctrl.user.is_logined() || ctrl.liked_items()?.contains(&item.id.as_u64()),
-                        disable_buy: !ctrl.user.is_logined() || ctrl.user.get_account_exp() < item.price.as_u64(),
+                        disable_buy: !ctrl.user.is_logined()
+                            || ctrl.account_exp().unwrap_or_default() < item.price.as_u64(),
                     }
                 }
             }

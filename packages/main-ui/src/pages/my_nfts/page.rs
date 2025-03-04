@@ -8,7 +8,6 @@ use super::i18n::*;
 use by_components::icons;
 use dioxus::prelude::*;
 use dioxus_translate::*;
-use ethers::types::U256;
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize, Default, PartialEq)]
 pub enum NftType {
@@ -27,11 +26,7 @@ pub fn MyNftsPage(lang: Language) -> Element {
     let icps = ctrl.user_service.icp_nfts().unwrap_or(vec![]);
     let evms = ctrl.user_service.evm_nfts().unwrap_or(vec![]);
 
-    let account_exp = ctrl
-        .user_service
-        .account_exp()
-        .unwrap_or(U256::from(0))
-        .as_u64();
+    let account_exp = ctrl.account_exp()?;
     let total_ids = ctrl.user_service.total_nfts();
 
     rsx! {

@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 use crate::config;
-use crate::models::user_wallet::{create_evm_wallet, create_identity, EvmWallet, UserWallet};
+use crate::models::user_wallet::{EvmWallet, UserWallet, create_evm_wallet, create_identity};
 use crate::route::Route;
 use crate::services::backend_api::BackendApi;
 use crate::services::google_service::GoogleService;
@@ -141,8 +141,6 @@ impl Controller {
         {
             Ok(UserResponse { user, action }) => {
                 self.user_wallet.set_user(user);
-                self.user_wallet.account_activities.restart();
-                self.user_wallet.account_exp.restart();
 
                 let _ = action;
 
