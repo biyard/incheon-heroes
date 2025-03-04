@@ -253,7 +253,7 @@ impl Controller {
 
         // Listen for account changes
         let user_service = self.user.clone();
-        let callback = Closure::wrap(Box::new(move |accounts: JsValue| {
+        let callback = wasm_bindgen::prelude::Closure::wrap(Box::new(move |accounts: JsValue| {
             let accounts: Vec<String> =
                 serde_wasm_bindgen::from_value(accounts).unwrap_or_default();
             if let Some(new_address) = accounts.get(0) {
@@ -265,7 +265,7 @@ impl Controller {
             }
         }) as Box<dyn FnMut(JsValue)>);
 
-        let k = klaytn().unwrap();
+        let k = dto::wallets::kaikas_browser::klaytn().unwrap();
         k.on("accountsChanged", callback.as_ref().unchecked_ref());
         callback.forget();
 
