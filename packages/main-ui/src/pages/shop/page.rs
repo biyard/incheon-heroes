@@ -235,6 +235,7 @@ pub fn ShopItemCard(
                             button {
                                 class: "col-span-1 w-full bg-[#00C564] py-[10px] disabled:bg-gray-100 disabled:text-gray-400",
                                 disabled: disable_buy,
+                                style: if remaining_quantity == 0 { "display: none;" } else { "" },
                                 onclick: move |evt| {
                                     evt.prevent_default();
                                     evt.stop_propagation();
@@ -243,7 +244,10 @@ pub fn ShopItemCard(
                                 "{tr.buy}"
                             }
                             button {
-                                class: "col-span-1 w-full bg-[#00C564] py-[10px] flex flex-row items-center justify-center gap-[10px] disabled:bg-gray-100 disabled:text-gray-400",
+                                class: format!(
+                                    "{} w-full bg-[#00C564] py-[10px] flex flex-row items-center justify-center gap-[10px] disabled:bg-gray-100 disabled:text-gray-400",
+                                    if remaining_quantity == 0 { "col-span-2" } else { "col-span-1" },
+                                ),
                                 disabled: disable_like,
                                 onclick: move |evt| {
                                     evt.prevent_default();

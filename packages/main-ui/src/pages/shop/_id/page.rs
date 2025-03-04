@@ -26,6 +26,7 @@ pub fn ShopByIdPage(id: ReadOnlySignal<String>, lang: Language) -> Element {
         Language::En => &item.name_en.split_once(" ").unwrap().1,
     };
     let desc = ctrl.description(lang)?;
+    let remaining_quantity = item.remaining.as_u64();
 
     rsx! {
         document::Title { "{name}" }
@@ -84,7 +85,7 @@ pub fn ShopByIdPage(id: ReadOnlySignal<String>, lang: Language) -> Element {
                                 "{tr.remaining}"
                             }
                             span { class: "w-full col-span-1 text-right text-[#16775D] text-[14px] font-bold",
-                                "{item.remaining.as_u64().to_formatted_string(&Locale::en)}"
+                                "{remaining_quantity.to_formatted_string(&Locale::en)}"
                             }
 
                             span { class: "w-full col-span-1 text-left text-[#636363] text-[14px]",
@@ -101,7 +102,18 @@ pub fn ShopByIdPage(id: ReadOnlySignal<String>, lang: Language) -> Element {
                                 }
                             } else {
                                 button {
-                                    class: "col-span-5 w-full bg-white/40 text-center py-[15px] text-[#636363] font-semibold rounded-[10px]  hover:bg-[#D4EED4] hover:text-[#16775D]",
+                                    class: "col-span-3 w-full bg-[#24B28C] text-center py-[15px] text-white font-semibold rounded-[10px] hover:bg-[#24B28C]/90 hover:text-white",
+                                    style: if remaining_quantity == 0 { "display: none;" } else { "" },
+                                    onclick: move |_| async move {
+                                        ctrl.handle_buy().await;
+                                    },
+                                    "{tr.buy_now}"
+                                }
+                                button {
+                                    class: format!(
+                                        "{} w-full bg-white/40 text-center py-[15px] text-[#636363] font-semibold rounded-[10px]  hover:bg-[#D4EED4] hover:text-[#16775D]",
+                                        if remaining_quantity == 0 { "col-span-5" } else { "col-span-2" },
+                                    ),
                                     onclick: move |_| async move {
                                         ctrl.handle_like().await;
                                     },

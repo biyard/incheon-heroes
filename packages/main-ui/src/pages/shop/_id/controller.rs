@@ -120,6 +120,23 @@ impl Controller {
         }
     }
 
+    pub async fn handle_buy(&self) {
+        let shop = self.klaytn.shop.cloned();
+
+        let id: u64 = self.id().parse().unwrap();
+        let item_id = U256::from(id);
+        tracing::debug!("buy item: {:?}", item_id);
+
+        match shop.buy_item(item_id).await {
+            Ok(v) => {
+                btracing::info!("Transaction: {v}");
+            }
+            Err(e) => {
+                btracing::error!("send transaction failed: {e}");
+            }
+        }
+    }
+
     pub async fn handle_like(&self) {
         if self.liked().unwrap_or_default() {
             btracing::info!("Already liked");
