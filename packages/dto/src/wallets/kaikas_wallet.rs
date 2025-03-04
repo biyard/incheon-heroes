@@ -7,6 +7,7 @@ use ethers::{
 };
 
 use crate::contracts::klaytn_transaction::KlaytnTransaction;
+use wasm_bindgen::prelude::*;
 
 use super::KaiaWallet;
 use crate::Result;
@@ -58,6 +59,31 @@ impl KaikasWallet {
         Self::switch_chain(chain_id.as_u64()).await?;
 
         tracing::debug!("selected address: {address}");
+
+        // Add event listener for account changes
+        let user_service = use_context::<UserService>();
+        let on_accounts_changed = Closure::wrap(Box::new(move |accounts: JsValue| {
+            let accounts: Vec<String> =
+                serde_wasm_bindgen::from_value(accounts).unwrap_or_default();
+            if let Some(new_address) = accounts.get(0) {
+                tracing::debug!("Account changed to: {}", new_address);
+                // Update the UserService with the new address
+                spawn(async move {
+                    let mut user_service = user_service.clone();
+                    user_service
+                        .update_wallet_address(new_address.clone())
+                        .await;
+                });
+            }
+        }) as Box<dyn FnMut(JsValue)>);
+
+        k.on(
+            "accountsChanged",
+            on_accounts_changed.as_ref().unchecked_ref(),
+        )
+        .await;
+
+        on_accounts_changed.forget();
 
         Ok(Self {
             address,

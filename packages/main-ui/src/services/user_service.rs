@@ -327,6 +327,18 @@ impl UserService {
     pub fn icp_address(&self) -> Option<String> {
         self.wallet().principal()
     }
+
+    pub async fn update_wallet_address(&mut self, new_address: String) {
+        match self.wallet() {
+            UserWallet::KaiaWallet(ref mut kaia_wallet) => {
+                kaia_wallet.address = new_address;
+                self.set_wallet(self.wallet()).await;
+            }
+            _ => {
+                tracing::warn!("Cannot update wallet address: Wallet is not a KaiaWallet");
+            }
+        }
+    }
 }
 
 #[cfg_attr(not(feature = "server"), async_trait(?Send))]
