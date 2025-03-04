@@ -452,20 +452,12 @@ pub fn ExpandableMenu(
                 "{name}"
                 SingleSimpleArrow { direction: if responsive.width() > 1200.0 { if expanded { ArrowDirection::Up } else { ArrowDirection::Down } } else { if mobile_expanded() { ArrowDirection::Up } else { ArrowDirection::Down } } }
             }
-            if expanded {
-                if responsive.width() > 1200.0 {
-                    div {
-                        class: "absolute top-[70px] left-0 w-full flex flex-col gap-[15px] z-[100]",
-                        style: if let Some(w) = min_width { "min-width: {w}" } else { "" },
-                        {children}
-                    }
-                } else {
-                    if mobile_expanded() {
-                        div { class: "w-full flex flex-col gap-[10px] py-[5px] pl-[18px] z-[100]",
-                            {children}
-                        }
-                    }
-                }
+            div {
+                class: if responsive.width() > 1200.0 { "absolute top-[70px] left-0 w-full flex flex-col gap-[15px] z-[100] overflow-hidden" } else { "w-full flex flex-col gap-[10px] py-[5px] pl-[18px] z-[100] overflow-hidden" },
+                visibility: if expanded { "visible" } else { "hidden" },
+                height: if expanded { "auto" } else { "0px" },
+                min_width: if let Some(w) = min_width { w },
+                {children}
             }
         }
     }
