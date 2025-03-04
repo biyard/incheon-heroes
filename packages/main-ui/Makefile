@@ -51,7 +51,7 @@ setup.tool:
 	npm i -g tailwindcss
 
 serve: clean public/tailwind.css
-	$(BUILD_ENV) dx serve --addr 0.0.0.0 --platform web  --client-features web-only
+	$(BUILD_ENV) dx serve --addr 0.0.0.0 --platform web --port 8080
 
 run: clean node_modules public
 	$(BUILD_ENV) dx serve --fullstack --platform web

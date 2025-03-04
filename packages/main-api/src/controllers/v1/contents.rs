@@ -5,9 +5,9 @@ use by_axum::aide;
 use by_axum::{
     auth::Authorization,
     axum::{
+        Extension, Json,
         extract::{Path, Query, State},
         routing::{get, post},
-        Extension, Json,
     },
 };
 use by_types::{AwsConfig, QueryResponse};
@@ -22,6 +22,7 @@ use wallets::local_fee_payer::LocalFeePayer;
 use wallets::wallet::KaiaLocalWallet;
 
 use crate::config::{BucketConfig, ContractConfig, KlaytnConfig};
+use crate::contracts::account_profile::AccountProfileContract;
 
 #[derive(
     Debug, Clone, serde::Deserialize, serde::Serialize, schemars::JsonSchema, aide::OperationIo,
@@ -34,8 +35,8 @@ pub struct ContentPath {
 pub struct ContentController {
     content_download_repo: ContentDownloadRepository,
     repo: ContentRepository,
-    #[allow(unused)]
     contract: IncheonContentsContract<LocalFeePayer, KaiaLocalWallet>,
+    account_profile: AccountProfileContract,
     pool: sqlx::Pool<sqlx::Postgres>,
     cli: aws_sdk_s3::Client,
     bucket_name: &'static str,
@@ -181,10 +182,17 @@ impl ContentController {
         };
 
         let mut tx = self.pool.begin().await?;
+        let already_minted = sqlx::query_scalar::<_, bool>(
+            "SELECT EXISTS(SELECT 1 FROM content_downloads WHERE user_id = $1 AND content_id = $2)",
+        )
+        .bind(user_id)
+        .bind(content_id)
+        .fetch_optional(&mut *tx)
+        .await?;
 
-        self.content_download_repo
-            .insert_with_tx(&mut *tx, user_id, content_id)
-            .await?;
+        if let Some(true) = already_minted {
+            return Err(Error::AlreadyMinted);
+        }
 
         let content = Content::query_builder(user_id)
             .id_equals(content_id)
@@ -193,11 +201,48 @@ impl ContentController {
             .fetch_optional(&mut *tx)
             .await?;
 
+        let creator = User::query_builder()
+            .id_equals(content.clone().unwrap_or_default().creator_id)
+            .query()
+            .map(User::from)
+            .fetch_optional(&mut *tx)
+            .await?;
+
+        tracing::debug!("creator: {:?}", creator);
+        tracing::debug!("requestor: {:?}", evm_address);
+
+        if let Some(user) = &creator {
+            if &user.evm_address.to_lowercase() == &evm_address.to_lowercase() {
+                return Err(Error::CannotMintedByCreator);
+            }
+        }
+
+        self.content_download_repo
+            .insert_with_tx(&mut *tx, user_id, content_id)
+            .await?;
+
         tx.commit().await?;
 
         let content = content.ok_or(Error::NotFoundContent)?;
-        if let Err(e) = self.contract.mint(evm_address, content.id as u64).await {
+        if let Err(e) = self
+            .contract
+            .mint(evm_address.clone(), content.id as u64)
+            .await
+        {
             tracing::error!("some error on klaytn call {e}");
+        }
+
+        if let Some(creator) = creator {
+            tracing::debug!("reward to {:?}", creator.evm_address);
+            let now = chrono::Utc::now().timestamp();
+            self.account_profile
+                .add_account_activity(
+                    creator.evm_address,
+                    "Content Minted".to_string(),
+                    300,
+                    now as u64,
+                )
+                .await?;
         }
 
         Ok(Json(content))
@@ -275,7 +320,9 @@ impl ContentController {
         }: &BucketConfig,
         provider: Arc<Provider<Http>>,
         &ContractConfig {
-            incheon_contents, ..
+            account_profile,
+            incheon_contents,
+            ..
         }: &ContractConfig,
         &KlaytnConfig {
             owner_key,
@@ -287,7 +334,7 @@ impl ContentController {
         let repo = Content::get_repository(pool.clone());
         let content_download_repo = ContentDownload::get_repository(pool.clone());
         use aws_config::BehaviorVersion;
-        use aws_config::{defaults, Region};
+        use aws_config::{Region, defaults};
         use aws_sdk_s3::config::Credentials;
 
         let config = defaults(BehaviorVersion::latest())
@@ -307,7 +354,9 @@ impl ContentController {
         let feepayer =
             LocalFeePayer::new(&feepayer_address, feepayer_key, provider.clone()).await?;
 
-        let mut contract = IncheonContentsContract::new(incheon_contents, provider);
+        let mut contract = IncheonContentsContract::new(incheon_contents, provider.clone());
+        let account_profile =
+            AccountProfileContract::new(account_profile, provider, onwer.clone(), feepayer.clone());
         contract.set_wallet(onwer);
         contract.set_fee_payer(feepayer);
 
@@ -315,6 +364,7 @@ impl ContentController {
             content_download_repo,
             repo,
             contract,
+            account_profile,
             pool,
             cli,
             bucket_name: name,

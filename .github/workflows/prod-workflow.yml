@@ -159,9 +159,69 @@ jobs:
           KLAYTN_OWNER_ADDR: ${{ secrets.PROD_KLAYTN_OWNER_KEY_ADDR }}
           KLAYTN_ENDPOINT: https://public-en.node.kaia.io
           CONTRACT_INCHEON_CONTENTS: "0x345F050DdcdBdEA04Cd34E8456f48160d6b1de83"
+          CONTRACT_ACCOUNT_PROFILE: "0xe394EbAF9987ecFB952778E10B0255Daa9133b28"
 
           ENABLE_S3: false
           ENABLE_LAMBDA: true
         run: |
           npm i -g aws-cdk
           make deploy
+
+  fetcher:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+          ssh-key: ${{ secrets.PULL_KEY_REPO }}
+
+      - uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          components: clippy, rustfmt
+          target: wasm32-unknown-unknown
+          toolchain: stable
+
+      - name: Install dependencies
+        run: |
+          cargo install toml-cli
+
+      - name: Cache builder
+        id: fetcher-build-cache
+        uses: actions/cache@v3
+        with:
+          key: fetcher-build-cache
+          path: |
+            packages/fetcher/target
+
+      - name: Deploy APIs
+        env:
+          REGION: ap-northeast-2
+          ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          BASE_DOMAIN: incheonheroes.world
+          RUST_LOG: error
+          SERVICE: fetcher
+          DOMAIN: fetcher.incheonheroes.world
+          DATABASE_TYPE: postgres
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+          KLAYTN_FEEPAYER_KEY: ${{ secrets.PROD_KLAYTN_FEEPAYER_KEY }}
+          KLAYTN_FEEPAYER_ADDR: ${{ secrets.PROD_KLAYTN_FEEPAYER_ADDR }}
+          KLAYTN_OWNER_KEY: ${{ secrets.PROD_KLAYTN_OWNER_KEY }}
+          KLAYTN_OWNER_ADDR: ${{ secrets.PROD_KLAYTN_OWNER_KEY_ADDR }}
+          KLAYTN_ENDPOINT: https://public-en.node.kaia.io
+          CONTRACT_INCHEON_CONTENTS: "0x345F050DdcdBdEA04Cd34E8456f48160d6b1de83"
+
+          ENABLE_S3: false
+          ENABLE_FARGATE: true
+          ENABLE_DYNAMO: false
+          ENABLE_LAMBDA: false
+        run: |
+          npm i -g aws-cdk
+          make deploy-if-needed

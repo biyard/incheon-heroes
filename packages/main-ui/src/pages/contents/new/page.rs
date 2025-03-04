@@ -22,12 +22,12 @@ pub fn NewContentsPage(lang: Language) -> Element {
 
         div {
             id: "new-contents",
-            class: "w-full flex flex-col items-start gap-[10px] pb-[50px]",
-            div { class: "flex flex-col items-start gap-[20px]",
+            class: "w-full flex flex-col items-center gap-[10px] pb-[50px]",
+            div { class: "flex flex-col items-center gap-[20px]",
                 div { class: "w-full flex flex-col items-center justify-center",
                     Heading1 { lang, "{tr.title}" }
                 }
-                div { class: "flex flex-col items-start",
+                div { class: "flex flex-col items-center",
                     for desc in descs {
                         p {
                             class: "text-black text-[14px] font-normal",

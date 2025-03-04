@@ -12,10 +12,10 @@ use super::i18n::*;
 use by_components::charts::horizontal_bar::HorizontalBar;
 use by_components::files::DropZone;
 use by_components::responsive::ResponsiveService;
-use dioxus::{prelude::*, CapturedError};
+use dioxus::prelude::*;
 use dioxus_translate::*;
 
-use dto::AssetPresignedUris;
+use dto::{AssetPresignedUris, Error};
 #[cfg(feature = "web")]
 use dto::{File, FileType};
 
@@ -24,7 +24,7 @@ use dioxus::html::FileEngine;
 
 #[cfg(feature = "web")]
 use dto::AssetPresignedUrisReadAction;
-use reqwest::header::{HeaderMap, HeaderValue, CONTENT_TYPE};
+use reqwest::header::{CONTENT_TYPE, HeaderMap, HeaderValue};
 
 #[cfg(feature = "web")]
 use std::sync::Arc;
@@ -627,28 +627,18 @@ pub fn process_image(input: &[u8], width: u32, height: u32) -> Vec<u8> {
     output.to_vec()
 }
 
-pub async fn handle_upload(
-    file_bytes: Vec<u8>,
-    ext: String,
-) -> std::result::Result<(String, String), CapturedError> {
+pub async fn handle_upload(file_bytes: Vec<u8>, ext: String) -> dto::Result<(String, String)> {
     let cli = AssetPresignedUris::get_client(config::get().new_api_endpoint);
-    let res = match cli
+    let res = cli
         .get_presigned_uris(1, dto::FileType::from_str(&ext).unwrap_or_default())
-        .await
-    {
-        Ok(res) => res,
-        Err(e) => {
-            tracing::error!("Failed to get presigned uris: {:?}", e);
-            return Err(e.into());
-        }
-    };
+        .await?;
 
-    let presigned_uri = res.presigned_uris.first().context("No presigned uri")?;
-    let uri = res.uris.first().context("No uri")?;
+    let presigned_uri = res.presigned_uris.first().ok_or(Error::EmptyData)?;
+    let uri = res.uris.first().ok_or(Error::EmptyData)?;
 
     use infer;
 
-    let kind = infer::get(&file_bytes).context("Failed to infer file type")?;
+    let kind = infer::get(&file_bytes).ok_or(Error::EmptyData)?;
     tracing::debug!("Inferred file type: {:?}", kind);
 
     let content_type = kind.mime_type().to_string();
@@ -656,7 +646,7 @@ pub async fn handle_upload(
     let mut headers = HeaderMap::new();
     headers.insert(
         CONTENT_TYPE,
-        HeaderValue::from_str(&content_type).context("could not convert content type to header")?,
+        HeaderValue::from_str(&content_type).map_err(|_| Error::InvalidType)?,
     );
 
     reqwest::Client::new()
@@ -664,8 +654,7 @@ pub async fn handle_upload(
         .body(file_bytes)
         .headers(headers)
         .send()
-        .await
-        .context("Failed to upload file")?;
+        .await?;
 
     Ok((uri.to_string(), content_type))
 }
