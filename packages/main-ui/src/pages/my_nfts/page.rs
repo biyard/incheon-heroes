@@ -209,13 +209,21 @@ pub fn NftList(
 pub fn NftCard(lang: Language, nft: (u64, NftMetadata), nft_type: NftType) -> Element {
     let id = nft.0;
     let metadata = nft.1;
+    let nav = use_navigator();
 
     rsx! {
-        Link {
-            class: "w-full col-span-1 h-full flex flex-col justify-start items-center",
-            to: Route::MyNftsByIdPage {
-                lang,
-                id: id.to_string(),
+        div {
+            class: "cursor-pointer w-full col-span-1 h-full flex flex-col justify-start items-center",
+            onclick: {
+                let nft_type = nft_type.clone();
+                move |_| {
+                    if nft_type != NftType::SBT {
+                        nav.push(Route::MyNftsByIdPage {
+                            lang,
+                            id: id.to_string(),
+                        });
+                    }
+                }
             },
             div { class: "relative flex flex-col w-full max-w-[250px] max-h-[350px] rounded-[12px] shadow-lg bg-white overflow-hidden",
                 div {

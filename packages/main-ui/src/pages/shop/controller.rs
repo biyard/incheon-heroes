@@ -88,19 +88,19 @@ impl Controller {
         let item = (self.items)().unwrap()[i].clone();
 
         if account_exp < item.price.as_u64() {
-            tracing::debug!("not enough exp");
+            btracing::error!("not enough exp");
             return;
         }
         let item_id = item.id;
 
-        tracing::debug!("buying item: {:?}", item_id);
+        btracing::debug!("buying item: {:?}", item_id);
 
         match shop.buy_item(item_id).await {
             Ok(v) => {
-                tracing::debug!("transaction tx: {v}");
+                btracing::debug!("transaction tx: {v}");
             }
             Err(e) => {
-                tracing::debug!("send transaction failed: {e:?}");
+                btracing::error!("send transaction failed: {e:?}");
             }
         }
     }
@@ -110,14 +110,14 @@ impl Controller {
         let shop = klaytn.shop.cloned();
 
         let item_id = self.items().unwrap()[i].id;
-        tracing::debug!("liking item: {:?}", item_id);
+        btracing::debug!("liking item: {:?}", item_id);
 
         match shop.like_item(item_id).await {
             Ok(v) => {
-                tracing::debug!("transaction tx: {v}");
+                btracing::debug!("transaction tx: {v}");
             }
             Err(e) => {
-                tracing::debug!("send transaction failed: {e}");
+                btracing::error!("send transaction failed: {e}");
             }
         }
     }
