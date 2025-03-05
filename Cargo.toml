@@ -32,7 +32,7 @@ dioxus-web = { version = "0.6.3", git = "https://github.com/hackartists/dioxus.g
 candid = "0.10.13"
 ethers = "=2.0.14"
 
-sqlx = { version = "0.8.3", features = [
+sqlx = { version = "=0.8.3", features = [
     "sqlite",
     "postgres",
     "runtime-tokio",
