@@ -98,7 +98,7 @@ jobs:
           ENABLE_LAMBDA: true
         run: |
           npm i -g aws-cdk @tailwindcss/cli
-          cargo clean
+          cargo update -p time --precise 0.3.37
           make deploy-web
 
   main-api:
