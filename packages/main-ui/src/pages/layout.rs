@@ -28,10 +28,6 @@ pub fn RootLayout(lang: Language) -> Element {
     let responsive: ResponsiveService = use_context();
 
     rsx! {
-        document::Title { "{tr.title}" }
-        document::Meta { property: "og:title", content: "{tr.title}" }
-        document::Meta { name: "description", content: "{tr.description}" }
-        document::Meta { property: "og:description", content: "{tr.description}" }
         document::Meta { property: "og:type", content: "website" }
 
         MetaSeoTemplate {
