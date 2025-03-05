@@ -6,7 +6,7 @@ exclude = ["deps", "contracts"]
 [workspace.package]
 authors = ["Biyard"]
 description = "Incheon heroes"
-edition = "2021"
+edition = "2024"
 repository = "https://github.com/biyard/incheon-heroes"
 license = "Apache"
 
