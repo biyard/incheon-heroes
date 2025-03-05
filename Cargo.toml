@@ -6,7 +6,7 @@ exclude = ["deps", "contracts"]
 [workspace.package]
 authors = ["Biyard"]
 description = "Incheon heroes"
-edition = "2024"
+edition = "2021"
 repository = "https://github.com/biyard/incheon-heroes"
 license = "Apache"
 
@@ -27,8 +27,8 @@ serde = { version = "1.0.197", features = ["derive"] }
 serde_json = "1.0.133"
 dto = { path = "./packages/dto" }
 reqwest = { version = "0.12.5", features = ["blocking", "json", "multipart"] }
-dioxus = { version = "0.6.3" }
-dioxus-web = { version = "0.6.3" }
+dioxus = { version = "0.6.3", git = "https://github.com/hackartists/dioxus.git" }
+dioxus-web = { version = "0.6.3", git = "https://github.com/hackartists/dioxus.git" }
 candid = "0.10.13"
 ethers = "=2.0.14"
 
