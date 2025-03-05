@@ -282,6 +282,7 @@ impl Controller {
 
             on_accounts_changed.forget();
         });
+        
     }
 
     pub async fn handle_internet_identity(&self) {}
