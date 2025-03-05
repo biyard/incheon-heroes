@@ -7,7 +7,6 @@ use crate::{
     assets::*,
     components::icons,
     components::icons::arrows::{ArrowDirection, SingleSimpleArrow},
-    pages::i18n::RootLayoutTranslate,
     route::Route,
     services::user_service::UserService,
 };
