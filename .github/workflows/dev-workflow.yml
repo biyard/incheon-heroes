@@ -98,6 +98,7 @@ jobs:
           ENABLE_LAMBDA: true
         run: |
           npm i -g aws-cdk @tailwindcss/cli
+          cargo clean
           make deploy-web
 
   main-api:
@@ -214,7 +215,7 @@ jobs:
           ENABLE_LAMBDA: false
         run: |
           npm i -g aws-cdk
-          make deploy
+          make deploy-if-needed
 
   create-release-pr:
     runs-on: ubuntu-latest

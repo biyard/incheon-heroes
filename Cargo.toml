@@ -49,6 +49,3 @@ inherits = "dev"
 
 [profile.android-dev]
 inherits = "dev"
-
-[patch.crates-io]
-time = { version = "=0.3.37" }
