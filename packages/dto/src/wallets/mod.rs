@@ -4,6 +4,7 @@ pub mod kaikas_wallet;
 pub mod local_fee_payer;
 pub mod remote_fee_payer;
 pub mod wallet;
+pub mod kaikas_browser;
 
 use async_trait::async_trait;
 use ethers::types::{Signature, H160};

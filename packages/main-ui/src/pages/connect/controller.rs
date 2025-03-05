@@ -3,6 +3,7 @@ use dioxus::prelude::*;
 use dioxus_oauth::prelude::FirebaseService;
 use dioxus_translate::Language;
 use dto::User;
+use dto::wallets::kaikas_browser::klaytn;
 use google_wallet::drive_api::DriveApi;
 use wasm_bindgen::prelude::*;
 
@@ -261,7 +262,7 @@ impl Controller {
         // Listen for account changes and update the UserService
         let user_service = self.user.clone();
         spawn(async move {
-            let k = klaytn().unwrap();
+            let k = klaytn();
             let on_accounts_changed = Closure::wrap(Box::new(move |accounts: JsValue| {
                 let accounts: Vec<String> =
                     serde_wasm_bindgen::from_value(accounts).unwrap_or_default();
