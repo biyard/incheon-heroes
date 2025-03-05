@@ -62,6 +62,3 @@ default = []
 web = ["dioxus-aws/web", "dioxus-translate/web", "dioxus-oauth/web", "ic-agent/wasm-bindgen", "by-components/web", "dto/web"]
 server = ["dioxus-aws/server", "dto/server"]
 lambda = ["server", "dioxus-aws/lambda"]
-
-[patch.crates-io]
-time = { version = "=0.3.37" }
