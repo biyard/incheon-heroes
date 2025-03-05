@@ -52,7 +52,12 @@ fn app() -> Element {
     KakaoService::init();
 
     rsx! {
-        btracing::ToastTracing {}
+        btracing::ToastTracing {
+            img {
+                src: asset!("/public/logos/logo_symbol_white.png"),
+                width: "30px",
+            }
+        }
 
         document::Meta {
             name: "viewport",

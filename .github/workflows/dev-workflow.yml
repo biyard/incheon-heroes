@@ -37,14 +37,6 @@ jobs:
           cargo binstall dioxus-cli --force
           cargo binstall toml-cli --force
 
-      - name: Cache builder
-        id: main-ui-build-cache
-        uses: actions/cache@v3
-        with:
-          key: main-ui-build-cache
-          path: |
-            target
-
       - name: Checking violate
         env:
           REGION: ap-northeast-2
@@ -58,6 +50,7 @@ jobs:
         env:
           REGION: ap-northeast-2
           RUST_LOG: debug
+          RUSTFLAGS: "-D warnings"
           ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           FIREBASE_API_KEY: "${{ secrets.FIREBASE_API_KEY }}"
@@ -105,6 +98,7 @@ jobs:
           ENABLE_LAMBDA: true
         run: |
           npm i -g aws-cdk @tailwindcss/cli
+          cargo update -p time --precise 0.3.37
           make deploy-web
 
   main-api:
@@ -165,7 +159,7 @@ jobs:
           ENABLE_LAMBDA: true
         run: |
           npm i -g aws-cdk
-          make deploy
+          make deploy-if-needed
 
   fetcher:
     runs-on: ubuntu-latest
@@ -221,7 +215,7 @@ jobs:
           ENABLE_LAMBDA: false
         run: |
           npm i -g aws-cdk
-          make deploy
+          make deploy-if-needed
 
   create-release-pr:
     runs-on: ubuntu-latest

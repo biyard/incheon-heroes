@@ -7,7 +7,6 @@ use crate::{
     assets::*,
     components::icons,
     components::icons::arrows::{ArrowDirection, SingleSimpleArrow},
-    pages::i18n::RootLayoutTranslate,
     route::Route,
     services::user_service::UserService,
 };
@@ -24,14 +23,9 @@ pub fn RootLayout(lang: Language) -> Element {
     let theme: ColorTheme = use_context();
     let path: Route = use_route();
     let logo = asset!("/public/logos/logo_symbol_color.png");
-    let tr: RootLayoutTranslate = translate(&lang);
     let responsive: ResponsiveService = use_context();
 
     rsx! {
-        document::Title { "{tr.title}" }
-        document::Meta { property: "og:title", content: "{tr.title}" }
-        document::Meta { name: "description", content: "{tr.description}" }
-        document::Meta { property: "og:description", content: "{tr.description}" }
         document::Meta { property: "og:type", content: "website" }
 
         MetaSeoTemplate {
