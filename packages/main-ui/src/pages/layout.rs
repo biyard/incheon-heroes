@@ -119,11 +119,11 @@ pub fn MobileHeader(
                     icons::alignments::AlignJustify { class: "w-[30px] h-[30px] text-black" }
                 }
                 Link {
-                    class: "flex items-center justify-center h-[70px] z-[1] max-[400px]:hidden",
+                    class: "flex items-center justify-center h-[70px] z-[1]",
                     to: Route::HomePage { lang },
                     img {
                         src: "{LOGO}",
-                        class: "w-[145px] max-[500px]:w-[100px]",
+                        class: "w-[145px] max-[500px]:w-[110px]",
                     }
                 }
                 div { class: "flex flex-row gap-[15px] items-center h-full z-[1]",
