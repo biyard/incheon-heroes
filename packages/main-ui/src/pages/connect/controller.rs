@@ -4,7 +4,7 @@ use by_macros::*;
 use dioxus::prelude::*;
 use dioxus_oauth::prelude::FirebaseService;
 use dioxus_translate::Language;
-use dto::{wallets::kaikas_wallet::KaikasWallet, User};
+use dto::{wallets::{kaikas_browser::klaytn, kaikas_wallet::KaikasWallet}, User};
 use ethers::providers::{Http, Provider};
 use google_wallet::drive_api::DriveApi;
 use wasm_bindgen::prelude::*;
@@ -289,6 +289,7 @@ impl Controller {
         if self.nav.can_go_back() {
             self.nav.go_back();
         } else {
+            tracing::debug!("replace home page");
             self.nav.replace(Route::HomePage { lang: self.lang });
         }
     }
