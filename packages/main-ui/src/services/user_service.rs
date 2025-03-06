@@ -193,10 +193,12 @@ impl UserService {
 
         #[cfg(feature = "web")]
         use_effect(move || {
+            let mut srv = srv.clone();
             spawn(async move {
-                let mut srv = srv;
                 srv.load_wallet_from_storage().await;
                 klaytn.set_signer(srv).await;
+
+                srv.listen_for_account_changes().await;
             });
         });
 

@@ -153,10 +153,6 @@ impl Controller {
             }
         });
 
-        spawn(async move {
-            user_service.listen_for_account_changes().await;
-        });
-
         Ok(ctrl)
     }
 
