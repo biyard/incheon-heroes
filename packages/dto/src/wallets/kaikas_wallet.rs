@@ -8,7 +8,7 @@ use ethers::{
 
 use crate::contracts::klaytn_transaction::KlaytnTransaction;
 
-use super::KaiaWallet;
+use super::{kaikas_browser::klaytn, KaiaWallet};
 use crate::Result;
 
 #[derive(Debug, Clone, Default, serde::Deserialize, serde::Serialize, PartialEq, Eq)]
