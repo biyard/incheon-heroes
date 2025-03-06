@@ -90,7 +90,7 @@ translate! {
     MainTextTranslate;
 
     title: {
-        ko: "인천 히어로즈",
+        ko: "인천히어로즈",
         en: "INCHEON HEROES",
     },
     main_text: {
