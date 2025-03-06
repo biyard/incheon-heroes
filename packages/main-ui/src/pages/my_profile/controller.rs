@@ -40,7 +40,7 @@ pub struct Controller {
 impl Controller {
     pub fn new(lang: Language) -> std::result::Result<Self, RenderError> {
         let popup_service: PopupService = use_context();
-        let mut user_service: UserService = use_context();
+        let user_service: UserService = use_context();
 
         let klaytn: Klaytn = use_context();
 
