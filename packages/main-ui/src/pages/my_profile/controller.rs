@@ -41,6 +41,7 @@ impl Controller {
     pub fn new(lang: Language) -> std::result::Result<Self, RenderError> {
         let popup_service: PopupService = use_context();
         let user_service: UserService = use_context();
+
         let klaytn: Klaytn = use_context();
 
         let klaytn_scope_endpoint = config::get().klaytn_scope_endpoint;

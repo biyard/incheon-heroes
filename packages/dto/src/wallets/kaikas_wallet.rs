@@ -22,6 +22,9 @@ use super::kaikas_browser::*;
 #[cfg(feature = "web")]
 use wasm_bindgen_futures::JsFuture;
 
+#[cfg(feature = "web")]
+use wasm_bindgen::prelude::*;
+
 #[cfg(not(feature = "web"))]
 impl KaikasWallet {
     pub async fn new(_provider: Arc<Provider<Http>>) -> Result<Self> {
@@ -78,6 +81,14 @@ impl KaikasWallet {
 
         let _ = JsFuture::from(k.request(&req)).await;
 
+        Ok(())
+    }
+
+    pub async fn listen_for_account_changes(callback: impl Fn(String) + 'static) -> Result<()> {
+        let k = klaytn()?;
+        let callback = Closure::wrap(Box::new(callback) as Box<dyn Fn(String)>);
+        let _ = k.on("accountsChanged", callback.as_ref().unchecked_ref());
+        callback.forget();
         Ok(())
     }
 }
