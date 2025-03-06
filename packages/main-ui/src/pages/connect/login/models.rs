@@ -16,6 +16,7 @@ pub enum LoginProvider {
     Kakao,
     Google,
     Kaia,
+    InternetIdentity,
 }
 
 impl Into<UserAuthProvider> for LoginProvider {
@@ -24,6 +25,7 @@ impl Into<UserAuthProvider> for LoginProvider {
             Self::Kakao => UserAuthProvider::Kakao,
             Self::Google => UserAuthProvider::Google,
             Self::Kaia => UserAuthProvider::Kaia,
+            Self::InternetIdentity => UserAuthProvider::InternetIdentity,
         }
     }
 }

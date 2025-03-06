@@ -40,6 +40,14 @@ pub fn LoginPage(
                     },
                     "{tr.btn}"
                 }
+                button {
+                    class: "w-full flex flex-row h-[75px] items-center justify-start px-[40px] text-[20px] font-normal gap-[40px] hover:bg-white/30",
+                    onclick: move |_| async move {
+                        ctrl.handle_internet_identity().await;
+                    },
+                    icons::logo::InternetIdentity { size: 35 }
+                    p { "{tr.ii}" }
+                }
             }
         } // end of this page
     }
