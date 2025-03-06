@@ -7,7 +7,7 @@ use ethers::{
 };
 
 use crate::contracts::klaytn_transaction::KlaytnTransaction;
-// use wasm_bindgen::closure::Closure;
+
 use super::KaiaWallet;
 use crate::Result;
 
@@ -21,6 +21,9 @@ pub struct KaikasWallet {
 use super::kaikas_browser::*;
 #[cfg(feature = "web")]
 use wasm_bindgen_futures::JsFuture;
+
+#[cfg(feature = "web")]
+use wasm_bindgen::prelude::*;
 
 #[cfg(not(feature = "web"))]
 impl KaikasWallet {

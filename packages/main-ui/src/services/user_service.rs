@@ -6,7 +6,9 @@ use by_macros::DioxusController;
 use dioxus::prelude::*;
 use dioxus_oauth::prelude::FirebaseService;
 use dto::{
-    contracts::klaytn_transaction::KlaytnTransaction, wallets::{kaikas_wallet::KaikasWallet, wallet::KaiaLocalWallet, KaiaWallet}, User
+    User, UserAuthProvider,
+    contracts::klaytn_transaction::KlaytnTransaction,
+    wallets::{KaiaWallet, kaikas_wallet::KaikasWallet, wallet::KaiaLocalWallet},
 };
 use ethers::{
     providers::{Http, Provider},
@@ -326,25 +328,32 @@ impl UserService {
         self.wallet().principal()
     }
 
+    #[cfg(feature = "web")]
     pub async fn listen_for_account_changes(&mut self) {
-        let mut srv = self.clone();
-        spawn(async move {
-            if let Err(e) = KaikasWallet::listen_for_account_changes(move |new_address| {
-                spawn(async move {
-                    tracing::debug!("Account changed to: {}", new_address);
-                    srv.update_wallet_address(new_address).await;
-                });
-            })
-            .await
-            {
-                tracing::error!("Failed to listen for account changes: {:?}", e);
-            }
-        });
+        let mut srv = *self;
+        if let Err(e) = KaikasWallet::listen_for_account_changes(move |new_address| {
+            spawn(async move {
+                tracing::debug!("Account changed to: {}", new_address);
+                srv.update_wallet_address(new_address).await;
+            });
+        })
+        .await
+        {
+            tracing::error!("Failed to listen for account changes: {:?}", e);
+        }
+    }
+
+    #[cfg(not(feature = "web"))]
+    pub async fn listen_for_account_changes(&mut self) {
+        tracing::warn!("listen_for_account_changes is not supported in non-web environments");
     }
 
     pub async fn update_wallet_address(&mut self, new_address: String) {
         let endpoint = config::get().new_api_endpoint;
-        match User::get_client(endpoint).get_user_by_address(new_address.clone()).await {
+        match User::get_client(endpoint)
+            .register_or_login(new_address.clone(), UserAuthProvider::Kaia)
+            .await
+        {
             Ok(user) => {
                 self.user.set(Some(user));
                 self.wallet.set(UserWallet::KaiaWallet(KaikasWallet {
