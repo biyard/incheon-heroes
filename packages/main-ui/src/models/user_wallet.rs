@@ -3,8 +3,8 @@ use dto::wallets::kaikas_wallet::KaikasWallet;
 use ethers::prelude::*;
 use ethers::signers::LocalWallet;
 use ethers::utils::to_checksum;
-use ic_agent::identity::BasicIdentity;
 use ic_agent::Identity;
+use ic_agent::identity::BasicIdentity;
 use sha2::{Digest, Sha256};
 
 #[derive(Debug, Clone, Eq, PartialEq, serde::Serialize, serde::Deserialize, Default, Translate)]
@@ -61,6 +61,14 @@ impl UserWallet {
         match self {
             UserWallet::SocialWallet { principal, .. } => Some(principal.clone()),
             _ => None,
+        }
+    }
+
+    pub fn chain_id(&self) -> u64 {
+        match self {
+            UserWallet::KaiaWallet(wallet) => wallet.chain_id,
+            UserWallet::SocialWallet { .. } => 0, 
+            UserWallet::None => 0,                
         }
     }
 }

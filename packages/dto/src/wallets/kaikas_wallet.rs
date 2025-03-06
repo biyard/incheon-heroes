@@ -3,12 +3,12 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use ethers::{
     providers::{Http, Provider},
-    types::{H160, Signature},
+    types::Signature,
 };
 
 use crate::contracts::klaytn_transaction::KlaytnTransaction;
-
-use super::{kaikas_browser::klaytn, KaiaWallet};
+// use wasm_bindgen::closure::Closure;
+use super::KaiaWallet;
 use crate::Result;
 
 #[derive(Debug, Clone, Default, serde::Deserialize, serde::Serialize, PartialEq, Eq)]
@@ -80,6 +80,14 @@ impl KaikasWallet {
 
         Ok(())
     }
+
+    pub async fn listen_for_account_changes(callback: impl Fn(String) + 'static) -> Result<()> {
+        let k = klaytn()?;
+        let callback = Closure::wrap(Box::new(callback) as Box<dyn Fn(String)>);
+        k.on("accountsChanged", callback.as_ref().unchecked_ref());
+        callback.forget();
+        Ok(())
+    }
 }
 
 #[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
@@ -110,12 +118,7 @@ pub struct Transaction {
 #[cfg_attr(feature = "server", async_trait)]
 impl KaiaWallet for KaikasWallet {
     fn address(&self) -> ethers::types::H160 {
-        let k = match klaytn() {
-            Ok(k) => k,
-            Err(_) => return H160::default(),
-        };
-        let current_address = k.selected_address().unwrap_or_default();
-        current_address.parse().unwrap_or_default()
+        unimplemented!()
     }
 
     #[cfg(not(feature = "web"))]

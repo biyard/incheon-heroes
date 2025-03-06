@@ -6,9 +6,7 @@ use by_macros::DioxusController;
 use dioxus::prelude::*;
 use dioxus_oauth::prelude::FirebaseService;
 use dto::{
-    User,
-    contracts::klaytn_transaction::KlaytnTransaction,
-    wallets::{KaiaWallet, wallet::KaiaLocalWallet},
+    contracts::klaytn_transaction::KlaytnTransaction, wallets::{kaikas_wallet::KaikasWallet, wallet::KaiaLocalWallet, KaiaWallet}, User
 };
 use ethers::{
     providers::{Http, Provider},
@@ -326,6 +324,41 @@ impl UserService {
 
     pub fn icp_address(&self) -> Option<String> {
         self.wallet().principal()
+    }
+
+    pub async fn listen_for_account_changes(&mut self) {
+        let mut srv = self.clone();
+        spawn(async move {
+            if let Err(e) = KaikasWallet::listen_for_account_changes(move |new_address| {
+                spawn(async move {
+                    tracing::debug!("Account changed to: {}", new_address);
+                    srv.update_wallet_address(new_address).await;
+                });
+            })
+            .await
+            {
+                tracing::error!("Failed to listen for account changes: {:?}", e);
+            }
+        });
+    }
+
+    pub async fn update_wallet_address(&mut self, new_address: String) {
+        let endpoint = config::get().new_api_endpoint;
+        match User::get_client(endpoint).get_user_by_address(new_address.clone()).await {
+            Ok(user) => {
+                self.user.set(Some(user));
+                self.wallet.set(UserWallet::KaiaWallet(KaikasWallet {
+                    address: new_address,
+                    chain_id: self.wallet().chain_id(),
+                }));
+                self.evm_nfts.restart();
+                self.sbts.restart();
+                self.icp_nfts.restart();
+            }
+            Err(e) => {
+                tracing::error!("Failed to get user by address: {:?}", e);
+            }
+        }
     }
 }
 

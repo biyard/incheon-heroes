@@ -40,7 +40,8 @@ pub struct Controller {
 impl Controller {
     pub fn new(lang: Language) -> std::result::Result<Self, RenderError> {
         let popup_service: PopupService = use_context();
-        let user_service: UserService = use_context();
+        let mut user_service: UserService = use_context();
+
         let klaytn: Klaytn = use_context();
 
         let klaytn_scope_endpoint = config::get().klaytn_scope_endpoint;
@@ -150,6 +151,10 @@ impl Controller {
             if !ctrl.user_service.is_logined() {
                 nav.push(Route::ConnectPage { lang });
             }
+        });
+
+        spawn(async move {
+            user_service.listen_for_account_changes().await;
         });
 
         Ok(ctrl)
