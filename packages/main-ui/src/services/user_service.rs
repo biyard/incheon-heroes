@@ -330,7 +330,7 @@ impl UserService {
 
     #[cfg(feature = "web")]
     pub async fn listen_for_account_changes(&mut self) {
-        let mut srv = *self;
+        let mut srv = self.clone();
         if let Err(e) = KaikasWallet::listen_for_account_changes(move |new_address| {
             spawn(async move {
                 tracing::debug!("Account changed to: {}", new_address);

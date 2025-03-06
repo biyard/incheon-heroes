@@ -87,7 +87,7 @@ impl KaikasWallet {
     pub async fn listen_for_account_changes(callback: impl Fn(String) + 'static) -> Result<()> {
         let k = klaytn()?;
         let callback = Closure::wrap(Box::new(callback) as Box<dyn Fn(String)>);
-        k.on("accountsChanged", callback.as_ref().unchecked_ref());
+        let _ = k.on("accountsChanged", callback.as_ref().unchecked_ref());
         callback.forget();
         Ok(())
     }
