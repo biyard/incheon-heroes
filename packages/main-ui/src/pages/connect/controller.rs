@@ -1,9 +1,13 @@
+use std::sync::Arc;
+
 use by_macros::*;
 use dioxus::prelude::*;
 use dioxus_oauth::prelude::FirebaseService;
 use dioxus_translate::Language;
-use dto::User;
+use dto::{wallets::kaikas_wallet::KaikasWallet, User};
+use ethers::providers::{Http, Provider};
 use google_wallet::drive_api::DriveApi;
+use wasm_bindgen::prelude::*;
 
 use crate::{
     config,
@@ -219,22 +223,21 @@ impl Controller {
 
     pub async fn handle_kaia(&mut self) {
         let conf = config::get();
-        let provider =
-            ethers::providers::Provider::<ethers::providers::Http>::try_from(conf.klaytn.endpoint)
-                .unwrap();
-        let provider = std::sync::Arc::new(provider);
-
-        let w = match dto::wallets::kaikas_wallet::KaikasWallet::new(provider).await {
+        let provider = Provider::<Http>::try_from(conf.klaytn.endpoint).unwrap();
+        let provider = Arc::new(provider);
+    
+        let w = match KaikasWallet::new(provider).await {
             Ok(wallet) => wallet,
             Err(e) => {
                 tracing::error!("Failed to get kaikas wallet: {:?}", e);
                 return;
             }
         };
-
+    
         self.user.set_wallet(UserWallet::KaiaWallet(w)).await;
         let endpoint = conf.new_api_endpoint;
-
+    
+        // Fetch user data initially
         match User::get_client(endpoint)
             .register_or_login(
                 self.user.evm_address().unwrap_or_default(),
@@ -249,11 +252,43 @@ impl Controller {
                 tracing::error!("Failed to register or login: {:?}", e);
             }
         };
-
+    
+        // Set up event listener for account changes
+        let k = match klaytn() {
+            Ok(k) => k,
+            Err(_) => return,
+        };
+    
+        let nav = self.nav.clone();
+        let user_service = self.user;
+        let lang = self.lang;
+        let endpoint = endpoint.clone();
+    
+        let callback = Closure::<dyn FnMut()>::new(move || {
+            spawn(async move {
+                // Re-fetch user data with the new address
+                if let Some(address) = user_service.evm_address() {
+                    match User::get_client(&endpoint)
+                        .register_or_login(address, dto::UserAuthProvider::Kaia)
+                        .await
+                    {
+                        Ok(user) => {
+                            user_service.set_user(user);
+                            // Navigate to refresh the UI
+                            nav.replace(Route::HomePage { lang });
+                        }
+                        Err(e) => tracing::error!("Failed to update user: {:?}", e),
+                    }
+                }
+            });
+        });
+    
+        k.on("accountsChanged", callback.as_ref().unchecked_ref());
+        callback.forget();
+    
         if self.nav.can_go_back() {
             self.nav.go_back();
         } else {
-            tracing::debug!("replace home page");
             self.nav.replace(Route::HomePage { lang: self.lang });
         }
     }

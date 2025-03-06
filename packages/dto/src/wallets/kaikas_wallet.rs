@@ -3,7 +3,7 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use ethers::{
     providers::{Http, Provider},
-    types::Signature,
+    types::{H160, Signature},
 };
 
 use crate::contracts::klaytn_transaction::KlaytnTransaction;
@@ -110,7 +110,12 @@ pub struct Transaction {
 #[cfg_attr(feature = "server", async_trait)]
 impl KaiaWallet for KaikasWallet {
     fn address(&self) -> ethers::types::H160 {
-        unimplemented!()
+        let k = match klaytn() {
+            Ok(k) => k,
+            Err(_) => return H160::default(),
+        };
+        let current_address = k.selected_address().unwrap_or_default();
+        current_address.parse().unwrap_or_default()
     }
 
     #[cfg(not(feature = "web"))]
