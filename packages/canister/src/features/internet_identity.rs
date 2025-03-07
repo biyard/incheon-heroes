@@ -1,3 +1,34 @@
+use candid::CandidType;
+use serde::Deserialize;
+
+pub type DeviceKey = Vec<u8>;
+pub type CredentialId = Vec<u8>;
+
+#[derive(Eq, PartialEq, Clone, Debug, CandidType, Deserialize)]
+pub enum Purpose {
+    Authentication,
+    Recovery,
+}
+
+#[derive(Eq, PartialEq, Clone, Debug, CandidType, Deserialize)]
+pub enum KeyType {
+    Unknown,
+    Platform,
+    CrossPlatform,
+    SeedPhrase,
+}
+
+#[derive(Eq, PartialEq, Clone, Debug, CandidType, Deserialize)]
+pub struct MetadataEntry {
+    pub key: String,
+    pub value: String,
+}
+
+#[derive(Eq, PartialEq, Clone, Debug, CandidType, Deserialize)]
+pub enum DeviceProtection {
+    Protected,
+    Unprotected,
+}
 
 #[derive(Eq, PartialEq, Clone, Debug, CandidType, Deserialize)]
 pub struct DeviceData {
@@ -13,6 +44,5 @@ pub struct DeviceData {
     // Note: some fields above will be moved to the metadata map in the future.
     // All field names of `DeviceData` (such as 'alias', 'origin, etc.) are
     // reserved and cannot be written.
-    pub metadata: Option<HashMap<String, MetadataEntry>>,
+    pub metadata: Option<std::collections::HashMap<String, MetadataEntry>>,
 }
-
