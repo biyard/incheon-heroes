@@ -3,7 +3,10 @@ use dioxus::prelude::*;
 use dioxus_oauth::prelude::FirebaseService;
 use dioxus_translate::Language;
 use dto::User;
+use dto::UserAuthProvider;
 use google_wallet::drive_api::DriveApi;
+use ic_agent::Agent;
+use ic_agent::identity::BasicIdentity;
 
 use crate::{
     config,
@@ -46,7 +49,7 @@ impl Controller {
         let cred = self
             .firebase
             .sign_in_with_popup(vec![
-                "https://www.googleapis.com/auth/drive.appdata".to_string()
+                "https://www.googleapis.com/auth/drive.appdata".to_string(),
             ])
             .await;
 
@@ -258,5 +261,36 @@ impl Controller {
         }
     }
 
-    pub async fn handle_internet_identity(&self) {}
+    pub async fn handle_internet_identity(&mut self) {
+        let mut agent = Agent::builder()
+            .with_url("http://localhost:8000/") 
+            .build()
+            .unwrap();
+
+        let identity = BasicIdentity::from_pem_file("path/to/identity.pem").unwrap();
+        agent.set_identity(identity);
+
+        let principal = agent.get_principal().unwrap();
+        tracing::debug!("Authenticated with principal: {}", principal);
+
+        let endpoint = config::get().new_api_endpoint;
+        match User::get_client(endpoint)
+            .register_or_login(
+                principal.to_string(), 
+                UserAuthProvider::InternetIdentity,
+            )
+            .await
+        {
+            Ok(user) => {
+                self.user.set_user(user);
+                self.nav.replace(Route::HomePage { lang: self.lang });
+            }
+            Err(e) => {
+                tracing::error!(
+                    "Failed to register or login with Internet Identity: {:?}",
+                    e
+                );
+            }
+        }
+    }
 }

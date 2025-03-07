@@ -84,6 +84,7 @@ impl Controller {
                 LoginProvider::Google => ctrl.google.logged_in(),
                 LoginProvider::Kakao => ctrl.kakao.logged_in(),
                 LoginProvider::Kaia => true,
+                LoginProvider::InternetIdentity => true,
             };
 
             if !logged_in {
@@ -110,6 +111,7 @@ impl Controller {
             LoginProvider::Kakao => self.backup_kakao(seed).await,
             LoginProvider::Google => self.backup_google(address, seed).await,
             LoginProvider::Kaia => {}
+            LoginProvider::InternetIdentity => todo!(),
         }
     }
 
