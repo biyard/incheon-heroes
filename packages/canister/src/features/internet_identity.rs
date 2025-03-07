@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use candid::CandidType;
 use serde::Deserialize;
 
@@ -44,5 +46,5 @@ pub struct DeviceData {
     // Note: some fields above will be moved to the metadata map in the future.
     // All field names of `DeviceData` (such as 'alias', 'origin, etc.) are
     // reserved and cannot be written.
-    pub metadata: Option<std::collections::HashMap<String, MetadataEntry>>,
+    pub metadata: Option<HashMap<String, MetadataEntry>>,
 }
