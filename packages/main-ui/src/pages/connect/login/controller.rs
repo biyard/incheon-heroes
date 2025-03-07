@@ -84,6 +84,7 @@ impl Controller {
                 LoginProvider::Google => ctrl.google.logged_in(),
                 LoginProvider::Kakao => ctrl.kakao.logged_in(),
                 LoginProvider::Kaia => true,
+                LoginProvider::InternetIdentity => todo!(),
             };
 
             if !logged_in {
