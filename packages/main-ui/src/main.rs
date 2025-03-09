@@ -71,32 +71,23 @@ fn app() -> Element {
             rel: "preconnect",
         }
         document::Script { src: "https://d3js.org/d3.v7.min.js" }
-        document::Link {
-            href: "https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Russo+One&display=swap",
-            rel: "preload",
-        }
+        document::Link { href: "https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Russo+One&display=swap" }
         document::Link {
             href: "https://cdn.jsdelivr.net/gh/fonts-archive/Pretendard/Pretendard.css",
             r#type: "text/css",
-            rel: "preload",
         }
 
-        document::Link {
-            href: "https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Noto+Color+Emoji&family=Russo+One&display=swap",
-            rel: "preload",
-        }
+        document::Link { href: "https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Noto+Color+Emoji&family=Russo+One&display=swap" }
         document::Link { id: "favicon", rel: "icon", href: "{assets::FAVICON}" }
-        document::Link { rel: "preload", href: asset!("/public/main.css") }
-        document::Link { rel: "preload", href: asset!("/public/tailwind.css") }
+        document::Link { rel: "stylehsheet", href: asset!("/public/main.css") }
+        document::Link { rel: "stylehsheet", href: asset!("/public/tailwind.css") }
 
         document::Script { defer: true, src: asset!("/public/dep.js") }
-        document::Script { defer: true, src: "https://cdn.tailwindcss.com/3.4.16" }
+        document::Script { src: "https://cdn.tailwindcss.com/3.4.16" }
         document::Link {
             href: "https://cdn.jsdelivr.net/npm/daisyui@4.12.23/dist/full.min.css",
             r#type: "text/css",
-            rel: "preload",
         }
-        document::Script { defer: true, src: "https://cdn.tailwindcss.com" }
         Responsive { mobile_first: false, desktop: 1200.1, Router::<Route> {} }
     }
 }
