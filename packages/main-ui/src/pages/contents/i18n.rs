@@ -4,8 +4,8 @@ translate! {
     ContentsTranslate;
 
     title: {
-        ko: "인천 콘텐츠",
-        en: "Incheon Contents",
+        ko: "인천 갤러리",
+        en: "Incheon Gallery",
     },
 
     btn_create: {
