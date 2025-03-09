@@ -3,10 +3,7 @@ use dioxus::prelude::*;
 use dioxus_oauth::prelude::FirebaseService;
 use dioxus_translate::Language;
 use dto::User;
-use dto::UserAuthProvider;
 use google_wallet::drive_api::DriveApi;
-use ic_agent::Agent;
-use ic_agent::identity::BasicIdentity;
 
 use crate::{
     config,
@@ -14,7 +11,8 @@ use crate::{
     pages::LoginProvider,
     route::Route,
     services::{
-        backend_api::BackendApi, google_service::GoogleService, kakao_service::KakaoService,
+        backend_api::BackendApi, google_service::GoogleService,
+        internet_identity::InternetIdentityService, kakao_service::KakaoService,
         user_service::UserService,
     },
 };
@@ -28,6 +26,7 @@ pub struct Controller {
     pub user: UserService,
     pub google: GoogleService,
     pub kakao: KakaoService,
+    pub internet_identity: InternetIdentityService,
 }
 
 impl Controller {
@@ -40,6 +39,7 @@ impl Controller {
             user: use_context(),
             google: use_context(),
             kakao: use_context(),
+            internet_identity: use_context(),
         };
 
         Ok(ctrl)
@@ -261,24 +261,20 @@ impl Controller {
         }
     }
 
-    pub async fn handle_internet_identity(&mut self) {
-        let mut agent = Agent::builder()
-            .with_url("http://localhost:8000/") 
-            .build()
-            .unwrap();
+    pub async fn handle_internet_identity(&self) {
+        let identity = match self.internet_identity.identity() {
+            Some(identity) => identity,
+            None => {
+                tracing::error!("No Internet Identity found");
+                return;
+            }
+        };
 
-        let identity = BasicIdentity::from_pem_file("path/to/identity.pem").unwrap();
-        agent.set_identity(identity);
-
-        let principal = agent.get_principal().unwrap();
-        tracing::debug!("Authenticated with principal: {}", principal);
+        let principal = identity.sender().unwrap().to_text();
 
         let endpoint = config::get().new_api_endpoint;
         match User::get_client(endpoint)
-            .register_or_login(
-                principal.to_string(), 
-                UserAuthProvider::InternetIdentity,
-            )
+            .register_or_login(principal, dto::UserAuthProvider::InternetIdentity)
             .await
         {
             Ok(user) => {
@@ -286,11 +282,8 @@ impl Controller {
                 self.nav.replace(Route::HomePage { lang: self.lang });
             }
             Err(e) => {
-                tracing::error!(
-                    "Failed to register or login with Internet Identity: {:?}",
-                    e
-                );
+                tracing::error!("Failed to register or login: {:?}", e);
             }
-        }
+        };
     }
 }

@@ -1,37 +1,3 @@
-use std::collections::HashMap;
-
-use candid::CandidType;
-use serde::Deserialize;
-
-pub type DeviceKey = Vec<u8>;
-pub type CredentialId = Vec<u8>;
-
-#[derive(Eq, PartialEq, Clone, Debug, CandidType, Deserialize)]
-pub enum Purpose {
-    Authentication,
-    Recovery,
-}
-
-#[derive(Eq, PartialEq, Clone, Debug, CandidType, Deserialize)]
-pub enum KeyType {
-    Unknown,
-    Platform,
-    CrossPlatform,
-    SeedPhrase,
-}
-
-#[derive(Eq, PartialEq, Clone, Debug, CandidType, Deserialize)]
-pub struct MetadataEntry {
-    pub key: String,
-    pub value: String,
-}
-
-#[derive(Eq, PartialEq, Clone, Debug, CandidType, Deserialize)]
-pub enum DeviceProtection {
-    Protected,
-    Unprotected,
-}
-
 #[derive(Eq, PartialEq, Clone, Debug, CandidType, Deserialize)]
 pub struct DeviceData {
     pub pubkey: DeviceKey,

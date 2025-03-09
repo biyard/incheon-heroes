@@ -355,6 +355,7 @@ impl KaiaWallet for UserService {
             }
             UserWallet::KaiaWallet(ref wallet) => wallet.sign_transaction(tx).await,
             UserWallet::None => Err(dto::Error::WalletNotInitialized),
+            UserWallet::InternetIdentity { .. } => todo!(),
         }
     }
 }

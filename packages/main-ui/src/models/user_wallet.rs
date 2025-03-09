@@ -3,8 +3,8 @@ use dto::wallets::kaikas_wallet::KaikasWallet;
 use ethers::prelude::*;
 use ethers::signers::LocalWallet;
 use ethers::utils::to_checksum;
-use ic_agent::identity::BasicIdentity;
 use ic_agent::Identity;
+use ic_agent::identity::BasicIdentity;
 use sha2::{Digest, Sha256};
 
 #[derive(Debug, Clone, Eq, PartialEq, serde::Serialize, serde::Deserialize, Default, Translate)]
@@ -21,9 +21,7 @@ pub enum UserWallet {
     KaiaWallet(KaikasWallet),
 
     #[translate(ko = "인터넷 아이덴티티", en = "Internet Identity")]
-    InternetIdentity {
-        principal: String,
-    },
+    InternetIdentity { principal: String },
 
     #[default]
     #[translate(ko = "없음")]
@@ -58,6 +56,7 @@ impl UserWallet {
                 checksum_address, ..
             } => Some(checksum_address.clone()),
             UserWallet::KaiaWallet(wallet) => Some(wallet.address.clone()),
+            UserWallet::InternetIdentity { principal } => Some(principal.clone()),
             _ => None,
         }
     }
@@ -65,6 +64,7 @@ impl UserWallet {
     pub fn principal(&self) -> Option<String> {
         match self {
             UserWallet::SocialWallet { principal, .. } => Some(principal.clone()),
+            UserWallet::InternetIdentity { principal, .. } => Some(principal.clone()),
             _ => None,
         }
     }

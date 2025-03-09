@@ -12,7 +12,6 @@ pub mod features {
     pub mod dao;
     pub mod nft;
     pub mod siwe_provider;
-    pub mod internet_identity;
 }
 
 pub mod utils {

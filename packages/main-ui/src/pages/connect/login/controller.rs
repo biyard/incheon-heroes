@@ -4,6 +4,7 @@ use crate::models::user_wallet::{EvmWallet, UserWallet, create_evm_wallet, creat
 use crate::route::Route;
 use crate::services::backend_api::BackendApi;
 use crate::services::google_service::GoogleService;
+use crate::services::internet_identity::InternetIdentityService;
 use crate::services::kakao_service::KakaoService;
 use crate::services::user_service::UserService;
 use by_macros::*;
@@ -31,6 +32,7 @@ pub struct Controller {
     pub nav: Navigator,
     pub google: GoogleService,
     pub kakao: KakaoService,
+    pub internet_identity: InternetIdentityService,
 }
 
 impl Controller {
@@ -77,6 +79,7 @@ impl Controller {
             user_wallet: use_context(),
             google: use_context(),
             kakao: use_context(),
+            internet_identity: use_context(),
         };
 
         use_effect(move || {
@@ -84,7 +87,7 @@ impl Controller {
                 LoginProvider::Google => ctrl.google.logged_in(),
                 LoginProvider::Kakao => ctrl.kakao.logged_in(),
                 LoginProvider::Kaia => true,
-                LoginProvider::InternetIdentity => true,
+                LoginProvider::InternetIdentity => ctrl.internet_identity.is_logged_in(),
             };
 
             if !logged_in {
@@ -203,6 +206,45 @@ impl Controller {
             Err(e) => {
                 btracing::error!("Failed to save backup key: {}", e);
             }
+        }
+    }
+
+    pub async fn handle_internet_identity(&mut self) {
+        if let Some(identity) = self.internet_identity.get_identity() {
+            let principal = identity.sender().unwrap().to_text();
+
+            let endpoint = config::get().new_api_endpoint;
+            match User::get_client(endpoint)
+                .signup_or_login(
+                    principal.clone(),
+                    self.email(),
+                    self.id(),
+                    self.picture(),
+                    self.provider.into(),
+                )
+                .await
+            {
+                Ok(UserResponse { user, action }) => {
+                    self.user_wallet.set_user(user);
+
+                    if action == dto::UserResponseType::SignUp {
+                        self.signup_handler(&EvmWallet {
+                            private_key: "".to_string(),
+                            seed: "".to_string(),
+                            checksum_address: principal.clone(),
+                            address: principal.clone(),
+                        })
+                        .await;
+                    }
+
+                    self.nav.replace(Route::HomePage { lang: self.lang });
+                }
+                Err(e) => {
+                    tracing::error!("Failed to register or login: {:?}", e);
+                }
+            }
+        } else {
+            tracing::error!("No Internet Identity found");
         }
     }
 }
