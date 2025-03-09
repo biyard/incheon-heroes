@@ -4,6 +4,7 @@ use dioxus_oauth::prelude::FirebaseService;
 use dioxus_translate::Language;
 use dto::User;
 use google_wallet::drive_api::DriveApi;
+use ic_agent::Identity;
 
 use crate::{
     config,
@@ -261,7 +262,7 @@ impl Controller {
         }
     }
 
-    pub async fn handle_internet_identity(&self) {
+    pub async fn handle_internet_identity(&mut self) {
         let identity = match self.internet_identity.identity() {
             Some(identity) => identity,
             None => {
