@@ -30,9 +30,7 @@ pub fn RootLayout(lang: Language) -> Element {
 
         MetaSeoTemplate {
             lang,
-            logo_url: "{logo}",
             title: "Incheon Heroes",
-            canonical: "https://incheonheroes.world",
             keywords: "incheonheroes, 인천히어로즈",
             url: "{path}",
         }
