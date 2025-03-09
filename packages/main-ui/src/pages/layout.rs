@@ -22,7 +22,7 @@ use dioxus_translate::*;
 pub fn RootLayout(lang: Language) -> Element {
     let theme: ColorTheme = use_context();
     let path: Route = use_route();
-    let logo = asset!("/public/logos/logo_symbol_color.png");
+    let _logo = asset!("/public/logos/logo_symbol_color.png");
     let responsive: ResponsiveService = use_context();
 
     rsx! {
