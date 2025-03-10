@@ -78,10 +78,10 @@ impl Controller {
 
         match result {
             Ok(_) => {
-                btracing::info!("Copied sharing URL: {}", self.path());
+                btracing::info!("Copied sharing URL: {}", full_url);
             }
             Err(e) => {
-                btracing::error!("Failed to copy sharing URL: {:?}", e);
+                btracing::error!("Failed to copy full URL: {:?}", e);
             }
         }
     }
