@@ -355,7 +355,7 @@ impl KaiaWallet for UserService {
             }
             UserWallet::KaiaWallet(ref wallet) => wallet.sign_transaction(tx).await,
             UserWallet::None => Err(dto::Error::WalletNotInitialized),
-            UserWallet::InternetIdentity { .. } => todo!(),
+            UserWallet::InternetIdentity { .. } => Err(dto::Error::ValidationError("Transaction signing for Internet Identity is not yet implemented.".to_string())),
         }
     }
 }
