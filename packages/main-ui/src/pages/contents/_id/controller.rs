@@ -59,12 +59,20 @@ impl Controller {
     }
 
     pub async fn handle_share(&self) {
+        let origin = web_sys::window()
+            .unwrap()
+            .location()
+            .origin()
+            .unwrap_or_else(|_| String::new());
+
+        let full_url = format!("{}{}", origin, self.path());
+
         let result = wasm_bindgen_futures::JsFuture::from(
             web_sys::window()
                 .unwrap()
                 .navigator()
                 .clipboard()
-                .write_text(&self.path()),
+                .write_text(&full_url),
         )
         .await;
 
