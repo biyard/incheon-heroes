@@ -1,4 +1,3 @@
-
 #[derive(Eq, PartialEq, Clone, Debug, CandidType, Deserialize)]
 pub struct DeviceData {
     pub pubkey: DeviceKey,
@@ -15,4 +14,3 @@ pub struct DeviceData {
     // reserved and cannot be written.
     pub metadata: Option<HashMap<String, MetadataEntry>>,
 }
-

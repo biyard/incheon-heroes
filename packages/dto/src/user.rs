@@ -53,6 +53,7 @@ pub enum UserAuthProvider {
     Kakao = 1,
     Google = 2,
     Kaia = 3,
+    InternetIdentity = 4,
 }
 
 /// UserContents is read-only model for users table with contents.
