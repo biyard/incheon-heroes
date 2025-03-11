@@ -114,7 +114,12 @@ impl Controller {
             LoginProvider::Kakao => self.backup_kakao(seed).await,
             LoginProvider::Google => self.backup_google(address, seed).await,
             LoginProvider::Kaia => {}
-            LoginProvider::InternetIdentity => todo!(),
+            LoginProvider::InternetIdentity => {
+                let principal = self.internet_identity.get_principal().unwrap().to_text();
+                tracing::debug!("Backing up Internet Identity principal: {}", principal);
+
+                LocalStorage::set("internet_identity_principal", &principal).unwrap();
+            }
         }
     }
 
