@@ -12,6 +12,7 @@ use dioxus::prelude::*;
 use dioxus_translate::Language;
 use dto::{User, UserResponse};
 use ethers::utils::keccak256;
+use gloo_storage::{LocalStorage, Storage};
 use google_wallet::drive_api::DriveApi;
 use ic_agent::Identity;
 
