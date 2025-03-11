@@ -251,6 +251,13 @@ pub fn InputWithLabel(
     multiline: bool,
     mandatory: bool,
 ) -> Element {
+    let character_count = value.chars().count();
+    let counter_color = if character_count == max {
+        "#FF0000"
+    } else {
+        "#979797"
+    };
+
     rsx! {
         div { class: "relative w-full flex flex-col gap-[10px] items-start justify-start",
 
@@ -267,26 +274,30 @@ pub fn InputWithLabel(
                     placeholder: "{placeholder}",
                     value: "{value}",
                     maxlength: max,
-                    oninput: move |evt| oninput(evt.value()),
+                    oninput: move |evt| {
+                        let new_value = evt.value();
+                        oninput.call(new_value.clone());
+                    },
                     rows: "5",
                 }
             } else {
                 input {
                     class: "w-full px-[24px] h-[45px] flex flex-row items-center justify-start rounded-[12px] border-[1px] border-[#dfdfdf] text-[#979797] font-normal text-[15px] bg-transparent",
-                    r#type: if multiline { "textarea" },
+                    r#type: "text",
                     maxlength: max,
                     value: "{value}",
                     placeholder: "{placeholder}",
-                    oninput: move |e| oninput(e.value()),
-
+                    oninput: move |evt| {
+                        let new_value = evt.value();
+                        oninput.call(new_value.clone());
+                    },
                 }
             }
             p {
                 class: "absolute right-[10px] bottom-[0px] h-[45px] flex flex-row items-center justify-center text-[#979797] font-normal text-[14px] z-[10]",
-                color: if value.chars().count() == max { "#FF0000" },
-                "{value.chars().count()}/{max}"
+                color: counter_color,
+                "{character_count}/{max}"
             }
-
         }
     }
 }
