@@ -80,7 +80,7 @@ fn app() -> Element {
         document::Script { defer: true, src: asset!("/public/dep.js") }
         document::Script { src: "https://cdn.tailwindcss.com/3.4.16" }
         document::Link {
-            href: "https://cdn.jsdelivr.net/npm/daisyui@4.12.23/dist/full.min.css",
+            href: "https://cdn.jsdelivr.net/npm/daisyui@5",
             r#type: "text/css",
         }
         Responsive { mobile_first: false, desktop: 1200.1, Router::<Route> {} }
