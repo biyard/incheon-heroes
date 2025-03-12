@@ -98,20 +98,36 @@ pub fn SingleContent(
     let mut description = use_signal(|| "".to_string());
     let mut thumbnail = use_signal(|| None);
     let mut source: Signal<Option<(String, String)>> = use_signal(|| None);
+    let mut error_message = use_signal(|| None); // For validation errors
 
-    let send = move || {
-        let req = ContentCreateRequest {
-            title: title(),
-            description: description(),
-            thumbnail_image: thumbnail().unwrap_or_default(),
-            source: if source().is_some() {
-                source().unwrap().0
-            } else {
-                thumbnail().unwrap_or_default()
-            },
-            ..Default::default()
-        };
-        onchange.call(req);
+    let mut validate_title = move || {
+        if title().is_empty() {
+            error_message.set(Some("Title cannot be empty.".to_string()));
+            false
+        } else if title().chars().count() > 30 {
+            error_message.set(Some("Title cannot exceed 30 characters.".to_string()));
+            false
+        } else {
+            error_message.set(None);
+            true
+        }
+    };
+
+    let mut send = move || {
+        if validate_title() {
+            let req = ContentCreateRequest {
+                title: title(),
+                description: description(),
+                thumbnail_image: thumbnail().unwrap_or_default(),
+                source: if source().is_some() {
+                    source().unwrap().0
+                } else {
+                    thumbnail().unwrap_or_default()
+                },
+                ..Default::default()
+            };
+            onchange.call(req);
+        }
     };
 
     rsx! {
@@ -121,14 +137,20 @@ pub fn SingleContent(
                 placeholder: "{tr.placeholder_title}",
                 max: 30,
                 oninput: move |e| {
-                    if title().chars().count() < 30 {
-                        title.set(e);
-                        send();
-                    }
+                    title.set(e);
+                    validate_title();
+                    send();
                 },
                 value: title(),
                 multiline: false,
                 mandatory: true,
+            }
+
+            if let Some(error) = error_message() {
+                p {
+                    class: "text-[#FF0000] text-[12px]",
+                    "{error}"
+                }
             }
 
             div { class: "w-full flex flex-col gap-[10px] items-start justify-start",
@@ -219,10 +241,8 @@ pub fn SingleContent(
                 placeholder: "{tr.placeholder_description}",
                 max: 300,
                 oninput: move |e| {
-                    if description().chars().count() < 300 {
-                        description.set(e);
-                        send();
-                    }
+                    description.set(e);
+                    send();
                 },
                 value: description(),
                 multiline: true,
@@ -252,11 +272,6 @@ pub fn InputWithLabel(
     mandatory: bool,
 ) -> Element {
     let character_count = value.chars().count();
-    let counter_color = if character_count == max {
-        "#FF0000"
-    } else {
-        "#979797"
-    };
 
     rsx! {
         div { class: "relative w-full flex flex-col gap-[10px] items-start justify-start",
@@ -275,27 +290,25 @@ pub fn InputWithLabel(
                     value: "{value}",
                     maxlength: max,
                     oninput: move |evt| {
-                        let new_value = evt.value();
-                        oninput.call(new_value.clone());
+                        oninput.call(evt.value());
                     },
                     rows: "5",
                 }
             } else {
                 input {
                     class: "w-full px-[24px] h-[45px] flex flex-row items-center justify-start rounded-[12px] border-[1px] border-[#dfdfdf] text-[#979797] font-normal text-[15px] bg-transparent",
-                    r#type: "text",
+                    r#type: if multiline { "textarea" },
                     maxlength: max,
                     value: "{value}",
                     placeholder: "{placeholder}",
-                    oninput: move |evt| {
-                        let new_value = evt.value();
-                        oninput.call(new_value.clone());
+                    oninput: move |e| {
+                        oninput.call(e.value());
                     },
                 }
             }
             p {
                 class: "absolute right-[10px] bottom-[0px] h-[45px] flex flex-row items-center justify-center text-[#979797] font-normal text-[14px] z-[10]",
-                color: counter_color,
+                color: if character_count == max { "#FF0000" },
                 "{character_count}/{max}"
             }
         }
