@@ -35,7 +35,7 @@ pub fn MintingPopup(lang: Language, id: ReadOnlySignal<i64>) -> Element {
 
                     div { class: "w-full flex flex-col items-start justify-start gap-[20px] text-[#5B5B5B]",
 
-                        div { class: "w-full text-start text-[15px] tracking-wide",
+                        div { class: "w-full text-start text-[15px] tracking-wide px-4", 
                             span { "{tr.description}" }
                         }
                         div { class: "flex justify-start items-center",
