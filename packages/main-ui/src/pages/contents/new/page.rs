@@ -94,13 +94,13 @@ pub fn SingleContent(
         "border-[#dfdfdf]"
     };
     let tr: NewContentsTranslate = translate(&lang);
-    let mut title = use_signal(|| "".to_string());
+    let mut title = use_signal(|| "".to_string()); 
     let mut description = use_signal(|| "".to_string());
     let mut thumbnail = use_signal(|| None);
     let mut source: Signal<Option<(String, String)>> = use_signal(|| None);
     let mut error_message = use_signal(|| None); // For validation errors
 
-    let mut validate_title = move || {
+    let validate_title = move || {
         if title().is_empty() {
             error_message.set(Some("Title cannot be empty.".to_string()));
             false
@@ -113,7 +113,7 @@ pub fn SingleContent(
         }
     };
 
-    let mut send = move || {
+    let send = move || {
         if validate_title() {
             let req = ContentCreateRequest {
                 title: title(),
@@ -141,7 +141,7 @@ pub fn SingleContent(
                     validate_title();
                     send();
                 },
-                value: title(),
+                value: title.read_only(),
                 multiline: false,
                 mandatory: true,
             }
@@ -266,12 +266,12 @@ pub fn InputWithLabel(
     label: String,
     placeholder: String,
     max: usize,
-    value: String,
+    value: ReadOnlySignal<String>, 
     oninput: EventHandler<String>,
     multiline: bool,
     mandatory: bool,
 ) -> Element {
-    let character_count = value.chars().count();
+    let character_count = value().chars().count(); 
 
     rsx! {
         div { class: "relative w-full flex flex-col gap-[10px] items-start justify-start",
@@ -287,10 +287,10 @@ pub fn InputWithLabel(
                 textarea {
                     class: "w-full px-[24px] py-[10px] flex flex-row items-center justify-start rounded-[12px] border-[1px] border-[#dfdfdf] text-[#979797] font-normal text-[15px] bg-transparent",
                     placeholder: "{placeholder}",
-                    value: "{value}",
+                    value: "{value()}", 
                     maxlength: max,
                     oninput: move |evt| {
-                        oninput.call(evt.value());
+                        oninput.call(evt.value()); 
                     },
                     rows: "5",
                 }
@@ -299,17 +299,17 @@ pub fn InputWithLabel(
                     class: "w-full px-[24px] h-[45px] flex flex-row items-center justify-start rounded-[12px] border-[1px] border-[#dfdfdf] text-[#979797] font-normal text-[15px] bg-transparent",
                     r#type: if multiline { "textarea" },
                     maxlength: max,
-                    value: "{value}",
+                    value: "{value()}",
                     placeholder: "{placeholder}",
                     oninput: move |e| {
-                        oninput.call(e.value());
+                        oninput.call(e.value()); 
                     },
                 }
             }
             p {
                 class: "absolute right-[10px] bottom-[0px] h-[45px] flex flex-row items-center justify-center text-[#979797] font-normal text-[14px] z-[10]",
                 color: if character_count == max { "#FF0000" },
-                "{character_count}/{max}"
+                "{character_count}/{max}" 
             }
         }
     }
