@@ -100,7 +100,7 @@ pub fn SingleContent(
     let mut source: Signal<Option<(String, String)>> = use_signal(|| None);
     let mut error_message = use_signal(|| None); // For validation errors
 
-    let validate_title = move || {
+    let mut validate_title = move || {
         if title().is_empty() {
             error_message.set(Some("Title cannot be empty.".to_string()));
             false
@@ -113,7 +113,7 @@ pub fn SingleContent(
         }
     };
 
-    let send = move || {
+    let mut send = move || {
         if validate_title() {
             let req = ContentCreateRequest {
                 title: title(),
@@ -141,7 +141,7 @@ pub fn SingleContent(
                     validate_title();
                     send();
                 },
-                value: title.read_only(),
+                value: title,
                 multiline: false,
                 mandatory: true,
             }
