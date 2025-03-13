@@ -4,7 +4,7 @@ use crate::models::user_wallet::{EvmWallet, UserWallet, create_evm_wallet, creat
 use crate::route::Route;
 use crate::services::backend_api::BackendApi;
 use crate::services::google_service::GoogleService;
-use crate::services::internet_identity::InternetIdentityService;
+use crate::services::internet_identity::{INTERNET_IDENTITY_KEY, InternetIdentityService};
 use crate::services::kakao_service::KakaoService;
 use crate::services::user_service::UserService;
 use by_macros::*;
@@ -119,7 +119,7 @@ impl Controller {
                 let principal = self.internet_identity.get_principal().unwrap().to_text();
                 tracing::debug!("Backing up Internet Identity principal: {}", principal);
 
-                LocalStorage::set("internet_identity_principal", &principal).unwrap();
+                LocalStorage::set(INTERNET_IDENTITY_KEY, &principal).unwrap();
             }
         }
     }
@@ -243,14 +243,21 @@ impl Controller {
                         .await;
                     }
 
+                    let identity_wallet = UserWallet::InternetIdentity {
+                        principal: principal.clone(),
+                    };
+                    self.user_wallet.set_wallet(identity_wallet).await;
+
                     self.nav.replace(Route::HomePage { lang: self.lang });
                 }
                 Err(e) => {
                     tracing::error!("Failed to register or login: {:?}", e);
+                    self.nav.replace(Route::ConnectPage { lang: self.lang });
                 }
             }
         } else {
             tracing::error!("No Internet Identity found");
+            self.nav.replace(Route::ConnectPage { lang: self.lang });
         }
     }
 }

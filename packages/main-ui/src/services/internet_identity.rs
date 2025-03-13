@@ -11,7 +11,7 @@ use ic_agent::identity::BasicIdentity;
 use ic_agent::identity::Delegation;
 use std::sync::Arc;
 
-const INTERNET_IDENTITY_KEY: &str = "internet_identity";
+pub const INTERNET_IDENTITY_KEY: &str = "internet_identity";
 
 #[derive(Clone)]
 pub struct ArcIdentity(Arc<BasicIdentity>);
