@@ -134,14 +134,14 @@ pub fn NftDescription(
 
                 //Mint now button
                 div { class: "w-full flex flex-col gap-[16px] items-start justify-center text-[#191919]",
-                button {
-                    class: "flex justify-center bg-white items-center w-full h-[46px] rounded-[12px] align-middle hover:text-[#16775D] hover:border-[1px] hover:border-[#16775D] hover:bg-[#E4F4E4] font-semibold text-[18px] cursor-pointer",
-                    box_shadow: "0px 4px 20px rgba(84, 157, 159, 0.25)",
-                    onclick: move |_| {
-                        ctrl.open_minting_popup();
-                    },
-                    "{tr.button_text}"
-                }
+                    button {
+                        class: "flex justify-center bg-white items-center w-full h-[46px] rounded-[12px] align-middle hover:text-[#16775D] hover:border-[1px] hover:border-[#16775D] hover:bg-[#E4F4E4] font-semibold text-[18px] cursor-pointer",
+                        box_shadow: "0px 4px 20px rgba(84, 157, 159, 0.25)",
+                        onclick: move |_| {
+                            ctrl.open_minting_popup();
+                        },
+                        "{tr.button_text}"
+                    }
 
                     div { class: "w-full flex flex-row justify-start items-center gap-[4px]",
                         //mint count
