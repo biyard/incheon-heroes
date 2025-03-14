@@ -13,7 +13,7 @@ pub fn HoverPrimaryButton(
     rsx! {
         div {..attributes,
             button {
-                class: "w-full flex flex-row items-center justify-center gap-[10px] hover:bg-[#D4EED4] px-[10px] py-[4] rounded-[12px] text-[#5B5B5B] hover:text-[#16775D] font-semibold",
+                class: "w-full flex flex-row items-center justify-center gap-[10px] hover:bg-[#D4EED4] px-[10px] py-[4] rounded-[12px] text-[#5B5B5B] hover:text-[#16775D] font-semibold cursor-pointer",
                 onmouseenter: move |_| {
                     if let Some(onchangehover) = onchangehover {
                         onchangehover(true);

@@ -106,7 +106,7 @@ pub fn NftDescription(
                 div { class: "flex flex-row justify-start items-center gap-[10px] text-[#5B5B5B]",
                     //opensea
                     a {
-                        class: " hover:bg-[#0086FF] hover:text-[#ffffff] px-[10px] py-[4px] rounded-[12px] flex flex-row items-center justify-center gap-[10px]",
+                        class: "hover:bg-[#0086FF] hover:text-[#ffffff] px-[10px] py-[4px] rounded-[12px] flex flex-row items-center justify-center gap-[10px] cursor-pointer",
                         target: "_blank",
                         href: "{opensea_url}",
                         onmouseover: move |_| icon_color.set("#ffffff".to_string()),
@@ -135,7 +135,7 @@ pub fn NftDescription(
                 //Mint now button
                 div { class: "w-full flex flex-col gap-[16px] items-start justify-center text-[#191919]",
                     button {
-                        class: "flex justify-center bg-white items-center w-full h-[46px] rounded-[12px] align-middle hover:text-[#16775D] hover:border-[1px] hover:border-[#16775D] hover:bg-[#E4F4E4] font-semibold text-[18px]",
+                        class: "flex justify-center bg-white items-center w-full h-[46px] rounded-[12px] align-middle hover:text-[#16775D] hover:border-[1px] hover:border-[#16775D] hover:bg-[#E4F4E4] font-semibold text-[18px] cursor-pointer",
                         box_shadow: "0px 4px 20px rgba(84, 157, 159, 0.25)",
                         onclick: move |_| {
                             ctrl.open_minting_popup();

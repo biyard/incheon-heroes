@@ -22,7 +22,7 @@ pub fn SingleSimpleArrow(
 
     rsx! {
         svg {
-            class: "transition-all {rotate} {class}",
+            class: "transition-all {rotate} {class} cursor-pointer",
             fill: "none",
             height: "{size}",
             "viewBox": "0 0 21 21",
@@ -40,6 +40,7 @@ pub fn SingleSimpleArrow(
 pub fn LeftArrow() -> Element {
     rsx! {
         svg {
+            class: "cursor-pointer",
             fill: "none",
             height: "50",
             view_box: "0 0 18 50",
@@ -60,6 +61,7 @@ pub fn LeftArrow() -> Element {
 pub fn RightArrow() -> Element {
     rsx! {
         svg {
+            class: "cursor-pointer",
             fill: "none",
             height: "50",
             view_box: "0 0 18 50",
