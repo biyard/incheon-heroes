@@ -28,14 +28,16 @@ pub fn MintingPopup(lang: Language, id: ReadOnlySignal<i64>) -> Element {
             div { class: "carousel-item relative w-full", id: "slide1",
                 div {
                     class: "flex flex-col justify-start items-center gap-[30px] p-4",
-                    style: "background-color: #ffffff; ",
+                    style: "background-color: #ffffff;",
                     p { class: "text-[24px] text-[#191919] font-bold leading-[45px] text-center",
                         "{tr.title}"
                     }
 
                     div { class: "w-full flex flex-col items-start justify-start gap-[20px] text-[#5B5B5B]",
 
-                        div { class: "w-full text-start text-[15px] tracking-wide px-4", 
+                        div {
+                            class: "w-full text-start text-[15px] tracking-wide px-6",
+                            style: "max-width: 100%; box-sizing: border-box;",
                             span { "{tr.description}" }
                         }
                         div { class: "flex justify-start items-center",
@@ -90,7 +92,7 @@ pub fn MintingPopup(lang: Language, id: ReadOnlySignal<i64>) -> Element {
             div { class: "carousel-item relative w-full", id: "slide2",
                 div {
                     class: "w-full flex flex-col justify-start items-center gap-[30px] p-4",
-                    style: "background-color: #ffffff; ",
+                    style: "background-color: #ffffff;",
                     p { class: "text-[24px] text-[#191919] font-bold leading-[45px] text-center",
                         "{tr.title}"
                     }
