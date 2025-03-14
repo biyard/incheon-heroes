@@ -50,7 +50,7 @@ pub fn MintingPopup(lang: Language, id: ReadOnlySignal<i64>) -> Element {
                                         class: "checkbox [--chkbg:theme(colors.green.500)] [--chkfg:white] border-[#16775D] w-[18px] h-[18px] rounded-[4px]",
                                         r#type: "checkbox",
                                     }
-                                    label { class: "mr-2 text-[14px] font-bold cursor-pointer",
+                                    label { class: "mr-2 text-[14px] font-bold cursor-pointer whitespace-pre-wrap",
                                         "{tr.agreement}"
                                     }
                                 }
@@ -127,7 +127,6 @@ pub fn MintingPopup(lang: Language, id: ReadOnlySignal<i64>) -> Element {
                                 "{tr.complete_text}"
                             }
                         }
-
                     }
                     div { class: "flex flex-col w-full items-center justify-center gap-[20px] text-[#5B5B5B]",
 
