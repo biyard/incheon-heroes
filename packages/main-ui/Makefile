@@ -51,27 +51,22 @@ setup.tool:
 	npm i -g tailwindcss
 
 serve: clean public/tailwind.css
-	$(BUILD_ENV) dx serve --addr 0.0.0.0 --platform web --port 8080
+	@$(BUILD_ENV) dx serve --addr 0.0.0.0 --platform web --port 8080
 
 run: clean node_modules public
-	$(BUILD_ENV) dx serve --fullstack --platform web
+	@$(BUILD_ENV) dx serve --fullstack --platform web
 
 node_modules:
 	npm i
 
 build: clean public
-	$(BUILD_ENV) dx build --release --fullstack --server-features lambda  --platform web
+	@$(BUILD_ENV) dx build --release --fullstack --server-features lambda  --platform web
 	cp -r $(WORKSPACE_ROOT)/target/dx/$(SERVICE)/release/web $(ARTIFACT_DIR)
 	mv $(ARTIFACT_DIR)/server $(ARTIFACT_DIR)/bootstrap
 
 .PHONY: public
-public: node_modules public/tailwind.css public/dep.js
+public: node_modules public/tailwind.css
 
-.PHONY: public/dep.js
-public/dep.js:
-	npx webpack --mode $(MODE)
-
-.PHONY: public/dep.js
 public/tailwind.css:
 	tailwindcss -i ./public/input.css -o ./public/tailwind.css --minify
 

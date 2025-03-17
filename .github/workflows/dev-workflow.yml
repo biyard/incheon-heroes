@@ -159,7 +159,7 @@ jobs:
           ENABLE_LAMBDA: true
         run: |
           npm i -g aws-cdk
-          make deploy-if-needed
+          make deploy
 
   fetcher:
     runs-on: ubuntu-latest
@@ -215,7 +215,7 @@ jobs:
           ENABLE_LAMBDA: false
         run: |
           npm i -g aws-cdk
-          make deploy-if-needed
+          make deploy
 
   create-release-pr:
     runs-on: ubuntu-latest

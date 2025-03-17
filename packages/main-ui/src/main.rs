@@ -11,6 +11,7 @@ use crate::route::Route;
 use by_components::responsive::Responsive;
 use by_components::theme::{CardColorTheme, ColorTheme, TextColorTheme};
 use dioxus::prelude::*;
+use dioxus_oauth::prelude::FirebaseProvider;
 use dioxus_popup::PopupService;
 use services::google_service::GoogleService;
 use services::kakao_service::KakaoService;
@@ -29,6 +30,7 @@ fn app() -> Element {
     std::panic::set_hook(Box::new(|info| {
         tracing::error!("Panic: {}", info);
     }));
+    let conf = config::get();
 
     use_context_provider(|| ColorTheme {
         background: "#E9F2EC",
@@ -52,6 +54,15 @@ fn app() -> Element {
     KakaoService::init();
 
     rsx! {
+        FirebaseProvider {
+            api_key: conf.firebase.api_key.clone(),
+            auth_domain: conf.firebase.auth_domain.clone(),
+            project_id: conf.firebase.project_id.clone(),
+            storage_bucket: conf.firebase.storage_bucket.clone(),
+            messaging_sender_id: conf.firebase.messaging_sender_id.clone(),
+            app_id: conf.firebase.app_id.clone(),
+            measurement_id: conf.firebase.measurement_id.clone(),
+        }
         btracing::ToastTracing {
             img {
                 src: asset!("/public/logos/logo_symbol_white.png"),
@@ -77,7 +88,6 @@ fn app() -> Element {
         document::Link { rel: "stylehsheet", href: asset!("/public/main.css") }
         document::Link { rel: "stylehsheet", href: asset!("/public/tailwind.css") }
 
-        document::Script { defer: true, src: asset!("/public/dep.js") }
         document::Link {
             href: "https://cdn.jsdelivr.net/npm/daisyui@5",
             r#type: "text/css",
