@@ -20,6 +20,9 @@ pub enum UserWallet {
     #[translate(ko = "카이아 지갑", en = "Kaia Wallet")]
     KaiaWallet(KaikasWallet),
 
+    #[translate(ko = "인터넷 아이덴티티", en = "Internet Identity")]
+    InternetIdentity { principal: String },
+
     #[default]
     #[translate(ko = "없음")]
     None,
@@ -67,8 +70,9 @@ impl UserWallet {
     pub fn chain_id(&self) -> u64 {
         match self {
             UserWallet::KaiaWallet(wallet) => wallet.chain_id,
-            UserWallet::SocialWallet { .. } => 0, 
-            UserWallet::None => 0,                
+            UserWallet::SocialWallet { .. } => 0,
+            UserWallet::None => 0,
+            UserWallet::InternetIdentity { .. } => todo!(),
         }
     }
 }

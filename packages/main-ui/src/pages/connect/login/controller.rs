@@ -5,6 +5,7 @@ use crate::route::Route;
 use crate::services::backend_api::BackendApi;
 use crate::services::google_service::GoogleService;
 use crate::services::kakao_service::KakaoService;
+use crate::services::internet_identity::{INTERNET_IDENTITY_KEY, InternetIdentityService};
 use crate::services::user_service::UserService;
 use by_macros::*;
 use dioxus::prelude::*;
@@ -13,6 +14,7 @@ use dto::{User, UserResponse};
 use ethers::utils::keccak256;
 use google_wallet::drive_api::DriveApi;
 use ic_agent::Identity;
+use gloo_storage::{LocalStorage, Storage};
 
 use super::models::LoginProvider;
 
@@ -31,6 +33,7 @@ pub struct Controller {
     pub nav: Navigator,
     pub google: GoogleService,
     pub kakao: KakaoService,
+    pub internet_identity: InternetIdentityService,
 }
 
 impl Controller {
@@ -77,6 +80,7 @@ impl Controller {
             user_wallet: use_context(),
             google: use_context(),
             kakao: use_context(),
+            internet_identity: use_context(),
         };
 
         use_effect(move || {
@@ -84,6 +88,7 @@ impl Controller {
                 LoginProvider::Google => ctrl.google.logged_in(),
                 LoginProvider::Kakao => ctrl.kakao.logged_in(),
                 LoginProvider::Kaia => true,
+                LoginProvider::InternetIdentity => ctrl.internet_identity.is_logged_in(),
             };
 
             if !logged_in {
@@ -110,6 +115,12 @@ impl Controller {
             LoginProvider::Kakao => self.backup_kakao(seed).await,
             LoginProvider::Google => self.backup_google(address, seed).await,
             LoginProvider::Kaia => {}
+            LoginProvider::InternetIdentity => {
+                let principal = self.internet_identity.get_principal().unwrap().to_text();
+                tracing::debug!("Backing up Internet Identity principal: {}", principal);
+
+                LocalStorage::set(INTERNET_IDENTITY_KEY, &principal).unwrap();
+            }
         }
     }
 
@@ -201,6 +212,52 @@ impl Controller {
             Err(e) => {
                 btracing::error!("Failed to save backup key: {}", e);
             }
+        }
+    }
+
+    pub async fn handle_internet_identity(&mut self) {
+        if let Some(identity) = self.internet_identity.get_identity() {
+            let principal = identity.sender().unwrap().to_text();
+
+            let endpoint = config::get().new_api_endpoint;
+            match User::get_client(endpoint)
+                .signup_or_login(
+                    principal.clone(),
+                    self.email(),
+                    self.id(),
+                    self.picture(),
+                    self.provider.into(),
+                )
+                .await
+            {
+                Ok(UserResponse { user, action }) => {
+                    self.user_wallet.set_user(user);
+
+                    if action == dto::UserResponseType::SignUp {
+                        self.signup_handler(&EvmWallet {
+                            private_key: "".to_string(),
+                            seed: "".to_string(),
+                            checksum_address: principal.clone(),
+                            address: principal.clone(),
+                        })
+                        .await;
+                    }
+
+                    let identity_wallet = UserWallet::InternetIdentity {
+                        principal: principal.clone(),
+                    };
+                    self.user_wallet.set_wallet(identity_wallet).await;
+
+                    self.nav.replace(Route::HomePage { lang: self.lang });
+                }
+                Err(e) => {
+                    tracing::error!("Failed to register or login: {:?}", e);
+                    self.nav.replace(Route::ConnectPage { lang: self.lang });
+                }
+            }
+        } else {
+            tracing::error!("No Internet Identity found");
+            self.nav.replace(Route::ConnectPage { lang: self.lang });
         }
     }
 }

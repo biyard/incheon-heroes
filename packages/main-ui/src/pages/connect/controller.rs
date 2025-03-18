@@ -4,6 +4,7 @@ use dioxus_oauth::prelude::FirebaseService;
 use dioxus_translate::Language;
 use dto::User;
 use google_wallet::drive_api::DriveApi;
+use ic_agent::Identity;
 
 use crate::{
     config,
@@ -11,7 +12,8 @@ use crate::{
     pages::LoginProvider,
     route::Route,
     services::{
-        backend_api::BackendApi, google_service::GoogleService, kakao_service::KakaoService,
+        backend_api::BackendApi, google_service::GoogleService,
+        internet_identity::InternetIdentityService, kakao_service::KakaoService,
         user_service::UserService,
     },
 };
@@ -25,6 +27,7 @@ pub struct Controller {
     pub user: UserService,
     pub google: GoogleService,
     pub kakao: KakaoService,
+    pub internet_identity: InternetIdentityService,
 }
 
 impl Controller {
@@ -37,6 +40,7 @@ impl Controller {
             user: use_context(),
             google: use_context(),
             kakao: use_context(),
+            internet_identity: use_context(),
         };
 
         Ok(ctrl)
@@ -46,7 +50,7 @@ impl Controller {
         let cred = self
             .firebase
             .sign_in_with_popup(vec![
-                "https://www.googleapis.com/auth/drive.appdata".to_string()
+                "https://www.googleapis.com/auth/drive.appdata".to_string(),
             ])
             .await;
 
@@ -258,5 +262,29 @@ impl Controller {
         }
     }
 
-    pub async fn handle_internet_identity(&self) {}
+    pub async fn handle_internet_identity(&mut self) {
+        let identity = match self.internet_identity.identity() {
+            Some(identity) => identity,
+            None => {
+                tracing::error!("No Internet Identity found");
+                return;
+            }
+        };
+
+        let principal = identity.sender().unwrap().to_text();
+
+        let endpoint = config::get().new_api_endpoint;
+        match User::get_client(endpoint)
+            .register_or_login(principal, dto::UserAuthProvider::InternetIdentity)
+            .await
+        {
+            Ok(user) => {
+                self.user.set_user(user);
+                self.nav.replace(Route::HomePage { lang: self.lang });
+            }
+            Err(e) => {
+                tracing::error!("Failed to register or login: {:?}", e);
+            }
+        };
+    }
 }
