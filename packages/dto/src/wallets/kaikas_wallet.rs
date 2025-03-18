@@ -25,6 +25,9 @@ use wasm_bindgen_futures::JsFuture;
 #[cfg(feature = "web")]
 use wasm_bindgen::prelude::*;
 
+#[cfg(feature = "web")]
+use ethers::types::U256;
+
 #[cfg(not(feature = "web"))]
 impl KaikasWallet {
     pub async fn new(_provider: Arc<Provider<Http>>) -> Result<Self> {
