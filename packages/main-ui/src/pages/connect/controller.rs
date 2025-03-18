@@ -4,6 +4,7 @@ use dioxus_oauth::prelude::FirebaseService;
 use dioxus_translate::Language;
 use dto::User;
 use google_wallet::drive_api::DriveApi;
+use serde_bytes::ByteBuf;
 
 use crate::{
     config,
@@ -11,8 +12,8 @@ use crate::{
     pages::LoginProvider,
     route::Route,
     services::{
-        backend_api::BackendApi, google_service::GoogleService, kakao_service::KakaoService,
-        user_service::UserService,
+        backend_api::BackendApi, google_service::GoogleService, icp_canister::IcpCanister,
+        kakao_service::KakaoService, user_service::UserService,
     },
 };
 
@@ -46,7 +47,7 @@ impl Controller {
         let cred = self
             .firebase
             .sign_in_with_popup(vec![
-                "https://www.googleapis.com/auth/drive.appdata".to_string()
+                "https://www.googleapis.com/auth/drive.appdata".to_string(),
             ])
             .await;
 
@@ -232,30 +233,58 @@ impl Controller {
             }
         };
 
-        self.user.set_wallet(UserWallet::KaiaWallet(w)).await;
         let endpoint = conf.new_api_endpoint;
 
-        match User::get_client(endpoint)
-            .register_or_login(
-                self.user.evm_address().unwrap_or_default(),
-                dto::UserAuthProvider::Kaia,
-            )
+        let evm_address = self.user.evm_address().unwrap_or_default();
+
+        let session_key = self.generate_session_key();
+
+        let message = format!("SIWE Login: {:?}", session_key); // Create a SIWE message
+        let signature = match w.sign_message(&message).await {
+            Ok(sig) => sig,
+            Err(e) => {
+                tracing::error!("Failed to sign SIWE message: {:?}", e);
+                return;
+            }
+        }; // Sign the message with the Kaia Wallet
+
+        // Call the ICP canister to login with SIWE
+        let icp_canister: IcpCanister = use_context();
+        match icp_canister
+            .siwe_login(signature.to_string(), w.address.clone(), session_key)
             .await
         {
-            Ok(user) => {
-                self.user.set_user(user);
+            Ok(login_details) => {
+                tracing::debug!("SIWE login successful: {:?}", login_details);
+                self.user.set_wallet(UserWallet::KaiaWallet(w)).await;
+
+                match User::get_client(endpoint)
+                    .register_or_login(evm_address, dto::UserAuthProvider::Kaia)
+                    .await
+                {
+                    Ok(user) => {
+                        self.user.set_user(user);
+                    }
+                    Err(e) => {
+                        tracing::error!("Failed to register or login: {:?}", e);
+                    }
+                };
+
+                if self.nav.can_go_back() {
+                    self.nav.go_back();
+                } else {
+                    tracing::debug!("replace home page");
+                    self.nav.replace(Route::HomePage { lang: self.lang });
+                }
             }
             Err(e) => {
-                tracing::error!("Failed to register or login: {:?}", e);
+                tracing::error!("SIWE login failed: {:?}", e);
             }
-        };
-
-        if self.nav.can_go_back() {
-            self.nav.go_back();
-        } else {
-            tracing::debug!("replace home page");
-            self.nav.replace(Route::HomePage { lang: self.lang });
         }
+    }
+
+    fn generate_session_key(&self) -> ByteBuf {
+        ByteBuf::from(rand::random::<[u8; 32]>().to_vec())
     }
 
     pub async fn handle_internet_identity(&self) {}

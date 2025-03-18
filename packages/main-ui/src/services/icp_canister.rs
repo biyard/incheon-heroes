@@ -3,11 +3,13 @@
 use by_macros::DioxusController;
 use dioxus::prelude::*;
 
-use candid::{encode_args, utils::ArgumentEncoder, CandidType, Decode, Principal};
+use candid::{CandidType, Decode, Principal, encode_args, utils::ArgumentEncoder};
 use dto::*;
 use ic_agent::Agent;
+use ic_siwe::login::LoginDetails;
 use nft::Nft;
 use serde::Deserialize;
+use serde_bytes::ByteBuf;
 
 use crate::config;
 
@@ -85,5 +87,15 @@ impl IcpCanister {
         let inter_output = Box::leak(Box::new(inter_output));
 
         candid::Decode!(inter_output, R).map_err(|e| Error::CandidError(e.to_string()))
+    }
+
+    pub async fn siwe_login(
+        &self,
+        signature: String,
+        address: String,
+        session_key: ByteBuf,
+    ) -> Result<LoginDetails> {
+        self.update("siwe_login", (signature, address, session_key))
+            .await
     }
 }
