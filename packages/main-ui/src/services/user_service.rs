@@ -371,6 +371,11 @@ impl UserService {
             }
         }
     }
+
+    // pub async fn set_icp_wallet(&mut self, wallet: Option<Arc<BasicIdentity>>) {
+    //     self.icp_wallet.set(wallet);
+    // }
+
 }
 
 #[cfg_attr(not(feature = "server"), async_trait(?Send))]

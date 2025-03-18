@@ -34,6 +34,12 @@ impl KaikasWallet {
     pub async fn switch_chain(_chain_id: u64) -> Result<()> {
         Ok(())
     }
+
+    pub async fn sign_message(&self, _message: &str) -> Result<Signature> {
+        Err(crate::Error::Unknown(
+            "sign_message is not supported in non-web environments".to_string(),
+        ))
+    }
 }
 
 #[cfg(feature = "web")]
@@ -90,6 +96,34 @@ impl KaikasWallet {
         let _ = k.on("accountsChanged", callback.as_ref().unchecked_ref());
         callback.forget();
         Ok(())
+    }
+
+    pub async fn sign_message(&self, message: &str) -> Result<Signature, crate::Error> {
+        let req = KaikasRequest {
+            method: "klay_sign".to_string(),
+            params: vec![message.to_string()],
+        };
+        let req = serde_wasm_bindgen::to_value(&req).unwrap();
+        web_sys::console::log_1(&req);
+        let k = klaytn()?;
+        let res = match JsFuture::from(k.request(&req)).await {
+            Ok(res) => {
+                web_sys::console::log_1(&res);
+                res
+            }
+            Err(e) => {
+                web_sys::console::log_1(&e);
+                return Err(crate::Error::SignError);
+            }
+        };
+
+        let sig: KaikasSignature = serde_wasm_bindgen::from_value(res).unwrap();
+
+        Ok(Signature {
+            r: U256::from_str_radix(&sig.r[2..], 16).expect("can't decode sig.r"),
+            s: U256::from_str_radix(&sig.s, 16).expect("can't decode sig.s"),
+            v: u64::from_str_radix(sig.v.trim_start_matches("0x"), 16).expect("can't decode sig.v"),
+        })
     }
 }
 
