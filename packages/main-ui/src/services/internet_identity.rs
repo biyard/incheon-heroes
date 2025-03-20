@@ -45,15 +45,12 @@ pub struct InternetIdentityService {
 }
 
 impl InternetIdentityService {
-    pub fn new() -> Self {
-        let agent = use_signal(|| None);
-        let identity = use_signal(|| None);
-
-        Self { agent, identity }
-    }
-
     pub fn init() {
-        use_context_provider(|| Self::new());
+        let srv = Self {
+            agent: use_signal(|| None),
+            identity: use_signal(|| None),
+        };
+        use_context_provider(move || srv);
     }
 
     pub async fn login(&mut self, identity: BasicIdentity) {
