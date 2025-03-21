@@ -129,6 +129,9 @@ impl Controller {
 
         let icp_wallet = create_identity(&wallet.seed);
 
+        let icp_canister: IcpCanister = use_context();
+
+
         let endpoint = config::get().new_api_endpoint;
         match User::get_client(endpoint)
             .signup_or_login(
@@ -161,7 +164,6 @@ impl Controller {
                     })
                     .await;
 
-                let icp_canister: IcpCanister = use_context();
                 if let Err(e) = icp_canister.register_evm_address(wallet.checksum_address.clone()).await {
                     btracing::error!("Faield to register EVM address with ICP canister: {:?}", e);
                 }
@@ -177,42 +179,6 @@ impl Controller {
             self.nav.replace(Route::HomePage { lang: self.lang });
         }
     }
-
-    // pub async fn handle_login(&mut self) {
-    //     let seed = self.create_seed(self.password());
-    //     let wallet = create_evm_wallet(&seed).unwrap();
-    //     let icp_wallet = create_identity(&wallet.seed);
-    
-    //     let endpoint = config::get().new_api_endpoint;
-    //     match User::get_client(endpoint)
-    //         .signup_or_login(
-    //             wallet.checksum_address.clone(),
-    //             self.email(),
-    //             self.id(),
-    //             self.picture(),
-    //             self.provider.into(),
-    //         )
-    //         .await
-    //     {
-    //         Ok(UserResponse { user, action }) => {
-    //             self.user.set(Some(user));
-    
-    //             // Register EVM address with the backend
-    //             if let Err(e) = self
-    //                 .backend_api
-    //                 .register_evm_address(&wallet.checksum_address)
-    //                 .await
-    //             {
-    //                 tracing::error!("Failed to register EVM address: {:?}", e);
-    //             }
-    
-    //             // Rest of the login logic...
-    //         }
-    //         Err(e) => {
-    //             btracing::error!("Failed to get user: {:?}", e);
-    //         }
-    //     }
-    // }
 
     pub fn create_seed(&self, password: String) -> [u8; 32] {
         let h = keccak256(password.as_bytes());
