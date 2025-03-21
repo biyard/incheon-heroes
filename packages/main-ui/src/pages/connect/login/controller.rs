@@ -165,7 +165,7 @@ impl Controller {
                     .await;
 
                 if let Err(e) = icp_canister.register_evm_address(wallet.checksum_address.clone()).await {
-                    btracing::error!("Faield to register EVM address with ICP canister: {:?}", e);
+                    btracing::error!("Failed to register EVM address with ICP canister: {:?}", e);
                 }
             }
             Err(e) => {
