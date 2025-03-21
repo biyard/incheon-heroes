@@ -3,7 +3,7 @@
 use by_macros::DioxusController;
 use dioxus::prelude::*;
 
-use candid::{encode_args, utils::ArgumentEncoder, CandidType, Decode, Principal};
+use candid::{CandidType, Decode, Principal, encode_args, utils::ArgumentEncoder};
 use dto::*;
 use ic_agent::Agent;
 use nft::Nft;
@@ -85,5 +85,9 @@ impl IcpCanister {
         let inter_output = Box::leak(Box::new(inter_output));
 
         candid::Decode!(inter_output, R).map_err(|e| Error::CandidError(e.to_string()))
+    }
+
+    pub async fn register_evm_address(&self, address: String) -> Result<()> {
+        self.update("register_evm_address", (address,)).await
     }
 }

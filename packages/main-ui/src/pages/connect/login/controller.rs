@@ -4,6 +4,7 @@ use crate::models::user_wallet::{EvmWallet, UserWallet, create_evm_wallet, creat
 use crate::route::Route;
 use crate::services::backend_api::BackendApi;
 use crate::services::google_service::GoogleService;
+use crate::services::icp_canister::IcpCanister;
 use crate::services::kakao_service::KakaoService;
 use crate::services::user_service::UserService;
 use by_macros::*;
@@ -128,6 +129,9 @@ impl Controller {
 
         let icp_wallet = create_identity(&wallet.seed);
 
+        let icp_canister: IcpCanister = use_context();
+
+
         let endpoint = config::get().new_api_endpoint;
         match User::get_client(endpoint)
             .signup_or_login(
@@ -155,10 +159,14 @@ impl Controller {
                     .set_wallet(UserWallet::SocialWallet {
                         private_key: wallet.private_key,
                         seed: wallet.seed,
-                        checksum_address: wallet.checksum_address,
+                        checksum_address: wallet.checksum_address.clone(),
                         principal: icp_wallet.sender().unwrap().to_text(),
                     })
                     .await;
+
+                if let Err(e) = icp_canister.register_evm_address(wallet.checksum_address.clone()).await {
+                    btracing::error!("Failed to register EVM address with ICP canister: {:?}", e);
+                }
             }
             Err(e) => {
                 btracing::error!("Failed to get user: {:?}", e);
