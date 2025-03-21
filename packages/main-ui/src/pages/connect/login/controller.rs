@@ -4,6 +4,7 @@ use crate::models::user_wallet::{EvmWallet, UserWallet, create_evm_wallet, creat
 use crate::route::Route;
 use crate::services::backend_api::BackendApi;
 use crate::services::google_service::GoogleService;
+use crate::services::icp_canister::IcpCanister;
 use crate::services::kakao_service::KakaoService;
 use crate::services::user_service::UserService;
 use by_macros::*;
@@ -155,10 +156,15 @@ impl Controller {
                     .set_wallet(UserWallet::SocialWallet {
                         private_key: wallet.private_key,
                         seed: wallet.seed,
-                        checksum_address: wallet.checksum_address,
+                        checksum_address: wallet.checksum_address.clone(),
                         principal: icp_wallet.sender().unwrap().to_text(),
                     })
                     .await;
+
+                let icp_canister: IcpCanister = use_context();
+                if let Err(e) = icp_canister.register_evm_address(wallet.checksum_address.clone()).await {
+                    btracing::error!("Faield to register EVM address with ICP canister: {:?}", e);
+                }
             }
             Err(e) => {
                 btracing::error!("Failed to get user: {:?}", e);
@@ -171,6 +177,42 @@ impl Controller {
             self.nav.replace(Route::HomePage { lang: self.lang });
         }
     }
+
+    // pub async fn handle_login(&mut self) {
+    //     let seed = self.create_seed(self.password());
+    //     let wallet = create_evm_wallet(&seed).unwrap();
+    //     let icp_wallet = create_identity(&wallet.seed);
+    
+    //     let endpoint = config::get().new_api_endpoint;
+    //     match User::get_client(endpoint)
+    //         .signup_or_login(
+    //             wallet.checksum_address.clone(),
+    //             self.email(),
+    //             self.id(),
+    //             self.picture(),
+    //             self.provider.into(),
+    //         )
+    //         .await
+    //     {
+    //         Ok(UserResponse { user, action }) => {
+    //             self.user.set(Some(user));
+    
+    //             // Register EVM address with the backend
+    //             if let Err(e) = self
+    //                 .backend_api
+    //                 .register_evm_address(&wallet.checksum_address)
+    //                 .await
+    //             {
+    //                 tracing::error!("Failed to register EVM address: {:?}", e);
+    //             }
+    
+    //             // Rest of the login logic...
+    //         }
+    //         Err(e) => {
+    //             btracing::error!("Failed to get user: {:?}", e);
+    //         }
+    //     }
+    // }
 
     pub fn create_seed(&self, password: String) -> [u8; 32] {
         let h = keccak256(password.as_bytes());

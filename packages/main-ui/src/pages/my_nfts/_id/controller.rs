@@ -265,6 +265,11 @@ impl Controller {
         let token_id = (self.token_id)();
         let from = user.evm_address().unwrap_or_default();
 
+        if let Err(e) = icp_canister.register_evm_address(from.clone()).await {
+            btracing::error!("Failed to register EVM address: {:?}", e);
+            return;
+        }
+
         match icp_canister.bridge(token_id as u64, from).await {
             Ok(_) => {
                 btracing::debug!("success to call icp canister");
