@@ -4,7 +4,6 @@ use dioxus_oauth::prelude::FirebaseService;
 use dioxus_translate::Language;
 use dto::User;
 use google_wallet::drive_api::DriveApi;
-use ic_agent::Identity;
 
 use crate::{
     config,
@@ -268,7 +267,6 @@ impl Controller {
 
         match ii.login().await {
             Ok(principal) => {
-                // Get or create user with ICP principal
                 let endpoint = config::get().new_api_endpoint;
                 match User::get_client(endpoint)
                     .register_or_login(principal.clone(), dto::UserAuthProvider::InternetIdentity)
@@ -277,7 +275,6 @@ impl Controller {
                     Ok(user) => {
                         self.user.set_user(user);
 
-                        // Create and set wallet
                         let wallet = crate::models::user_wallet::InternetIdentityWallet::new(
                             principal.clone(),
                         );

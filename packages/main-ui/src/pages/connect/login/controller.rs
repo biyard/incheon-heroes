@@ -4,7 +4,7 @@ use crate::models::user_wallet::{EvmWallet, UserWallet, create_evm_wallet, creat
 use crate::route::Route;
 use crate::services::backend_api::BackendApi;
 use crate::services::google_service::GoogleService;
-use crate::services::internet_identity::{INTERNET_IDENTITY_KEY, InternetIdentityService};
+use crate::services::internet_identity::InternetIdentityService;
 use crate::services::kakao_service::KakaoService;
 use crate::services::user_service::UserService;
 use by_macros::*;
@@ -12,7 +12,6 @@ use dioxus::prelude::*;
 use dioxus_translate::Language;
 use dto::{User, UserResponse};
 use ethers::utils::keccak256;
-use gloo_storage::{LocalStorage, Storage};
 use google_wallet::drive_api::DriveApi;
 use ic_agent::Identity;
 
@@ -115,12 +114,7 @@ impl Controller {
             LoginProvider::Kakao => self.backup_kakao(seed).await,
             LoginProvider::Google => self.backup_google(address, seed).await,
             LoginProvider::Kaia => {}
-            LoginProvider::InternetIdentity => {
-                let principal = self.internet_identity.get_principal().unwrap().to_text();
-                tracing::debug!("Backing up Internet Identity principal: {}", principal);
-
-                LocalStorage::set(INTERNET_IDENTITY_KEY, &principal).unwrap();
-            }
+            LoginProvider::InternetIdentity => {}
         }
     }
 

@@ -31,15 +31,12 @@ impl InternetIdentityService {
     }
 
     pub async fn login(&mut self) -> Result<String, String> {
-        // Create an anonymous identity first
         let empty_pem = Cursor::new(Vec::new());
         let identity = BasicIdentity::from_pem(empty_pem).map_err(|e| e.to_string())?;
         let principal = identity.sender().map_err(|e| e.to_string())?.to_text();
 
-        // Store the identity first
         self.identity.set(Some(identity));
 
-        // Then set it on the agent (this will move the identity)
         if let Some(identity) = self.identity.take() {
             self.agent().set_identity(identity);
         }
@@ -59,7 +56,6 @@ impl InternetIdentityService {
 
     pub async fn logout(&mut self) {
         self.identity.set(None);
-        // Reset to anonymous identity
         let empty_pem = Cursor::new(Vec::new());
         self.agent()
             .set_identity(BasicIdentity::from_pem(empty_pem).unwrap());
