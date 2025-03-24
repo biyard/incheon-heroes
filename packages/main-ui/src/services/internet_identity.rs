@@ -1,93 +1,67 @@
-use crate::config;
+#![allow(non_snake_case)]
 use by_macros::DioxusController;
 use dioxus::prelude::*;
-use gloo_storage::{LocalStorage, Storage};
-use ic_agent::Agent;
-use ic_agent::Identity;
-use ic_agent::Signature;
-use ic_agent::agent::EnvelopeContent;
-use ic_agent::export::Principal;
-use ic_agent::identity::BasicIdentity;
-use ic_agent::identity::Delegation;
-use std::sync::Arc;
-
-pub const INTERNET_IDENTITY_KEY: &str = "internet_identity";
-
-#[derive(Clone)]
-pub struct ArcIdentity(Arc<BasicIdentity>);
-
-impl Identity for ArcIdentity {
-    fn sender(&self) -> Result<Principal, String> {
-        self.0.sender()
-    }
-
-    fn public_key(&self) -> Option<Vec<u8>> {
-        self.0.public_key()
-    }
-
-    fn sign(&self, content: &EnvelopeContent) -> Result<Signature, String> {
-        self.0.sign(content)
-    }
-
-    fn sign_delegation(&self, content: &Delegation) -> Result<Signature, String> {
-        self.0.sign_delegation(content)
-    }
-
-    fn sign_arbitrary(&self, content: &[u8]) -> Result<Signature, String> {
-        self.0.sign_arbitrary(content)
-    }
-}
+use ic_agent::{Agent, Identity as _, identity::BasicIdentity};
+use std::io::Cursor;
 
 #[derive(Clone, Copy, DioxusController)]
 pub struct InternetIdentityService {
-    agent: Signal<Option<Agent>>,
-    identity: Signal<Option<ArcIdentity>>,
+    pub agent: Signal<Agent>,
+    pub identity: Signal<Option<BasicIdentity>>,
 }
 
 impl InternetIdentityService {
     pub fn init() {
+        let conf = &crate::config::get().icp;
+        let agent = Agent::builder()
+            .with_url(conf.endpoint)
+            .build()
+            .expect("failed to build default agent");
+
         let srv = Self {
-            agent: use_signal(|| None),
+            agent: use_signal(move || agent),
             identity: use_signal(|| None),
         };
+
         use_context_provider(move || srv);
     }
 
-    pub async fn login(&mut self, identity: BasicIdentity) {
-        let identity = ArcIdentity(Arc::new(identity));
-        let principal = identity.sender().unwrap().to_text();
-
-        let agent = Agent::builder()
-            .with_url(config::get().icp.endpoint)
-            .with_identity(identity.clone())
-            .build()
-            .unwrap();
-
-        self.agent.set(Some(agent));
-        self.identity.set(Some(identity));
-
-        LocalStorage::set(INTERNET_IDENTITY_KEY, principal).unwrap();
+    pub fn instance() -> Self {
+        use_context()
     }
 
-    pub async fn logout(&mut self) {
-        self.agent.set(None);
-        self.identity.set(None);
-        LocalStorage::delete(INTERNET_IDENTITY_KEY);
+    pub async fn login(&mut self) -> Result<String, String> {
+        // Create an anonymous identity first
+        let empty_pem = Cursor::new(Vec::new());
+        let identity = BasicIdentity::from_pem(empty_pem).map_err(|e| e.to_string())?;
+        let principal = identity.sender().map_err(|e| e.to_string())?.to_text();
+
+        // Store the identity first
+        self.identity.set(Some(identity));
+
+        // Then set it on the agent (this will move the identity)
+        if let Some(identity) = self.identity.take() {
+            self.agent().set_identity(identity);
+        }
+
+        Ok(principal)
     }
 
     pub fn is_logged_in(&self) -> bool {
-        self.agent().is_some()
+        self.identity().is_some()
     }
 
-    pub fn get_principal(&self) -> Option<Principal> {
-        self.identity().map(|identity| identity.sender().unwrap())
-    }
-
-    pub fn get_identity(&self) -> Option<ArcIdentity> {
+    pub fn principal(&self) -> Option<String> {
         self.identity()
+            .as_ref()
+            .and_then(|id| id.sender().ok().map(|p| p.to_text()))
     }
 
-    pub fn get_agent(&self) -> Option<Agent> {
+    pub async fn logout(&mut self) {
+        self.identity.set(None);
+        // Reset to anonymous identity
+        let empty_pem = Cursor::new(Vec::new());
         self.agent()
+            .set_identity(BasicIdentity::from_pem(empty_pem).unwrap());
     }
 }

@@ -263,28 +263,40 @@ impl Controller {
     }
 
     pub async fn handle_internet_identity(&mut self) {
-        let identity = match self.internet_identity.identity() {
-            Some(identity) => identity,
-            None => {
-                tracing::error!("No Internet Identity Found");
-                return;
-            }
-        };
+        use crate::services::internet_identity::InternetIdentityService;
+        let mut ii = InternetIdentityService::instance();
 
-        let principal = identity.sender().unwrap().to_text();
+        match ii.login().await {
+            Ok(principal) => {
+                // Get or create user with ICP principal
+                let endpoint = config::get().new_api_endpoint;
+                match User::get_client(endpoint)
+                    .register_or_login(principal.clone(), dto::UserAuthProvider::InternetIdentity)
+                    .await
+                {
+                    Ok(user) => {
+                        self.user.set_user(user);
 
-        let endpoint = config::get().new_api_endpoint;
-        match User::get_client(endpoint)
-            .register_or_login(principal, dto::UserAuthProvider::InternetIdentity)
-            .await
-        {
-            Ok(user) => {
-                self.user.set_user(user);
-                self.nav.replace(Route::HomePage { lang: self.lang });
+                        // Create and set wallet
+                        let wallet = crate::models::user_wallet::InternetIdentityWallet::new(
+                            principal.clone(),
+                        );
+                        self.user.set_wallet(wallet).await;
+
+                        if self.nav.can_go_back() {
+                            self.nav.go_back();
+                        } else {
+                            self.nav.replace(Route::HomePage { lang: self.lang });
+                        }
+                    }
+                    Err(e) => {
+                        tracing::error!("Failed to register/login with II: {:?}", e);
+                    }
+                }
             }
             Err(e) => {
-                tracing::error!("Failed to register or login: {:?}", e);
+                tracing::error!("Internet Identity login failed: {:?}", e);
             }
-        };
+        }
     }
 }

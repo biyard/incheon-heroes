@@ -137,6 +137,7 @@ pub enum Error {
         en = "You must agree to the terms of use for the minted NFT."
     )]
     MustAgreeToTerms,
+    UnsupportedWalletType,
 }
 
 impl std::error::Error for Error {}
