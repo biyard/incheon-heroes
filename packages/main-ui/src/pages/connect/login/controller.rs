@@ -215,49 +215,5 @@ impl Controller {
         }
     }
 
-    pub async fn handle_internet_identity(&mut self) {
-        if let Some(identity) = self.internet_identity.get_identity() {
-            let principal = identity.sender().unwrap().to_text();
-
-            let endpoint = config::get().new_api_endpoint;
-            match User::get_client(endpoint)
-                .signup_or_login(
-                    principal.clone(),
-                    self.email(),
-                    self.id(),
-                    self.picture(),
-                    self.provider.into(),
-                )
-                .await
-            {
-                Ok(UserResponse { user, action }) => {
-                    self.user_wallet.set_user(user);
-
-                    if action == dto::UserResponseType::SignUp {
-                        self.signup_handler(&EvmWallet {
-                            private_key: "".to_string(),
-                            seed: "".to_string(),
-                            checksum_address: principal.clone(),
-                            address: principal.clone(),
-                        })
-                        .await;
-                    }
-
-                    let identity_wallet = UserWallet::InternetIdentity {
-                        principal: principal.clone(),
-                    };
-                    self.user_wallet.set_wallet(identity_wallet).await;
-
-                    self.nav.replace(Route::HomePage { lang: self.lang });
-                }
-                Err(e) => {
-                    tracing::error!("Failed to register or login: {:?}", e);
-                    self.nav.replace(Route::ConnectPage { lang: self.lang });
-                }
-            }
-        } else {
-            tracing::error!("No Internet Identity found");
-            self.nav.replace(Route::ConnectPage { lang: self.lang });
-        }
-    }
+    
 }

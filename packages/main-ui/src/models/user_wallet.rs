@@ -63,6 +63,7 @@ impl UserWallet {
     pub fn principal(&self) -> Option<String> {
         match self {
             UserWallet::SocialWallet { principal, .. } => Some(principal.clone()),
+            UserWallet::InternetIdentity { principal } => Some(principal.clone()),
             _ => None,
         }
     }

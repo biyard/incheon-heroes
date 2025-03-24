@@ -266,7 +266,7 @@ impl Controller {
         let identity = match self.internet_identity.identity() {
             Some(identity) => identity,
             None => {
-                tracing::error!("No Internet Identity found");
+                tracing::error!("No Internet Identity Found");
                 return;
             }
         };
