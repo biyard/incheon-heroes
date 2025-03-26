@@ -21,6 +21,13 @@ pub enum NftType {
 pub fn MyNftsPage(lang: Language) -> Element {
     let ctrl = Controller::new(lang)?;
     let tr: MyNftsTranslate = translate(&lang);
+    let mut refresh = use_signal(|| false);
+
+    use_effect(move || {
+        if refresh() {
+            refresh.set(false);
+        }
+    });
 
     let sbts = ctrl.user_service.sbts().unwrap_or(vec![]);
     let icps = ctrl.user_service.icp_nfts().unwrap_or(vec![]);

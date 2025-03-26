@@ -14,7 +14,6 @@ use dioxus::prelude::*;
 use dioxus_oauth::prelude::FirebaseProvider;
 use dioxus_popup::PopupService;
 use services::google_service::GoogleService;
-use services::internet_identity::InternetIdentityService;
 use services::kakao_service::KakaoService;
 use services::{
     backend_api::BackendApi, icp_canister::IcpCanister, klaytn::Klaytn, user_service::UserService,
@@ -53,7 +52,6 @@ fn app() -> Element {
     PopupService::init();
     GoogleService::init();
     KakaoService::init();
-    InternetIdentityService::init();
 
     rsx! {
         FirebaseProvider {

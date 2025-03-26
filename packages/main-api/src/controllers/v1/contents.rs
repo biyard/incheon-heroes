@@ -181,6 +181,20 @@ impl ContentController {
             }
         };
 
+        let user = User::query_builder()
+            .id_equals(user_id)
+            .query()
+            .map(User::from)
+            .fetch_optional(&self.pool)
+            .await?;
+
+        if let Some(user) = user {
+            if user.evm_address.is_empty() {
+                tracing::error!("User {} has no EVM address set", user_id);
+                return Err(Error::InvalidUser("No EVM address set".to_string()));
+            }
+        }
+
         let mut tx = self.pool.begin().await?;
         let already_minted = sqlx::query_scalar::<_, bool>(
             "SELECT EXISTS(SELECT 1 FROM content_downloads WHERE user_id = $1 AND content_id = $2)",

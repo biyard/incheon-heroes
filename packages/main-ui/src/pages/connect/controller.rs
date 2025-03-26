@@ -11,8 +11,7 @@ use crate::{
     pages::LoginProvider,
     route::Route,
     services::{
-        backend_api::BackendApi, google_service::GoogleService,
-        internet_identity::InternetIdentityService, kakao_service::KakaoService,
+        backend_api::BackendApi, google_service::GoogleService, kakao_service::KakaoService,
         user_service::UserService,
     },
 };
@@ -26,7 +25,6 @@ pub struct Controller {
     pub user: UserService,
     pub google: GoogleService,
     pub kakao: KakaoService,
-    pub internet_identity: InternetIdentityService,
 }
 
 impl Controller {
@@ -39,7 +37,6 @@ impl Controller {
             user: use_context(),
             google: use_context(),
             kakao: use_context(),
-            internet_identity: use_context(),
         };
 
         Ok(ctrl)
@@ -261,39 +258,5 @@ impl Controller {
         }
     }
 
-    pub async fn handle_internet_identity(&mut self) {
-        use crate::services::internet_identity::InternetIdentityService;
-        let mut ii = InternetIdentityService::instance();
-
-        match ii.login().await {
-            Ok(principal) => {
-                let endpoint = config::get().new_api_endpoint;
-                match User::get_client(endpoint)
-                    .register_or_login(principal.clone(), dto::UserAuthProvider::InternetIdentity)
-                    .await
-                {
-                    Ok(user) => {
-                        self.user.set_user(user);
-
-                        let wallet = crate::models::user_wallet::InternetIdentityWallet::new(
-                            principal.clone(),
-                        );
-                        self.user.set_wallet(wallet).await;
-
-                        if self.nav.can_go_back() {
-                            self.nav.go_back();
-                        } else {
-                            self.nav.replace(Route::HomePage { lang: self.lang });
-                        }
-                    }
-                    Err(e) => {
-                        tracing::error!("Failed to register/login with II: {:?}", e);
-                    }
-                }
-            }
-            Err(e) => {
-                tracing::error!("Internet Identity login failed: {:?}", e);
-            }
-        }
-    }
+    pub async fn handle_internet_identity(&mut self) {}
 }

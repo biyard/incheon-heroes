@@ -190,10 +190,35 @@ pub async fn load(
     let mut tx = pool.begin().await?;
     let mut last = 0;
 
+    tracing::info!("Starting to load {} events", events.len());
+
     for (log, amount) in events {
+        tracing::debug!(
+            "Processing event - tx_hash: {}, token_id: {}, block: {}",
+            log.tx_hash,
+            log.token_id,
+            log.block_number
+        );
+
+        tracing::info!(
+            "Processing event - tx_hash: {}, token_id: {}, from: {}, to: {}",
+            log.tx_hash,
+            log.token_id,
+            log.from_address,
+            log.to_address
+        );
+
         if log.block_number > last {
             last = log.block_number;
         }
+
+        tracing::debug!(
+            "From: {}, To: {}, Amount: {}",
+            log.from_address,
+            log.to_address,
+            amount
+        );
+
         let to_user = User::query_builder()
             .evm_address_equals(log.to_address.clone())
             .query()
@@ -208,6 +233,24 @@ pub async fn load(
             .fetch_optional(&mut *tx)
             .await?;
 
+        match &to_user {
+            Some(user) => tracing::info!(
+                "Found recipient user {} for address {}",
+                user.id,
+                log.to_address
+            ),
+            None => tracing::warn!("No user found for recipient address {}", log.to_address),
+        }
+
+        match &from_user {
+            Some(user) => tracing::info!(
+                "Found sender user {} for address {}",
+                user.id,
+                log.from_address
+            ),
+            None => tracing::debug!("No user found for sender address {}", log.from_address),
+        }
+
         if let Some(event) = dto::events::Event::query_builder()
             .tx_hash_equals(log.tx_hash.clone())
             .log_index_equals(log.log_index)
@@ -217,9 +260,15 @@ pub async fn load(
             .fetch_optional(&mut *tx)
             .await?
         {
-            tracing::warn!("Event already exists: {:?}", event);
+            tracing::warn!(
+                "Event already exists - ID: {}, tx_hash: {}",
+                event.id,
+                event.tx_hash
+            );
             continue;
         }
+
+        tracing::info!("Inserting new event for token_id: {}", log.token_id);
 
         let event = match event_repo
             .insert_with_tx(
@@ -245,19 +294,42 @@ pub async fn load(
         };
 
         if let Some(user) = to_user {
-            let _ = user_trasnfer_repo
+            tracing::info!(
+                "Creating transfer record for user {}: +{} of token {}",
+                user.id,
+                amount,
+                log.token_id
+            );
+            match user_trasnfer_repo
                 .insert_with_tx(&mut *tx, user.id, event.id, amount)
-                .await?;
+                .await
+            {
+                Ok(_) => tracing::info!("Transfer record created successfully"),
+                Err(e) => tracing::error!("Failed to create transfer record: {:?}", e),
+            }
         }
 
         if let Some(user) = from_user {
-            let _ = user_trasnfer_repo
+            tracing::info!(
+                "Creating transfer record for user {}: -{} of token {}",
+                user.id,
+                amount,
+                log.token_id
+            );
+            match user_trasnfer_repo
                 .insert_with_tx(&mut *tx, user.id, event.id, -amount)
-                .await?;
+                .await
+            {
+                Ok(_) => tracing::debug!("Sender transfer record created"),
+                Err(e) => tracing::error!("Failed to create sender transfer record: {:?}", e),
+            }
         }
     }
 
-    tx.commit().await?;
+    match tx.commit().await {
+        Ok(_) => tracing::info!("Transaction committed successfully"),
+        Err(e) => tracing::error!("Failed to commit transaction: {:?}", e),
+    }
 
     Ok(BlockNumberOrTag::Number(last as u64 + 1))
 }
