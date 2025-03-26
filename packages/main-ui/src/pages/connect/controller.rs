@@ -258,5 +258,5 @@ impl Controller {
         }
     }
 
-    pub async fn handle_internet_identity(&mut self) {}
+    pub async fn handle_internet_identity(&self) {}
 }
