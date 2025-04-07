@@ -127,14 +127,3 @@ pub struct EvmWallet {
     pub checksum_address: String,
     pub address: String,
 }
-
-#[derive(Debug)]
-pub struct InternetIdentityWallet {
-    principal: String,
-}
-
-impl InternetIdentityWallet {
-    pub fn new(principal: String) -> UserWallet {
-        UserWallet::InternetIdentity { principal }
-    }
-}

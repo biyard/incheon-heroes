@@ -26,7 +26,7 @@ pub struct Controller {
     pub user: UserService,
     pub google: GoogleService,
     pub kakao: KakaoService,
-    pub internet_identity: InternetIdentityService,
+    // pub internet_identity: InternetIdentityService,
 }
 
 impl Controller {
@@ -39,7 +39,7 @@ impl Controller {
             user: use_context(),
             google: use_context(),
             kakao: use_context(),
-            internet_identity: use_context(),
+            // internet_identity: use_context(),
         };
 
         Ok(ctrl)
@@ -262,37 +262,38 @@ impl Controller {
     }
 
     pub async fn handle_internet_identity(&mut self) {
-        use crate::services::internet_identity::InternetIdentityService;
-        let mut ii = InternetIdentityService::instance();
+        let internet_identity = use_context::<InternetIdentityService>();
 
-        match ii.login().await {
+        match internet_identity.login().await {
             Ok(principal) => {
+                tracing::debug!(
+                    "Internet Identity login successful. Principal: {}",
+                    principal
+                );
+
+                let wallet = UserWallet::InternetIdentity {
+                    principal: principal.clone(),
+                };
+
+                let mut user_service = use_context::<UserService>();
+                user_service.set_wallet(wallet).await;
+
                 let endpoint = config::get().new_api_endpoint;
                 match User::get_client(endpoint)
-                    .register_or_login(principal.clone(), dto::UserAuthProvider::InternetIdentity)
+                    .register_or_login(principal, dto::UserAuthProvider::InternetIdentity)
                     .await
                 {
                     Ok(user) => {
-                        self.user.set_user(user);
-
-                        let wallet = crate::models::user_wallet::InternetIdentityWallet::new(
-                            principal.clone(),
-                        );
-                        self.user.set_wallet(wallet).await;
-
-                        if self.nav.can_go_back() {
-                            self.nav.go_back();
-                        } else {
-                            self.nav.replace(Route::HomePage { lang: self.lang });
-                        }
+                        user_service.set_user(user);
+                        self.nav.replace(Route::HomePage { lang: self.lang });
                     }
                     Err(e) => {
-                        tracing::error!("Failed to register/login with II: {:?}", e);
+                        tracing::error!("Failed to register or login: {:?}", e);
                     }
-                }
+                };
             }
             Err(e) => {
-                tracing::error!("Internet Identity login failed: {:?}", e);
+                tracing::error!("Internet Identity login failed: {}", e);
             }
         }
     }

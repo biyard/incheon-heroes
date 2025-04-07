@@ -87,7 +87,7 @@ impl Controller {
                 LoginProvider::Google => ctrl.google.logged_in(),
                 LoginProvider::Kakao => ctrl.kakao.logged_in(),
                 LoginProvider::Kaia => true,
-                LoginProvider::InternetIdentity => ctrl.internet_identity.is_logged_in(),
+                LoginProvider::InternetIdentity => false,
             };
 
             if !logged_in {
@@ -115,10 +115,10 @@ impl Controller {
             LoginProvider::Google => self.backup_google(address, seed).await,
             LoginProvider::Kaia => {}
             LoginProvider::InternetIdentity => {
-                if let Some(principal) = self.internet_identity.principal() {
-                    tracing::info!("Internet Identity principal: {}", principal);
-                }
-            }
+                // if let Some(principal) = self.internet_identity.principal() {
+                //     tracing::info!("Internet Identity principal: {}", principal);
+                // }
+            },
         }
     }
 
