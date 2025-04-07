@@ -263,6 +263,7 @@ impl Controller {
 
     pub async fn handle_internet_identity(&mut self) {
         let internet_identity = use_context::<InternetIdentityService>();
+        let mut user_service = use_context::<UserService>();
 
         match internet_identity.login().await {
             Ok(principal) => {
@@ -275,7 +276,6 @@ impl Controller {
                     principal: principal.clone(),
                 };
 
-                let mut user_service = use_context::<UserService>();
                 user_service.set_wallet(wallet).await;
 
                 let endpoint = config::get().new_api_endpoint;
