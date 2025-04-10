@@ -12,7 +12,8 @@ use crate::{
     route::Route,
     services::{
         backend_api::BackendApi, google_service::GoogleService,
-        internet_identity::InternetIdentityService, kakao_service::KakaoService,
+        internet_identity::InternetIdentityService,
+         kakao_service::KakaoService,
         user_service::UserService,
     },
 };
@@ -26,7 +27,6 @@ pub struct Controller {
     pub user: UserService,
     pub google: GoogleService,
     pub kakao: KakaoService,
-    // pub internet_identity: InternetIdentityService,
 }
 
 impl Controller {
@@ -39,7 +39,6 @@ impl Controller {
             user: use_context(),
             google: use_context(),
             kakao: use_context(),
-            // internet_identity: use_context(),
         };
 
         Ok(ctrl)
