@@ -27,7 +27,6 @@ pub struct Controller {
     pub user: UserService,
     pub google: GoogleService,
     pub kakao: KakaoService,
-    // pub internet_identity: InternetIdentityService,
 }
 
 impl Controller {
@@ -40,7 +39,6 @@ impl Controller {
             user: use_context(),
             google: use_context(),
             kakao: use_context(),
-            // internet_identity: use_context(),
         };
 
         Ok(ctrl)

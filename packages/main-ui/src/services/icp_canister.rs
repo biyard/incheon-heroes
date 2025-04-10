@@ -1,9 +1,10 @@
 #![allow(non_snake_case)]
+#![allow(unexpected_cfgs)]
 
 use by_macros::DioxusController;
 use dioxus::prelude::*;
 
-use candid::{encode_args, utils::ArgumentEncoder, CandidType, Decode, Principal};
+use candid::{CandidType, Decode, Principal, encode_args, utils::ArgumentEncoder};
 use dto::*;
 use ic_agent::Agent;
 use nft::Nft;
@@ -85,5 +86,13 @@ impl IcpCanister {
         let inter_output = Box::leak(Box::new(inter_output));
 
         candid::Decode!(inter_output, R).map_err(|e| Error::CandidError(e.to_string()))
+    }
+
+    pub async fn is_address_registered(&self, address: String) -> Result<bool> {
+        self.query("is_address_registered", (address,)).await
+    }
+
+    pub async fn register_address(&self, address: String) -> Result<()> {
+        self.update("register_address", (address,)).await
     }
 }
