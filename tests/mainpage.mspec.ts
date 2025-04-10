@@ -7,8 +7,9 @@ test.describe("UI Mobile Responsiveness For Main page", () => {
     const screenshotBase = path.join(
       "screenshots",
       "users",
+      "mainpage",
       projectName,
-      "mainpage-overflow",
+      "overflow",
     );
 
     await page.goto("https://dev.incheonheroes.world/en/");
