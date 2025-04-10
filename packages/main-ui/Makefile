@@ -18,6 +18,7 @@ WORKSPACE_ROOT ?= ../..
 
 ICP_CANISTER_ID ?= mkam6-f4aaa-aaaaa-qablq-cai
 ICP_ENDPOINT ?= https://rdmx6-jaaaa-aaaaa-aaadq-cai.icp.biyard.co
+II_ENDPOINT ?= https://identity.ic0.app
 
 KLAYTN_ENDPOINT ?= https://public-en-kairos.node.kaia.io
 CONTRACT_ACCOUNT ?= "0x49ee26D4dc8d52309e30fa190eBCe33fB8BF6279"

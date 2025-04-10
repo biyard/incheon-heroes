@@ -14,7 +14,7 @@ impl InternetIdentityService {
     pub fn init() {
         let conf = &config::get().icp;
         let agent = Agent::builder()
-            .with_url(conf.endpoint)
+            .with_url(conf.identity_provider)
             .build()
             .expect("failed to build default agent");
 
@@ -30,7 +30,7 @@ impl InternetIdentityService {
             .await
             .map_err(|e| format!("Failed to create auth client: {}", e))?;
 
-        let identity_provider_url = Url::new(config::get().icp.endpoint)
+        let identity_provider_url = Url::new(config::get().icp.identity_provider)
             .map_err(|e| format!("Failed to parse identity provider URL: {:?}", e))?;
 
         let login_options = ic_auth_client::AuthClientLoginOptions::builder()

@@ -12,7 +12,8 @@ use crate::{
     route::Route,
     services::{
         backend_api::BackendApi, google_service::GoogleService,
-        internet_identity::InternetIdentityService, kakao_service::KakaoService,
+        internet_identity::InternetIdentityService,
+         kakao_service::KakaoService,
         user_service::UserService,
     },
 };
