@@ -1,0 +1,51 @@
+name: Playwright Tests
+
+on:
+  push:
+    branches: [ main, master, dev ]
+  pull_request:
+    branches: [ main, master, dev ]
+
+jobs:
+  test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+      - name: Install dependencies
+        run: npm ci
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+      - name: Decode and restore auth.json
+        run: echo "${{ secrets.INCHEON_HEROES_STORAGE_STATE }}" | base64 --decode > auth.json
+      - name: Run Playwright tests (Skip secret-dependent tests on PRs)
+        env:
+          WAIT_TIMEOUT: 5000
+          VISIBLE_TIMEOUT: 10000
+          URL_TIMEOUT: 15000
+          GOOGLE_EMAIL: ${{ secrets.TEST_GOOGLE_MAIL }}
+          GOOGLE_PASS: ${{ secrets.TEST_GOOGLE_PASSWORD }}
+          HEADLESS: true
+        run: |
+          if [ "$GITHUB_EVENT_NAME" == "pull_request" ]; then
+            echo "Skipping tests that require secrets on pull request."
+            npx playwright test tests --grep-invert @secret-required
+          else
+            echo "Running all the tests."
+            npx playwright test --project 'chromium-*'
+          fi
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: screenshots
+          path: screenshots/
+          retention-days: 30
