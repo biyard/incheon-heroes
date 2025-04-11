@@ -24,6 +24,7 @@ pub struct KlaytnConfig {
 pub struct IcpConfig {
     pub endpoint: &'static str,
     pub canister_id: &'static str,
+    pub identity_provider: &'static str,
 }
 
 #[derive(Debug, serde::Deserialize, serde::Serialize)]
@@ -125,6 +126,8 @@ impl Default for Config {
             icp: IcpConfig {
                 endpoint: option_env!("ICP_ENDPOINT").expect("You must set ICP_ENDPOINT"),
                 canister_id: option_env!("ICP_CANISTER_ID").expect("You must set ICP_CANISTER_ID"),
+                identity_provider: option_env!("ICP_IDENTITY_PROVIDER")
+                    .unwrap_or("https://identity.ic0.app"),
             },
             discord_mission_url: option_env!("DISCORD_MISSION_URL")
                 .expect("You must set DISCORD_MISSION_URL"),

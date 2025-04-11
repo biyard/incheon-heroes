@@ -265,12 +265,31 @@ impl Controller {
         let token_id = (self.token_id)();
         let from = user.evm_address().unwrap_or_default();
 
+        if let Err(e) = icp_canister.is_address_registered(from.clone()).await {
+            btracing::error!("failed to check address registration: {:?}", e);
+        }
+
+        if !icp_canister
+            .is_address_registered(from.clone())
+            .await
+            .unwrap()
+        {
+            match icp_canister.register_address(from.clone()).await {
+                Ok(_) => btracing::debug!("successfully registered address"),
+                Err(e) => {
+                    btracing::error!("failed to register address: {:?}", e);
+                    return;
+                }
+            }
+        }
+
         match icp_canister.bridge(token_id as u64, from).await {
             Ok(_) => {
                 btracing::debug!("success to call icp canister");
             }
             Err(e) => {
                 btracing::error!("failed to swap token: {:?}", e);
+                return;
             }
         }
     }
