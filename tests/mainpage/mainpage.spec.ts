@@ -1,6 +1,11 @@
 import { test, expect } from "@playwright/test";
 import path from "path";
 
+const credentials = {
+    email: process.env.TEST_EMAIL|| "test@gmail.com",
+    kakaoId: process.env.TEST_KAKAO_ID|| ""
+}
+
 test.describe("Test Main Page", () => {
     test(`Check Navbar Navigation`, async ({ page }, testInfo) => {
         const projectName = testInfo.project.name;
@@ -102,6 +107,10 @@ test.describe("Test Main Page", () => {
         await kakaoSignIn.click()
 
         await expect(page).toHaveURL("https://accounts.kakao.com/login/")
+
+        const kakaoId = page.getByRole('textbox', { name: 'Enter Account Information' })
+        await expect(kakaoId).toBeVisible()
+        await kakaoId.fill('testemail@gmail.com');
 
         await page.screenshot({
             path: `${screenshotBase}/01-kakao-signin.png`,
