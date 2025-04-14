@@ -117,5 +117,99 @@ test.describe("Test Main Page", () => {
             fullPage: true,
         });
     });
+
+    test(`Test Kaia Sign-In Flow`, async ({ page }, testInfo) => {
+        const projectName = testInfo.project.name;
+        const screenshotBase = path.join(
+            "screenshots",
+            "mainpage",
+            "signin",
+            projectName,
+            "kaia"
+        );
+
+        await page.goto("https://dev.incheonheroes.world/en/");
+
+        await page.screenshot({
+            path: `${screenshotBase}/01-mainpage.png`,
+            fullPage: true,
+        });
+
+        const toConnect = page.getByRole('link', { name: 'Please sign in first' })
+        await expect(toConnect).toBeVisible()
+        await toConnect.click()
+
+        await page.screenshot({
+            path: `${screenshotBase}/02-signin-page.png`,
+            fullPage: true,
+        });
+
+        await expect(page).toHaveURL("https://dev.incheonheroes.world/en/connect")
+
+        const kaiaSignIn = page.getByRole('button', { name: 'Kaia' })
+        await expect(kaiaSignIn).toBeVisible()
+        await kaiaSignIn.click()
+
+        await expect(page).toHaveURL("https://accounts.kaia.com/login/")
+
+        const kaiaId = page.getByRole('textbox', { name: 'Enter Account Information' })
+        await expect(kaiaId).toBeVisible()
+        await kaiaId.fill('testemail@gmail.com');
+
+        await page.screenshot({
+            path: `${screenshotBase}/01-kaia-signin.png`,
+            fullPage: true,
+        });
+    });
+
+
+
+    test(`Test ICP Sign-In Flow`, async ({ page }, testInfo) => {
+        const projectName = testInfo.project.name;
+        const screenshotBase = path.join(
+            "screenshots",
+            "mainpage",
+            "signin",
+            projectName,
+            "icp"
+        );
+
+        await page.goto("https://dev.incheonheroes.world/en/");
+
+        await page.screenshot({
+            path: `${screenshotBase}/01-mainpage.png`,
+            fullPage: true,
+        });
+
+        const toConnect = page.getByRole('link', { name: 'Please sign in first' })
+        await expect(toConnect).toBeVisible()
+        await toConnect.click()
+
+        await page.screenshot({
+            path: `${screenshotBase}/02-signin-page.png`,
+            fullPage: true,
+        });
+
+        await expect(page).toHaveURL("https://dev.incheonheroes.world/en/connect")
+
+        const ICPSignIn = page.getByRole('button', { name: 'Kaia' })
+        await expect(ICPSignIn).toBeVisible()
+        await ICPSignIn.click()
+
+        await expect(page).toHaveURL("https://identity.ic0.app/#authorize")
+
+        const ICPStartButton = page.getByRole('button', { name: 'Use Existing' })
+        await expect(ICPStartButton).toBeVisible()
+        await ICPStartButton.click();
+
+        const ICPIdentityInput = page.getByRole('textbox', { name: 'Enter Account Information' })
+
+        await page.screenshot({
+            path: `${screenshotBase}/01-icp-signin.png`,
+            fullPage: true,
+        });
+    });
+
+
 });
 
