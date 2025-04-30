@@ -55,7 +55,7 @@ serve: clean public/tailwind.css
 	@$(BUILD_ENV) dx serve --addr 0.0.0.0 --platform web --port 8080
 
 run: clean node_modules public
-	@$(BUILD_ENV) dx serve --fullstack --platform web
+	$(BUILD_ENV) dx serve --fullstack --platform web
 
 node_modules:
 	npm i

@@ -14,6 +14,7 @@ use by_types::{AwsConfig, QueryResponse};
 use content_downloads::{ContentDownload, ContentDownloadRepository};
 use content_likes::ContentLike;
 use contracts::incheon_contents::IncheonContentsContract;
+use dto::nft::Event;
 use dto::*;
 use ethers::prelude::*;
 use sqlx::postgres::PgRow;
@@ -160,6 +161,120 @@ impl ContentController {
             docs.last().ok_or(Error::NoContentAfterInsert)?.clone(),
         ))
     }
+
+    async fn test_mint(&self, auth: Option<Authorization>, content_id: i64) -> Result<Json<Content>> {
+        let (user_id, evm_address) = match auth {
+            Some(Authorization::Bearer { claims }) => {
+                let user_id: i64 = claims
+                    .custom
+                    .get("id")
+                    .ok_or(Error::Unauthorized)?
+                    .parse()
+                    .map_err(|_| Error::Unauthorized)?;
+                (user_id, claims.sub)
+            }
+            _ => return Err(Error::Unauthorized),
+        };
+    
+        let mut tx = self.pool.begin().await?;
+    
+        let already_minted = sqlx::query_scalar::<_, bool>(
+            "SELECT EXISTS(SELECT 1 FROM content_downloads WHERE user_id = $1 AND content_id = $2)",
+        )
+        .bind(user_id)
+        .bind(content_id)
+        .fetch_optional(&mut *tx)
+        .await?;
+    
+        if let Some(true) = already_minted {
+            return Err(Error::AlreadyMinted);
+        }
+    
+        let content = Content::query_builder(user_id)
+            .id_equals(content_id)
+            .query()
+            .map(Content::from)
+            .fetch_optional(&mut *tx)
+            .await?
+            .ok_or(Error::NotFoundContent)?;
+    
+        let creator = User::query_builder()
+            .id_equals(content.creator_id)
+            .query()
+            .map(User::from)
+            .fetch_optional(&mut *tx)
+            .await?;
+    
+        if let Some(user) = &creator {
+            if &user.evm_address.to_lowercase() == &evm_address.to_lowercase() {
+                return Err(Error::CannotMintedByCreator);
+            }
+        }
+    
+        self.content_download_repo
+            .insert_with_tx(&mut *tx, user_id, content_id)
+            .await?;
+
+        let token_id = content.id as u64;
+        let mint_result = self.contract.mint(evm_address.clone(), token_id).await;
+    
+        if let Err(e) = mint_result {
+            tracing::error!("Klaytn mint error: {e}");
+            return Err(Error::BlockchainMintFailed); 
+        }
+    
+        let metadata = Metadata {
+            name: content.title.clone(),
+            description: content.description.clone().unwrap_or_default(),
+            image: content.image_url.clone(),
+            external_url: content.external_url.clone(),
+            background_color: None,
+            animation_url: None,
+            youtube_url: None,
+            attributes: vec![],
+        };
+    
+        let nft = Nft {
+            owner: Principal::from_text(&evm_address)?,
+            approved: None,
+            id: token_id,
+            metadata: metadata.clone(),
+        };
+    
+        sqlx::query("INSERT INTO nft_transfer (user_id, content_id, token_id, metadata_json, created_at) VALUES ($1, $2, $3, $4, NOW())")
+            .bind(user_id)
+            .bind(content.id)
+            .bind(token_id)
+            .bind(serde_json::to_string(&metadata)?)
+            .execute(&mut *tx)
+            .await?;
+    
+        let mint_event = Event {
+            token_id,
+            event_name: "Minted".to_string(),
+            from: Principal::anonymous(), 
+            to: Principal::from_text(&evm_address)?,
+        };
+    
+        self.event_log_repo.insert(&mut *tx, mint_event).await?;
+    
+        tx.commit().await?;
+    
+        if let Some(creator) = creator {
+            let now = chrono::Utc::now().timestamp();
+            self.account_profile
+                .add_account_activity(
+                    creator.evm_address,
+                    "Content Minted".to_string(),
+                    300,
+                    now as u64,
+                )
+                .await?;
+        }
+    
+        Ok(Json(content))
+    }
+    
 
     async fn mint(&self, auth: Option<Authorization>, content_id: i64) -> Result<Json<Content>> {
         let (user_id, evm_address) = match auth {
