@@ -137,7 +137,7 @@ impl UserController {
             .with_state(self.clone())
             .nest(
                 "/contents",
-                contents::UserContentsController::new(self.pool.clone()).route()?,
+                contents::UserContentsController::new(self.pool.clone(), "https://dev.incheonheroes.world/metadata".to_string()).route()?,
             ))
     }
 

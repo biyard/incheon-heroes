@@ -17,6 +17,7 @@ pub struct Nft {
     pub metadata: Metadata,
 }
 
+
 #[derive(CandidType, Debug, Clone, Serialize, Deserialize)]
 pub struct Metadata {
     pub name: String,
