@@ -51,9 +51,7 @@ impl UserContentsController {
 
 impl UserContentsController {
     pub fn new(pool: sqlx::Pool<sqlx::Postgres>,
-        &BucketConfig {
-            name, asset_dir, ..
-        }: &BucketConfig) -> Self {
+        asset_dir: &'static str, ) -> Self {
         Self { 
             pool,
             asset_dir,
@@ -65,6 +63,7 @@ impl UserContentsController {
             .route("/", get(Self::list_user_contents))
             .with_state(self.clone())
             .route("/:id", get(Self::get_user_contents))
+            .with_state(self.clone())
             .route("/nfts", get(Self::list_user_minted_nfts))
             .with_state(self.clone()))
     }
@@ -84,30 +83,12 @@ impl UserContentsController {
         ))
     }
 
-    pub async fn list_user_contents(
-        State(ctrl): State<UserContentsController>,
-        Extension(auth): Extension<Option<Authorization>>,
-        Query(q): Query<UserContentsParam>,
-    ) -> Result<Json<UserContentsGetResponse>> {
-        tracing::debug!("list_user_contents {:?}", q);
-
-        match q {
-            UserContentsParam::Read(param)
-                if param.action == Some(UserContentsReadActionType::ContentsBy) =>
-            {
-                let res = ctrl.contents_by(auth, param).await?;
-                Ok(Json(UserContentsGetResponse::Read(res)))
-            }
-            _ => todo!(),
-        }
-    }
-
     pub async fn list_user_minted_nfts(
         State(ctrl): State<UserContentsController>,
         Extension(_auth): Extension<Option<Authorization>>,
         Path(UserContentsPath { id }): Path<UserContentsPath>,
     ) -> Result<Json<Vec<UserGalleryItem>>> {
-        
+        // Fetching the rows using SQL query
         let rows = sqlx::query!(
             r#"
             SELECT
@@ -126,36 +107,42 @@ impl UserContentsController {
     
         let gallery_items: Vec<UserGalleryItem> = futures::future::join_all(rows.iter().map(|row| {
             let token_id_hex = format!("{:064x}", row.token_id);
-    
             let url = format!("{}/{}.json", ctrl.asset_dir, token_id_hex);
             let token_id = row.token_id;
             let amount = row.amount;
             let tx_hash = row.tx_hash.clone();
     
             async move {
-                reqwest::get(&url)
-                    .await
-                    .ok() 
-                    .and_then(|resp| resp.json::<Metadata>()) 
-                    .map(|metadata| UserGalleryItem {
-                        token_id,
-                        amount,
-                        tx_hash,
-                        metadata,
-                    })
-                    .or_else(|| {
-                        tracing::warn!("Failed to fetch or parse metadata for token_id {}", token_id);
+                match reqwest::get(&url).await {
+                    Ok(resp) => {
+                        match resp.json::<Option<Metadata>>().await {
+                            Ok(metadata) => Some(UserGalleryItem {
+                                token_id,
+                                amount,
+                                tx_hash,
+                                metadata,
+                            }),
+                            Err(_) => {
+                                tracing::warn!("Failed to parse metadata for token_id {}", token_id);
+                                None
+                            }
+                        }
+                    }
+                    Err(_) => {
+                        tracing::warn!("Failed to fetch metadata for token_id {}", token_id);
                         None
-                    })
+                    }
+                }
             }
         }))
         .await
         .into_iter()
-        .flatten()
+        .flatten() 
         .collect();
     
-        Ok(Json(gallery_items))
+        Ok(Json(gallery_items)) 
     }
+    
     
     
 }
