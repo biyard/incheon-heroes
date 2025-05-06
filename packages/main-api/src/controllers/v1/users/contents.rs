@@ -11,6 +11,7 @@ use by_axum::{
 };
 use dto::{events::UserNftTransfer, nft::Metadata, *};
 use sqlx::{postgres::PgRow, PgPool};
+use crate::config::BucketConfig;
 
 #[derive(
     Debug, Clone, serde::Deserialize, serde::Serialize, schemars::JsonSchema, aide::OperationIo,
@@ -29,7 +30,7 @@ pub struct UserGalleryItem {
 #[derive(Clone, Debug)]
 pub struct UserContentsController {
     pool: sqlx::Pool<sqlx::Postgres>,
-    metadata_url_prefix: String,
+    asset_dir: &'static str,
 }
 
 impl UserContentsController {
@@ -49,10 +50,13 @@ impl UserContentsController {
 }
 
 impl UserContentsController {
-    pub fn new(pool: sqlx::Pool<sqlx::Postgres>, metadata_url_prefix: String) -> Self {
+    pub fn new(pool: sqlx::Pool<sqlx::Postgres>,
+        &BucketConfig {
+            name, asset_dir, ..
+        }: &BucketConfig) -> Self {
         Self { 
             pool,
-            metadata_url_prefix,
+            asset_dir,
          }
     }
 
@@ -103,7 +107,7 @@ impl UserContentsController {
         Extension(_auth): Extension<Option<Authorization>>,
         Path(UserContentsPath { id }): Path<UserContentsPath>,
     ) -> Result<Json<Vec<UserGalleryItem>>> {
-
+        
         let rows = sqlx::query!(
             r#"
             SELECT
@@ -120,42 +124,38 @@ impl UserContentsController {
         .fetch_all(&ctrl.pool)
         .await?;
     
-        let metadata_futures = rows.iter().map(|row| {
-            let url = format!("{}/{}.json", ctrl.metadata_url_prefix, row.token_id);
+        let gallery_items: Vec<UserGalleryItem> = futures::future::join_all(rows.iter().map(|row| {
+            let token_id_hex = format!("{:064x}", row.token_id);
+    
+            let url = format!("{}/{}.json", ctrl.asset_dir, token_id_hex);
             let token_id = row.token_id;
             let amount = row.amount;
             let tx_hash = row.tx_hash.clone();
     
             async move {
-                match reqwest::get(&url).await {
-                    Ok(resp) => match resp.json::<Metadata>().await {
-                        Ok(metadata) => Some(UserGalleryItem {
-                            token_id,
-                            amount,
-                            tx_hash,
-                            metadata,
-                        }),
-                        Err(_) => {
-                            tracing::warn!("Failed to parse metadata for token_id {}", token_id);
-                            None
-                        }
-                    },
-                    Err(_) => {
-                        tracing::warn!("Failed to fetch metadata for token_id {}", token_id);
+                reqwest::get(&url)
+                    .await
+                    .ok() 
+                    .and_then(|resp| resp.json::<Metadata>()) 
+                    .map(|metadata| UserGalleryItem {
+                        token_id,
+                        amount,
+                        tx_hash,
+                        metadata,
+                    })
+                    .or_else(|| {
+                        tracing::warn!("Failed to fetch or parse metadata for token_id {}", token_id);
                         None
-                    }
-                }
+                    })
             }
-        });
-
-        let gallery_items: Vec<UserGalleryItem> =
-            futures::future::join_all(metadata_futures)
-                .await
-                .into_iter()
-                .flatten()
-                .collect();
+        }))
+        .await
+        .into_iter()
+        .flatten()
+        .collect();
     
         Ok(Json(gallery_items))
     }
+    
     
 }
