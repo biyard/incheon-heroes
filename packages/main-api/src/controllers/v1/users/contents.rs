@@ -90,14 +90,20 @@ impl UserContentsController {
         Path(UserContentsPath { id }): Path<UserContentsPath>,
         Query(query): Query<ListNftsQuery>,
     ) -> Result<Json<UserContents>> {
-
         if query.limit > 100 {
             tracing::warn!("Limit is too high, setting to 100");
+            let limit = 100;
+        } else {
+            let limit = query.limit;
         }
         if query.offset < 0 {
-            tracing::warn!("Limit is too high, setting to 100");
+            tracing::warn!("Offset is negative, setting to 0");
+            let offset = 0;
+        } else {
+            let offset = query.offset;
         }
-        let rows = sqlx::query!(
+
+        let rows = sqlx::query(
             r#"
             SELECT
                 e.token_id,
@@ -111,8 +117,8 @@ impl UserContentsController {
             OFFSET $3
             "#,
             id,
-            query.limit,
-            query.offset
+            limit,
+            offset
         )
         .fetch_all(&ctrl.pool)
         .await?;

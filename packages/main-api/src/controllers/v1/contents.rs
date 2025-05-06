@@ -14,7 +14,6 @@ use by_types::{AwsConfig, QueryResponse};
 use content_downloads::{ContentDownload, ContentDownloadRepository};
 use content_likes::ContentLike;
 use contracts::incheon_contents::IncheonContentsContract;
-use dto::nft::Event;
 use dto::*;
 use ethers::prelude::*;
 use sqlx::postgres::PgRow;
