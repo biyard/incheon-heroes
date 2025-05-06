@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use by_axum::{
     aide,
     auth::Authorization,
@@ -9,9 +7,8 @@ use by_axum::{
         Extension, Json,
     },
 };
-use dto::{events::UserNftTransfer, nft::Metadata, *};
-use sqlx::{postgres::PgRow, PgPool};
-use crate::config::BucketConfig;
+use dto::{nft::Metadata, *};
+use sqlx::postgres::PgRow;
 
 #[derive(
     Debug, Clone, serde::Deserialize, serde::Serialize, schemars::JsonSchema, aide::OperationIo,
@@ -20,11 +17,24 @@ pub struct UserContentsPath {
     pub id: i64,
 }
 
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct UserGalleryItem {
     pub token_id: i64,
     pub amount: i64,
     pub tx_hash: String,
     pub metadata: Metadata,
+}
+
+#[derive(Debug, serde::Deserialize, schemars::JsonSchema)]
+pub struct ListNftsQuery {
+    #[serde(default = "default_limit")]
+    pub limit: i64,
+    #[serde(default)]
+    pub offset: i64,
+}
+
+fn default_limit() -> i64 {
+    20
 }
 
 #[derive(Clone, Debug)]
@@ -46,25 +56,16 @@ impl UserContentsController {
             .fetch_one(&self.pool)
             .await?)
     }
-    
-}
 
-impl UserContentsController {
-    pub fn new(pool: sqlx::Pool<sqlx::Postgres>,
-        asset_dir: &'static str, ) -> Self {
-        Self { 
-            pool,
-            asset_dir,
-         }
+    pub fn new(pool: sqlx::Pool<sqlx::Postgres>, asset_dir: &'static str) -> Self {
+        Self { pool, asset_dir }
     }
 
     pub fn route(&self) -> Result<by_axum::axum::Router> {
         Ok(by_axum::axum::Router::new()
-            .route("/", get(Self::list_user_contents))
-            .with_state(self.clone())
             .route("/:id", get(Self::get_user_contents))
             .with_state(self.clone())
-            .route("/nfts", get(Self::list_user_minted_nfts))
+            .route("/:id/nfts", get(Self::list_user_minted_nfts))
             .with_state(self.clone()))
     }
 
@@ -87,8 +88,15 @@ impl UserContentsController {
         State(ctrl): State<UserContentsController>,
         Extension(_auth): Extension<Option<Authorization>>,
         Path(UserContentsPath { id }): Path<UserContentsPath>,
-    ) -> Result<Json<Vec<UserGalleryItem>>> {
-        // Fetching the rows using SQL query
+        Query(query): Query<ListNftsQuery>,
+    ) -> Result<Json<UserContents>> {
+
+        if query.limit > 100 {
+            tracing::warn!("Limit is too high, setting to 100");
+        }
+        if query.offset < 0 {
+            tracing::warn!("Limit is too high, setting to 100");
+        }
         let rows = sqlx::query!(
             r#"
             SELECT
@@ -99,37 +107,50 @@ impl UserContentsController {
             INNER JOIN events AS e ON unt.event_id = e.id
             WHERE unt.user_id = $1
             ORDER BY unt.created_at DESC
+            LIMIT $2
+            OFFSET $3
             "#,
-            id
+            id,
+            query.limit,
+            query.offset
         )
         .fetch_all(&ctrl.pool)
         .await?;
-    
+
         let gallery_items: Vec<UserGalleryItem> = futures::future::join_all(rows.iter().map(|row| {
             let token_id_hex = format!("{:064x}", row.token_id);
             let url = format!("{}/{}.json", ctrl.asset_dir, token_id_hex);
             let token_id = row.token_id;
             let amount = row.amount;
             let tx_hash = row.tx_hash.clone();
-    
+
             async move {
                 match reqwest::get(&url).await {
                     Ok(resp) => {
-                        match resp.json::<Option<Metadata>>().await {
-                            Ok(metadata) => Some(UserGalleryItem {
-                                token_id,
-                                amount,
-                                tx_hash,
-                                metadata,
-                            }),
-                            Err(_) => {
-                                tracing::warn!("Failed to parse metadata for token_id {}", token_id);
-                                None
+                        if resp.status().is_success() {
+                            match resp.json::<Metadata>().await {
+                                Ok(metadata) => Some(UserGalleryItem {
+                                    token_id,
+                                    amount,
+                                    tx_hash,
+                                    metadata,
+                                }),
+                                Err(err) => {
+                                    tracing::warn!("Failed to parse metadata for token_id {}: {}", token_id, err);
+                                    None
+                                }
                             }
+                        } else {
+                            tracing::warn!(
+                                "Failed to fetch metadata for token_id {}: HTTP status {}",
+                                token_id,
+                                resp.status()
+                            );
+                            None
                         }
                     }
-                    Err(_) => {
-                        tracing::warn!("Failed to fetch metadata for token_id {}", token_id);
+                    Err(err) => {
+                        tracing::warn!("Failed to fetch metadata for token_id {}: {}", token_id, err);
                         None
                     }
                 }
@@ -137,12 +158,9 @@ impl UserContentsController {
         }))
         .await
         .into_iter()
-        .flatten() 
+        .flatten()
         .collect();
-    
-        Ok(Json(gallery_items)) 
+
+        Ok(Json(gallery_items))
     }
-    
-    
-    
 }
