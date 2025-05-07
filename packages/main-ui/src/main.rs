@@ -88,7 +88,7 @@ fn app() -> Element {
         }
         document::Style { href: "https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Noto+Color+Emoji&family=Russo+One&display=swap" }
         document::Style { href: asset!("/public/main.css") }
-        document::Style { href: asset!("/public/tailwind.css") }
+        // document::Style { href: asset!("/public/tailwind.css") }
         document::Style {
             href: "https://cdn.jsdelivr.net/npm/daisyui@5",
             r#type: "text/css",

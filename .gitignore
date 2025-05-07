@@ -36,3 +36,5 @@ dist/
 /playwright/.cache/
 /screenshots
 
+*.env
+*env.rs
