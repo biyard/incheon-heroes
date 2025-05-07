@@ -50,18 +50,18 @@ pub struct UserContentsController {
 }
 
 impl UserContentsController {
-    async fn contents_by(
-        &self,
-        _auth: Option<Authorization>,
-        UserContentsReadAction { evm_address, .. }: UserContentsReadAction,
-    ) -> Result<UserContents> {
-        Ok(UserContents::query_builder()
-            .evm_address_equals(evm_address.unwrap_or_default())
-            .query()
-            .map(|r: PgRow| r.into())
-            .fetch_one(&self.pool)
-            .await?)
-    }
+    // async fn contents_by(
+    //     &self,
+    //     _auth: Option<Authorization>,
+    //     UserContentsReadAction { evm_address, .. }: UserContentsReadAction,
+    // ) -> Result<UserContents> {
+    //     Ok(UserContents::query_builder()
+    //         .evm_address_equals(evm_address.unwrap_or_default())
+    //         .query()
+    //         .map(|r: PgRow| r.into())
+    //         .fetch_one(&self.pool)
+    //         .await?)
+    // }
 
     pub fn new(pool: sqlx::Pool<sqlx::Postgres>, asset_dir: &'static str) -> Self {
         Self { pool, asset_dir }
