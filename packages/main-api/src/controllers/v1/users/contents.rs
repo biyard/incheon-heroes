@@ -2,12 +2,17 @@ use by_axum::{
     aide,
     auth::Authorization,
     axum::{
+        Extension, Json,
         extract::{Path, Query, State},
         routing::get,
-        Extension, Json,
     },
 };
-use dto::{nft::Metadata, *};
+use chrono::Utc;
+use dto::{
+    events::{Event, UserNftTransfer},
+    nft::Metadata,
+    *,
+};
 use sqlx::postgres::PgRow;
 
 #[derive(
@@ -16,6 +21,7 @@ use sqlx::postgres::PgRow;
 pub struct UserContentsPath {
     pub id: i64,
 }
+
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct UserGalleryItem {
@@ -90,83 +96,100 @@ impl UserContentsController {
         Path(UserContentsPath { id }): Path<UserContentsPath>,
         Query(query): Query<ListNftsQuery>,
     ) -> Result<Json<UserContents>> {
-        if query.limit > 100 {
-            tracing::warn!("Limit is too high, setting to 100");
-            let limit = 100;
+        let limit = if query.limit > 100 {
+            tracing::warn!("Limit too high, setting to 100");
+            100
         } else {
-            let limit = query.limit;
-        }
-        if query.offset < 0 {
-            tracing::warn!("Offset is negative, setting to 0");
-            let offset = 0;
+            query.limit
+        };
+    
+        let offset = if query.offset < 0 {
+            tracing::warn!("Negative offset, setting to 0");
+            0
         } else {
-            let offset = query.offset;
+            query.offset
+        };
+    
+        let user_nft_transfers = UserNftTransfer::query_builder()
+            .user_id_equals(id)
+            .query()
+            .map(|r: PgRow| r.into())
+            .fetch_all(&ctrl.pool)
+            .await?;
+    
+        if user_nft_transfers.is_empty() {
+            return Ok(Json(UserContents {
+                id,
+                profile_url: String::new(),
+                evm_address: String::new(),
+                contents: vec![],
+            }));
         }
-
-        let rows = sqlx::query(
-            r#"
-            SELECT
-                e.token_id,
-                unt.amount,
-                e.tx_hash
-            FROM user_nft_transfer AS unt
-            INNER JOIN events AS e ON unt.event_id = e.id
-            WHERE unt.user_id = $1
-            ORDER BY unt.created_at DESC
-            LIMIT $2
-            OFFSET $3
-            "#,
-            id,
-            limit,
-            offset
-        )
-        .fetch_all(&ctrl.pool)
-        .await?;
-
-        let gallery_items: Vec<UserGalleryItem> = futures::future::join_all(rows.iter().map(|row| {
-            let token_id_hex = format!("{:064x}", row.token_id);
-            let url = format!("{}/{}.json", ctrl.asset_dir, token_id_hex);
-            let token_id = row.token_id;
-            let amount = row.amount;
-            let tx_hash = row.tx_hash.clone();
-
-            async move {
-                match reqwest::get(&url).await {
-                    Ok(resp) => {
-                        if resp.status().is_success() {
-                            match resp.json::<Metadata>().await {
-                                Ok(metadata) => Some(UserGalleryItem {
-                                    token_id,
-                                    amount,
-                                    tx_hash,
-                                    metadata,
-                                }),
-                                Err(err) => {
-                                    tracing::warn!("Failed to parse metadata for token_id {}: {}", token_id, err);
-                                    None
-                                }
-                            }
+    
+        let event_ids: Vec<i64> = user_nft_transfers
+            .iter()
+            .map(|nft: &UserNftTransfer| nft.event_id)
+            .skip(offset as usize)
+            .take(limit as usize)
+            .collect();
+    
+        let mut contents = Vec::new();
+    
+        for event_id in event_ids {
+            let event_opt = Event::query_builder()
+                .id_equals(event_id)
+                .query()
+                .map(|r: PgRow| Event::from(r))
+                .fetch_optional(&ctrl.pool)
+                .await?;
+    
+            if let Some(event) = event_opt {
+                // let amount = user_nft_transfers
+                //     .iter()
+                //     .find(|t| t.event_id == event.id)
+                //     .map(|t| t.amount)
+                //     .unwrap_or(1);
+    
+                let token_id = event.token_id;
+                // let tx_hash = event.tx_hash.clone();
+                let token_id_hex = format!("{:064x}", token_id);
+                let url = format!("{}/{}.json", ctrl.asset_dir, token_id_hex);
+    
+                if let Ok(resp) = reqwest::get(&url).await {
+                    if resp.status().is_success() {
+                        if let Ok(metadata) = resp.json::<Metadata>().await {
+                            contents.push(UserContent {
+                                id: token_id,
+                                created_at: event.created_at,
+                                updated_at: Utc::now().timestamp(),
+                                thumbnail_image: metadata.image.clone(),
+                                source: url,
+                            });
                         } else {
-                            tracing::warn!(
-                                "Failed to fetch metadata for token_id {}: HTTP status {}",
-                                token_id,
-                                resp.status()
-                            );
-                            None
+                            tracing::warn!("Failed to parse metadata for token_id {}", token_id);
                         }
+                    } else {
+                        tracing::warn!(
+                            "Failed to fetch metadata for token_id {}: HTTP {}",
+                            token_id,
+                            resp.status()
+                        );
                     }
-                    Err(err) => {
-                        tracing::warn!("Failed to fetch metadata for token_id {}: {}", token_id, err);
-                        None
-                    }
+                } else {
+                    tracing::warn!("HTTP request failed for token_id {}", token_id);
                 }
             }
-        }))
-        .await
-        .into_iter()
-        .flatten()
-        .collect();
-
-        Ok(Json(gallery_items))
+        }
+    
+        let user_contents = UserContents {
+            id,
+            profile_url: String::new(), 
+            evm_address: String::new(),
+            contents,
+        };
+    
+        Ok(Json(user_contents))
     }
+    
 }
+
