@@ -71,6 +71,8 @@ translate! {
         ko: "GALLERY",
         en: "GALLERY",
     },
+
+
 }
 
 translate! {
@@ -97,6 +99,15 @@ translate! {
         ko: "도시 최초의 글로벌 NFT 프로젝트: 블록체인 도시 인천의 지구지키기에 동참해 주세요!",
         en: "Championing a Global First: Incheon City's Landmark NFT Project on a Mission to Safeguard the Earth from Climate Change",
     },
+    confirm: {
+        ko: "확인",
+        en: "Confirm"
+    }
+
+    modal_title: {
+        ko: "인천히어로즈 서비스 종료 안내",
+        en: "Farewell from Incheon Heroes"
+    }
 }
 
 translate! {

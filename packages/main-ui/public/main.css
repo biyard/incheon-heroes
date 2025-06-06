@@ -30,6 +30,25 @@ pre {
   }
 }
 
+.popup-content h1 {
+  font-size: 26px;
+  font-weight: bold;
+  margin: 16px 0;
+  color: #333;
+}
+
+.popup-content p {
+  font-size: 15px;
+  line-height: 1.6;
+  margin: 10px 0;
+  color: #444;
+}
+
+.popup-content strong {
+  font-weight: bold;
+  color: #222;
+}
+
 .animate-grow-to-left {
   animation: growToLeft 2s ease-in-out forwards;
 }
@@ -48,7 +67,9 @@ input[type="number"] {
   -moz-appearance: textfield;
 }
 
-
 #shop_item_details {
- 	a:link { color: #000080; text-decoration: underline }
+  a:link {
+    color: #000080;
+    text-decoration: underline;
+  }
 }

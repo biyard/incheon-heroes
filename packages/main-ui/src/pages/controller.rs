@@ -1,12 +1,57 @@
+use by_macros::DioxusController;
 use dioxus::prelude::*;
 use dioxus_translate::Translate;
 use dto::*;
 
 use crate::models::nft_metadata::NftMetadata;
 
+#[derive(Debug, Clone, Copy, DioxusController)]
+pub struct HomePageController {
+    pub html: Resource<(String, String)>,
+}
+
+impl HomePageController {
+    pub fn new() -> std::result::Result<Self, RenderError> {
+        let html = use_resource(move || async move {
+            let res_ko: Result<String> = get_html(&format!(
+                "https://metadata.biyard.co/incheon-universe/notice/html/heroes_shutdown_ko.html"
+            ))
+            .await;
+
+            let res_en: Result<String> = get_html(&format!(
+                "https://metadata.biyard.co/incheon-universe/notice/html/heroes_shutdown_en.html"
+            ))
+            .await;
+
+            (
+                match res_ko {
+                    Ok(v) => v,
+                    Err(e) => {
+                        tracing::error!("get html ko failed with error: {:?}", e);
+                        "".to_string()
+                    }
+                },
+                match res_en {
+                    Ok(v) => v,
+                    Err(e) => {
+                        tracing::error!("get html en failed with error: {:?}", e);
+                        "".to_string()
+                    }
+                },
+            )
+        });
+
+        let ctrl = Self { html };
+        use_context_provider(|| ctrl);
+
+        Ok(ctrl)
+    }
+}
+
 #[derive(Debug, Clone, Copy)]
 pub struct LeaderBoardController {
     pub leaderboard: Resource<Leaderboard>,
+
     pub selected_leaderboard_type: Signal<LeaderboardType>,
 }
 
@@ -174,4 +219,15 @@ pub async fn nft_id_to_character(id: i64) -> String {
 
 pub fn truncate_addr(addr: &str) -> String {
     format!("{}...{}", &addr[..6], &addr[addr.len() - 4..])
+}
+
+pub async fn get_html(url: &str) -> Result<String> {
+    tracing::debug!("111");
+    let client = reqwest::Client::new();
+    tracing::debug!("222");
+    let res = client.get(url).send().await?;
+    tracing::debug!("333");
+    let body = res.text().await?;
+    tracing::debug!("444");
+    Ok(body)
 }
