@@ -1,0 +1,14 @@
+{
+  "name": "hero",
+  "version": "1.0.0",
+  "description": "Incheon Heroes is a full-stack application built with Rust. It consists of a backend API (`main-api`) and a frontend UI (`main-ui`). The backend handles database operations, user authentication, and integrations with external services like **PostgreSQL**, **Klaytn blockchain** and **AWS**. The frontend provides a user-friendly interface for interacting with the backend.",
+  "main": "index.js",
+  "scripts": {},
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "^1.51.1",
+    "@types/node": "^22.14.0"
+  }
+}

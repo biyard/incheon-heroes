@@ -14,6 +14,7 @@ use dioxus::prelude::*;
 use dioxus_oauth::prelude::FirebaseProvider;
 use dioxus_popup::PopupService;
 use services::google_service::GoogleService;
+use services::internet_identity::InternetIdentityService;
 use services::kakao_service::KakaoService;
 use services::{
     backend_api::BackendApi, icp_canister::IcpCanister, klaytn::Klaytn, user_service::UserService,
@@ -52,6 +53,7 @@ fn app() -> Element {
     PopupService::init();
     GoogleService::init();
     KakaoService::init();
+    InternetIdentityService::init();
 
     rsx! {
         FirebaseProvider {
@@ -86,7 +88,7 @@ fn app() -> Element {
         }
         document::Style { href: "https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Noto+Color+Emoji&family=Russo+One&display=swap" }
         document::Style { href: asset!("/public/main.css") }
-        document::Style { href: asset!("/public/tailwind.css") }
+        // document::Style { href: asset!("/public/tailwind.css") }
         document::Style {
             href: "https://cdn.jsdelivr.net/npm/daisyui@5",
             r#type: "text/css",

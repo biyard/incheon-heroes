@@ -76,6 +76,7 @@ jobs:
           KAKAO_REDIRECT_URI: https://dev.incheonheroes.world/oauth/kakao
           ICP_CANISTER_ID: mkam6-f4aaa-aaaaa-qablq-cai
           ICP_ENDPOINT: https://rdmx6-jaaaa-aaaaa-aaadq-cai.icp.biyard.co
+          II_ENDPOINT: https://identity.ic0.app
 
           KLAYTN_ENDPOINT: https://public-en-kairos.node.kaia.io
           CONTRACT_SHOP: "0xd1C122aBCa35B5187CccF98FEb1ddF46E3db5367"

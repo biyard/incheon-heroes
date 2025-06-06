@@ -28,3 +28,13 @@ dist/
 .vscode
 .DS_Store
 /packages/main-ui/public/dep.js.LICENSE.txt
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/screenshots
+
+*.env
+*env.rs

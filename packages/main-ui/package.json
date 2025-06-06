@@ -9,7 +9,11 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "firebase": "^11.3.1"
+    "@tailwindcss/cli": "^4.1.4",
+    "firebase": "^11.3.1",
+    "i": "^0.3.7",
+    "npm": "^11.3.0",
+    "tailwindcss": "^4.1.4"
   },
   "devDependencies": {
     "daisyui": "^4.12.23",
