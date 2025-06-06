@@ -7,13 +7,60 @@ use crate::{components::headings::Heading1, route::Route, services::user_service
 use super::i18n::*;
 use crate::assets::*;
 use by_components::meta::MetaPage;
+use chrono::Utc;
 use dioxus::prelude::*;
+use dioxus_popup::PopupService;
 use dioxus_translate::*;
+
+const MODAL_VIEW_START: i64 = 1749170332000;
+const MODAL_VIEW_END: i64 = 1751295599000;
 
 #[component]
 pub fn HomePage(lang: Language) -> Element {
+    let ctrl = HomePageController::new()?;
     let tr: MainTextTranslate = translate(&lang);
     let user: UserService = use_context();
+    let mut popup: PopupService = use_context();
+
+    use_effect({
+        move || {
+            let now = Utc::now().timestamp_millis();
+
+            if now >= MODAL_VIEW_START && now <= MODAL_VIEW_END {
+                if let Ok((ko_html, en_html)) = ctrl.html() {
+                    let html_to_use = match lang {
+                        Language::Ko => ko_html,
+                        Language::En => en_html,
+                    };
+
+                    if !html_to_use.is_empty() {
+                        popup
+                    .open(rsx! {
+                        div { class: "flex flex-col max-w-[500px] max-[400px]:w-full justify-start items-start px-10 gap-[10px] pb-10",
+                            div {
+                                class: "popup-content w-full",
+                                dangerous_inner_html: "{html_to_use}",
+                            }
+
+                            div { class: "flex flex-row w-full h-fit justify-center items-center",
+                                div {
+                                    class: "cursor-pointer flex flex-row w-[150px] h-[40px] justify-center items-center bg-[#32c564] rounded-lg font-semibold text-white text-base",
+                                    onclick: move |_| {
+                                        use_future(move || async move {
+                                            popup.close();
+                                        });
+                                    },
+                                    {tr.confirm}
+                                }
+                            }
+                        }
+                    })
+                    .with_title(tr.modal_title);
+                    }
+                }
+            }
+        }
+    });
 
     rsx! {
         MetaPage {

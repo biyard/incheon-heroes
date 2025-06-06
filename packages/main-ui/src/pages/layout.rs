@@ -5,8 +5,13 @@ use super::{
 };
 use crate::{
     assets::*,
-    components::icons,
-    components::icons::arrows::{ArrowDirection, SingleSimpleArrow},
+    components::{
+        icons::{
+            self,
+            arrows::{ArrowDirection, SingleSimpleArrow},
+        },
+        popup_zone::PopupZone,
+    },
     route::Route,
     services::user_service::UserService,
 };
@@ -15,7 +20,7 @@ use by_components::{
     theme::ColorTheme,
 };
 use dioxus::prelude::*;
-use dioxus_popup::{PopupService, PopupZone};
+use dioxus_popup::PopupService;
 use dioxus_translate::*;
 
 #[component]
