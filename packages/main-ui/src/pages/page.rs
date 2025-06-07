@@ -38,7 +38,7 @@ pub fn HomePage(lang: Language) -> Element {
                     .open(rsx! {
                         div { class: "flex flex-col max-w-[500px] max-[400px]:w-full justify-start items-start px-10 gap-[10px] pb-10",
                             div {
-                                class: "popup-content w-full",
+                                class: "popup-content w-full h-fit max-[500px]:h-[250px] max-[500px]:overflow-y-scroll",
                                 dangerous_inner_html: "{html_to_use}",
                             }
 
